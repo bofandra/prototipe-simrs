@@ -1,0 +1,70 @@
+SUMBER: new simrs.pdf
+STATUS: Ekstraksi teks otomatis, bukan file PDF asli.
+
+<PARSED TEXT FOR PAGE: 1 / 2>
+Memecah Lab, Radiologi, dan Farmasi untuk ditangani oleh developer yang berbeda adalah
+keputusan yang sangat tepat. Ketiga instalasi penunjang ini memiliki alur kerja fisik, standar
+kode, dan mesin yang sama sekali berbeda. Memisahkannya akan membuat masing-masing
+developer bisa fokus mendalami kompleksitas spesifik di domainnya.
+Dengan pembagian 6 modul bisnis ini, tugas bridging eksternal (SATUSEHAT dan BPJS) yang
+sebelumnya terpusat, kini ditangani oleh masing-masing developer sesuai dengan domain
+data mereka.
+Berikut adalah detail pembagian tugas dan pemetaan FHIR untuk spesifikasi yang baru:
+1. Core Admin & Front Office (Developer 1)
+Fokus: Pintu masuk pasien, manajemen antrean, dan pendaftaran rawat jalan/inap/IGD.
+  ●​ FHIR Resources: Patient, Organization, Location, Practitioner, Appointment, Encounter.
+  ●​ Integrasi Eksternal: Bridging Antrean BPJS (Mobile JKN), sinkronisasi data master tenaga
+     medis (SISDMK), dan update status pasien di SATUSEHAT.
+  ●​ Tantangan: Mengamankan data demografi agar tidak ada duplikasi rekam medis (MRN
+     ganda) dan memastikan siklus status Encounter terekam rapi (mulai dari pendaftaran
+     hingga pasien pulang).
+2. Core EMR / Rekam Medis (Developer 2)
+Fokus: Antarmuka utama dokter dan perawat untuk pencatatan asuhan medis (CPPT) dan
+penerbitan rujukan/order (ke lab, rad, atau farmasi).
+  ●​ FHIR Resources: Condition (ICD-10), Procedure (ICD-9-CM), Observation (TTV &
+     Anamnesis), AllergyIntolerance, dan ServiceRequest (Order/Pengantar).
+  ●​ Integrasi Eksternal: Pengiriman bundle RME (Diagnosa, Tindakan, TTV) ke API
+     SATUSEHAT Kemenkes sesuai standar use case kunjungan klinis.
+  ●​ Tantangan: Membuat form UI RME yang sangat cepat dan ramah-pengguna bagi dokter,
+     tanpa mengorbankan standarisasi data di backend.
+3. Laboratorium (Developer 3)
+Fokus: Membangun Laboratory Information System (LIS) untuk mengelola sampel dan hasil tes
+darah/urine/patologi.
+  ●​ FHIR Resources: Menerima ServiceRequest, lalu membuat Specimen (manajemen
+     tabung/barcode), Observation (nilai hasil ukur lab), dan merangkumnya di
+     DiagnosticReport.
+  ●​ Integrasi Internal/Eksternal: Membuat middleware untuk membaca hasil otomatis dari
+     mesin lab analyzer (biasanya berprotokol HL7 v2), dan memetakan nama tes ke standar
+     terminologi LOINC.
+4. Radiologi (Developer 4)
+Fokus: Membangun Radiology Information System (RIS) untuk manajemen foto rontgen, USG,
+CT-Scan, dan MRI.
+  ●​ FHIR Resources: Menerima ServiceRequest, menyimpan metadata di ImagingStudy, dan
+     mencatat ekspertise/bacaan dokter di DiagnosticReport.
+  ●​ Integrasi Internal/Eksternal: Integrasi dengan server PACS (Picture Archiving and
+<PARSED TEXT FOR PAGE: 2 / 2>
+     Communication System). Developer tidak menyimpan file gambar bergiga-giga di FHIR,
+     melainkan menyambungkan DICOM Viewer ke dalam aplikasi SIMRS.
+5. Pharmacy / Farmasi & Apotek (Developer 5)
+Fokus: Manajemen stok obat, peracikan, e-Resep, dan penyerahan obat ke pasien.
+  ●​ FHIR Resources: Medication, MedicationRequest (e-resep dari Dev 2), dan
+     MedicationDispense (penyerahan obat).
+  ●​ Integrasi Eksternal: Bridging data penyerahan obat ke SATUSEHAT (kewajiban
+     Kemenkes) dan memetakan database obat lokal ke standar KFA (Kamus Farmasi dan Alat
+     Kesehatan).
+  ●​ Tantangan: Menyinkronkan pengurangan stok inventori secara real-time setiap kali
+     MedicationDispense berstatus selesai.
+6. Finance, Billing & Claims (Developer 6)
+Fokus: Otomatisasi penagihan (kasir gabungan) dan pengajuan klaim asuransi tanpa
+double-entry.
+  ●​ FHIR Resources: Account, ChargeItem, Invoice, Coverage (data asuransi/BPJS), Claim,
+      dan PaymentReconciliation.
+  ●​ Integrasi Eksternal: Bridging API V-Claim BPJS, integrasi INA-CBG untuk grouping tarif
+      INA-CBG, dan payment gateway untuk pasien umum.
+  ●​ Tantangan: Membangun listener agar setiap kali Dev 2 (tindakan), Dev 3 (lab), Dev 4
+      (rad), atau Dev 5 (obat) menyelesaikan layanannya, sistem otomatis menciptakan
+      ChargeItem ke dalam struk tagihan (Invoice) milik Dev 6.
+Catatan Arsitektur Penting: Karena tidak ada developer khusus infrastruktur dalam skema ini,
+semua developer harus menyepakati satu standar FHIR Server terpusat (misalnya
+menggunakan HAPI FHIR atau Smile CDR) dan menggunakan satu API Gateway yang sama agar
+data otentikasi (OAuth2) tidak terpecah-pecah.
