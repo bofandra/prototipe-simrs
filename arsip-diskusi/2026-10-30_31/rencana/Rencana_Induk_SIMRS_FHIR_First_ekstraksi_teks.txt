@@ -1,0 +1,2077 @@
+SUMBER: Rencana_Induk_SIMRS_FHIR_First_Tanpa_FHIR_Server_v1.docx
+CATATAN: EKSTRAKSI TEKS dari Library ChatGPT. Bukan DOCX asli; tampilan, gambar, bagan, tabel, dan styling bisa hilang.
+
+<PARSED TEXT FOR PAGE: 1 / 28>
+                                                                                   SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+
+BLUEPRINT SISTEM INFORMASI MANAJEMEN RUMAH SAKIT
+
+
+MASTER PLAN
+SIMRS BARU
+FHIR-First • Modular Monolith • Tanpa Dedicated FHIR
+Server
+Rancangan enterprise untuk frontoffice, rekam medis, penunjang, backoffice/ERP, integrasi nasional, mutu,
+dan analitik.
+
+
+
+
+ KEPUTUSAN BASELINE                                         TEKNOLOGI / PRINSIP
+ Antarmuka                                                  React + TypeScript
+ Layanan bisnis                                             Go (modular monolith)
+ Database otoritatif                                        PostgreSQL
+ Interoperabilitas                                          HL7 FHIR R4 + profil SATUSEHAT
+ FHIR Server                                                Tidak digunakan
+ Integrasi                                                  FHIR mapper + validator + client + outbox worker
+
+
+Versi 1.0 | 30 Oktober 2026 | Status: Blueprint untuk pembahasan dan perancangan detail
+
+Disusun dari diskusi keputusan arsitektur, dokumen “new simrs.pdf” (2 halaman), serta referensi spesifikasi resmi HL7
+FHIR dan SATUSEHAT. Pengembangan belum dieksekusi melalui dokumen ini.
+
+
+
+
+                                                                                Baseline arsitektur 30-10-2026 • Halaman 1
+<PARSED TEXT FOR PAGE: 2 / 28>
+                                                                                 SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+
+Pengendalian Dokumen
+    Atribut                                              Keterangan
+                                                         Master Plan Pengembangan SIMRS Baru – FHIR-First
+    Judul
+                                                         Tanpa FHIR Server
+    Versi / tanggal                                      1.0 / 30 Oktober 2026
+                                                         Rancangan arsitektur awal dan perencanaan
+    Klasifikasi
+                                                         implementasi
+                                                         Satu RS atau jaringan multi-RS; dapat disesuaikan
+    Target
+                                                         skala fasilitas
+                                                         Keputusan baseline dinyatakan; sejumlah pilihan
+    Status keputusan
+                                                         teknis tetap memerlukan spike
+                                                         Setiap perubahan arsitektur harus memiliki
+    Perubahan
+                                                         Architecture Decision Record (ADR)
+
+
+
+
+Pernyataan ruang lingkup dan tingkat kepastian
+Dokumen ini menetapkan arah arsitektur dan menginventaris cakupan modul. Rincian fitur pembanding
+NUHA, SIMGOS, Khanza dan SIMRS lain merupakan daftar kandidat benchmark, bukan klaim audit fitur
+lengkap produk tersebut. Status aktual fitur existing SIMRS-Sensi dan prioritas final harus ditetapkan
+melalui discovery dan verifikasi kode/proses.
+
+Tabel pemetaan FHIR menjelaskan kandidat resource FHIR R4. Pemetaan final, profil, cardinality,
+terminologi, dan kewajiban integrasi harus diverifikasi terhadap Implementation Guide serta Playbook
+SATUSEHAT untuk use case terkait.
+
+
+Daftar isi
+      1. Ringkasan Eksekutif
+      2. Visi, Prinsip dan Batasan
+      3. Benchmark dan Katalog Modul
+      4. Technology Stack dan Keputusan Arsitektur
+      5. Arsitektur Logis dan Deployment
+      6. Domain, Kepemilikan Data dan Konsistensi
+      7. Desain PostgreSQL dan Master Data
+      8. FHIR-First Tanpa FHIR Server
+      9. API, Event dan Integrasi Eksternal
+      10. Blueprint Workflow End-to-End
+      11. Keamanan, Privasi dan Audit
+      12. Non-functional Requirements dan Operasional
+      13. Quality Engineering dan Uji Penerimaan
+      14. Organisasi Tim dan Tata Kelola
+      15. Roadmap, Backlog dan Stage Gates
+      16. Migrasi/Re-use SIMRS-Sensi
+      17. Risiko, Asumsi dan Keputusan Terbuka
+      18. Referensi dan Traceability
+      Lampiran A–D. Data dictionary, API, event, acceptance criteria
+
+
+
+
+                                                                           Baseline arsitektur 30-10-2026 • Halaman 2
+<PARSED TEXT FOR PAGE: 3 / 28>
+                                                                             SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+
+1. Ringkasan Eksekutif
+SIMRS baru dirancang sebagai platform operasional klinis dan bisnis rumah sakit, bukan aplikasi rekam
+medis yang sekadar menambahkan fitur bridging. Standar HL7 FHIR R4 menjadi bahasa interoperabilitas
+klinis; transaksi internal dibangun sebagai model domain relasional di PostgreSQL. Tidak ada deployment
+dedicated FHIR Server (misalnya HAPI) pada baseline. Backend Go menghasilkan, memvalidasi, menerima,
+dan mengirim resource FHIR melalui adapter terpusat.
+
+    Keputusan arsitektur yang sudah disepakati
+
+
+      React + TypeScript untuk antarmuka semua modul.
+      Go untuk backend bisnis dan integrasi.
+      PostgreSQL sebagai sumber data otoritatif.
+      Modular monolith sebagai bentuk deployment aplikasi awal.
+      FHIR R4 sebagai acuan pemetaan klinis dan pertukaran data; bukan skema tabel wajib.
+      Tanpa dedicated FHIR Server; kontrak API internal tetap REST/OpenAPI.
+      Adapters khusus untuk SATUSEHAT, BPJS, HL7 v2 dan DICOM/PACS.
+      Python hanya ditambahkan ketika analitik/AI membutuhkan runtime khusus.
+
+
+Hasil akhir yang dituju
+    Kemampuan                                          Kriteria hasil
+                                                       Perjalanan pasien dari registrasi sampai discharge
+    Clinical continuity
+                                                       memiliki relasi dan provenance yang konsisten.
+                                                       Tidak ada dua tabel / repository yang saling menjadi
+    Single source of truth
+                                                       penulis otoritatif untuk entitas sama.
+                                                       Stok, billing, klaim, jurnal dan pembayaran dapat
+    Operational integrity
+                                                       direkonsiliasi dan diaudit.
+                                                       Resource FHIR yang relevan dihasilkan dari model
+    Interoperability
+                                                       domain dan lulus validasi use case.
+                                                       Kegagalan SATUSEHAT/BPJS tidak menghilangkan
+    Resilience
+                                                       transaksi klinis; retry dan rekonsiliasi aman.
+                                                       Tenant isolation, RBAC/ABAC, audit, backup-restore
+    Enterprise readiness
+                                                       dan observability sejak awal.
+
+
+
+
+Apa yang tidak termasuk baseline
+Tidak membangun FHIR repository generic-search/history/transaction lengkap; tidak membangun PACS
+maupun LIS analyzer engine dari nol; tidak menganggap FHIR Claim otomatis menggantikan kontrak
+VClaim atau grouping INA-CBG; tidak memaksakan seluruh modul ERP ke resource FHIR; tidak
+menduplikasi clinical source of truth demi keperluan integrasi.
+
+
+
+2. Visi, Prinsip dan Batasan
+2.1 Visi produk
+Satu platform terpadu untuk alur pasien, pekerjaan tenaga kesehatan, penunjang diagnostik, farmasi,
+operasi, gizi, administrasi, keuangan, logistik, SDM, mutu, dan pelaporan; mampu digunakan pada rumah
+sakit Indonesia dengan dukungan transaksi dan interoperabilitas nasional.
+
+
+
+
+                                                                          Baseline arsitektur 30-10-2026 • Halaman 3
+<PARSED TEXT FOR PAGE: 4 / 28>
+                                                                                               SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+2.2 Prinsip desain
+ Prinsip                                                             Penerapan
+                                                                     Setiap perubahan klinis penting memiliki author,
+ Clinical safety first
+                                                                     timestamp, status, validasi dan workflow koreksi.
+                                                                     Satu domain memiliki tanggung jawab menulis data inti;
+ Domain ownership
+                                                                     modul lain mengakses lewat layanan atau event.
+                                                                     FHIR menjadi kontrak semantik klinis; ERP tetap berbasis
+ FHIR-first, not FHIR-only
+                                                                     ledger dan model transaksional.
+                                                                     Master tarif, layanan, formulir, profil, workflow dan
+ Configuration over duplication
+                                                                     integrasi dikonfigurasi per tenant/unit.
+                                                                     MFA step-up, least privilege, audit dan consent sesuai
+ Security by design
+                                                                     konteks tersedia sebelum go-live.
+                                                                     Sistem klinis dapat terus berjalan saat layanan eksternal
+ Offline-tolerant integration
+                                                                     tidak tersedia.
+                                                                     Pisah deploy menjadi service hanya jika kebutuhan
+ Modular evolution
+                                                                     kapasitas dan isolasi terbukti.
+                                                                     Semua transaksi kritis dan integrasi memiliki correlation
+ Operational observability
+                                                                     ID, trace dan alert.
+
+
+
+
+2.3 In-scope vs out-of-scope
+ In scope                                                            Out-of-scope untuk fase awal
+ FHIR resource mapping, profile validation, SATUSEHAT
+                                                                     Dedicated local FHIR Server / FHIR clinical data lake
+ client
+ Registrasi, RJ, IGD, RI, penunjang dan billing                      Reimplementasi protokol DICOM stack dari dasar
+                                                                     Pengganti langsung semua sistem regulator dengan
+ Ledger stok, billing, keuangan, klaim
+                                                                     skema FHIR
+                                                                     FHIR REST server universal dengan seluruh search
+ API bagi modul/mitra melalui OpenAPI
+                                                                     interactions
+ Role, consent, audit, BCP, observability                            AI yang mengambil keputusan klinis secara otomatis
+
+
+
+
+3. Benchmark dan Katalog Modul
+Enam domain dari “new simrs.pdf” adalah pembagian implementasi awal: Core Admin, Core EMR,
+Laboratorium, Radiologi, Farmasi, dan Finance/Billing/Claims. Blueprint ini memperluasnya menjadi
+katalog enterprise berdasarkan diskusi proyek dan contoh modul SIMRS pembanding. Setiap item
+merupakan kandidat scope; prioritas P0/P1/P2 adalah usulan awal, bukan komitmen rilis.
+P0 = kebutuhan workflow minimal/ketergantungan awal; P1 = ekspansi pelayanan; P2 = operasional lanjut/enterprise.
+“FHIR” berarti representasi klinis utama; “Hybrid” berarti FHIR + transaksi domain; “ERP” berarti domain-native/non-
+FHIR.
+
+
+Core Platform & Front Office
+ Modul                    Ruang lingkup inti         FHIR / standar                 Jenis                    Prio
+                                                     terkait
+                          Identitas, MRN, dedup,
+ Master Patient / MPI     merge, histori             Patient, RelatedPerson         FHIR                     P0
+                          identitas
+                          Cabang, instalasi, poli,
+ Organisasi & Unit                                   Organization, Location         FHIR                     P0
+                          ruang, lokasi fisik
+                          Praktisi, kompetensi,      Practitioner,
+ Tenaga Medis & Role                                                                FHIR                     P0
+                          SIP/STR, penugasan         PractitionerRole
+
+
+
+
+                                                                                            Baseline arsitektur 30-10-2026 • Halaman 4
+<PARSED TEXT FOR PAGE: 5 / 28>
+                                                                                      SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+ Modul                  Ruang lingkup inti        FHIR / standar          Jenis                     Prio
+                                                  terkait
+                        User, role, MFA,
+ IAM & Permissions                                Tidak wajib             ERP                       P0
+                        tenant, policy
+ Appointment &          Slot, appointment,        Schedule, Slot,
+                                                                          FHIR                      P0
+ Scheduling             jadwal layanan            Appointment
+                        Booking, check-in,        Appointment,
+ Antrean & Kiosk                                                          Hybrid                    P0
+                        display antrean           Encounter, Task
+ Registrasi dan         RJ, IGD, RI, identitas    Encounter,
+                                                                          Hybrid                    P0
+ Admisi                 penjamin                  EpisodeOfCare
+                        Kamar, bed, okupansi,
+ Bed Management                                   Location, Encounter     Hybrid                    P1
+                        mutasi
+                        Persetujuan
+ Consent & Disclosure                             Consent, Provenance     Hybrid                    P0
+                        pelayanan dan akses
+                                                  ServiceRequest /
+ Master Katalog         Tarif, tindakan, paket,
+                                                  ChargeItem              Hybrid                    P0
+ Layanan                layanan
+                                                  (pemetaan)
+
+
+
+
+Clinical / Frontoffice RME
+ Modul                  Ruang lingkup inti        FHIR / standar          Jenis                     Prio
+                                                  terkait
+                        Asesmen, SOAP,            Encounter, Condition,
+ Rawat Jalan                                                              FHIR                      P0
+                        diagnosis, tindakan       Observation
+                        Acuity, asesmen,          Encounter,
+ IGD & Triase                                                             FHIR                      P0
+                        observasi, disposition    Observation
+                        Visite, asuhan,
+ Rawat Inap                                       Encounter, CarePlan     FHIR                      P1
+                        transfer, discharge
+                        Catatan longitudinal      Composition,
+ CPPT & SOAP                                                              FHIR                      P0
+                        dokter/perawat            Observation
+                        Coding, verifikasi dan
+ Diagnosis & Prosedur                             Condition, Procedure    FHIR                      P0
+                        correction
+                        Order lab, rad,           ServiceRequest,
+ CPOE / Orders                                                            FHIR                      P0
+                        tindakan dan obat         MedicationRequest
+                                                  CarePlan,
+ Nursing &              Asuhan, pemberian
+                                                  MedicationAdministra    FHIR                      P1
+ Medication Admin       obat, barcode
+                                                  tion
+ Care Team & Clinical   Team, rencana             CareTeam, CarePlan,
+                                                                          FHIR                      P1
+ Plan                   asuhan, goals             Goal
+ Referral &             Rujukan
+                                                  ServiceRequest, Task    FHIR                      P1
+ Consultation           internal/eksternal
+                        Resume, surat, tanda      Composition,
+ Clinical Documents                                                       FHIR                      P0
+                        tangan                    DocumentReference
+ Allergy & Medication   Alergi, alerts, med       AllergyIntolerance,
+                                                                          FHIR                      P1
+ Safety                 reconciliation            DetectedIssue
+ Clinical Decision      Scores, warning,          Observation,
+                                                                          Hybrid                    P1
+ Support                guideline                 RiskAssessment
+                        Antrean, janji,           Patient, Appointment,
+ Patient Portal                                                           Hybrid                    P2
+                        dokumen, riwayat          DocumentReference
+
+
+
+
+Penunjang Klinis
+ Modul                  Ruang lingkup inti        FHIR / standar          Jenis                     Prio
+                                                  terkait
+                                                  ServiceRequest,
+                        Order, barcode,           Specimen,
+ Laboratory / LIS                                                         Hybrid                    P0
+                        specimen, result, QC      Observation,
+                                                  DiagnosticReport
+
+
+
+                                                                                   Baseline arsitektur 30-10-2026 • Halaman 5
+<PARSED TEXT FOR PAGE: 6 / 28>
+                                                                                   SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+ Modul                Ruang lingkup inti       FHIR / standar          Jenis                     Prio
+                                               terkait
+                                               ServiceRequest,
+                      Order, schedule,
+ Radiology / RIS                               ImagingStudy,           Hybrid                    P0
+                      report, modality
+                                               DiagnosticReport
+                      Storage, image
+                                               ImagingStudy +
+ PACS / Viewer        retrieval, DICOM                                 Hybrid                    P1
+                                               DICOM
+                      viewer
+ Pharmacy /           Resep, verifikasi,       MedicationRequest,
+                                                                       Hybrid                    P0
+ Dispensing           serah, counseling        MedicationDispense
+ Medication                                    MedicationAdministra
+                      MAR/BCMA inpatient                               FHIR                      P1
+ Administration                                tion
+                      Schedule, checklist,     ServiceRequest,
+ Operating Theater                                                     Hybrid                    P1
+                      tindakan                 Procedure
+                                               Observation,
+                      Perioperatif,            Procedure,
+ Anesthesia & PACU                                                     FHIR                      P1
+                      monitoring, recovery     MedicationAdministra
+                                               tion
+                                               ServiceRequest,
+                      Session, orders,
+ Hemodialysis                                  Procedure,              Hybrid                    P2
+                      observations
+                                               Observation
+                      Asesmen, goal, jadwal    CarePlan, Goal,
+ Rehabilitation                                                        Hybrid                    P2
+                      terapi                   Procedure
+                      Paket, pemeriksaan,      ServiceRequest,
+ Medical Check Up                                                      Hybrid                    P2
+                      resume hasil             DiagnosticReport
+                                               NutritionOrder,
+                      Asesmen, masalah
+ Clinical Nutrition                            Observation,            FHIR                      P1
+                      gizi, diet
+                                               Condition
+                                               ServiceRequest,
+ Blood Bank /         Matching, issue,
+                                               BiologicallyDerivedPr   Hybrid                    P2
+ Transfusion          administration
+                                               oduct
+                                               Condition,
+ Infection            Surveilans dan
+                                               Observation,            Hybrid                    P2
+ Prevention / HAIs    incident tracking
+                                               AdverseEvent
+                      Rencana care             PlanDefinition,
+ Clinical Pathway                                                      Hybrid                    P2
+                      terstruktur              CarePlan, Task
+
+
+
+
+Operasional & Logistik
+ Modul                Ruang lingkup inti       FHIR / standar          Jenis                     Prio
+                                               terkait
+ Inventory &          Multi-gudang, batch,     Medication/Supply*
+                                                                       Hybrid                    P0
+ Warehouse            expiry, ledger           sebagai referensi
+ Procurement /        PR, RFQ, PO, GRN,
+                                               Tidak wajib             ERP                       P1
+ Vendor               retur
+                      Siklus set instrumen,    Device / Supply* bila
+ CSSD                                                                  Hybrid                    P2
+                      steril, tracking         relevan
+                      Collection, washing,     Location sebagai
+ Laundry & Linen                                                       ERP                       P2
+                      delivery                 referensi
+ Produksi &           Menu, resep, raw         NutritionOrder
+                                                                       Hybrid                    P1
+ Distribusi Gizi      material, tray           sebagai sumber
+                      Aset, depresiasi,        Device untuk alat
+ Asset Management                                                      Hybrid                    P2
+                      kalibrasi                klinis
+ Maintenance /        WO, preventive dan       Device/Location
+                                                                       Hybrid                    P2
+ Facility             corrective               sebagai referensi
+                      Cleaning, inspection,    Location sebagai
+ Housekeeping                                                          ERP                       P2
+                      checklist                referensi
+ Ambulance &                                   ServiceRequest jika
+                      Order, dispatch, fleet                           Hybrid                    P2
+ Transport                                     terkait klinis
+
+
+
+                                                                                Baseline arsitektur 30-10-2026 • Halaman 6
+<PARSED TEXT FOR PAGE: 7 / 28>
+                                                                                    SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+ Modul                 Ruang lingkup inti        FHIR / standar         Jenis                     Prio
+                                                 terkait
+ Nonmedical            Parkir, koperasi,
+                                                 Tidak wajib            ERP                       P2
+ Operations            kantin, perpustakaan
+
+
+
+
+Finance, Billing, Claims
+ Modul                 Ruang lingkup inti        FHIR / standar         Jenis                     Prio
+                                                 terkait
+                       Charge otomatis           ChargeItem sebagai
+ Charge Capture                                                         Hybrid                    P0
+                       berdasar layanan          representasi
+                       Paket, tarif, diskon,
+ Billing & Invoice                               Account, Invoice       Hybrid                    P0
+                       piutang
+                                                 PaymentReconciliatio
+ Cashier & Payments    Kasir, refund, deposit                           ERP                       P0
+                                                 n (terbatas)
+                       BPJS, asuransi,
+ Payer & Coverage                                Coverage               Hybrid                    P0
+                       corporate
+ BPJS VClaim /         SEP, rujukan,             Adapter BPJS, bukan
+                                                                        Hybrid                    P1
+ Antrean               transaksi BPJS            FHIR universal
+                                                 Claim sebagai
+                       Coding, grouper,
+ Casemix / INA-CBG                               representasi           Hybrid                    P1
+                       dispute
+                                                 konseptual
+ Private Insurance     Package, upload,          Claim/ClaimResponse
+                                                                        Hybrid                    P1
+ Claims                tracking                  bila sesuai mitra
+                       Jurnal, chart of
+ General Ledger                                  Tidak wajib            ERP                       P1
+                       accounts, posting
+ AP/AR & Treasury      Hutang, piutang, bank     Tidak wajib            ERP                       P1
+ Costing & Doctor      Unit cost, fee, alokasi   ChargeItem sebagai
+                                                                        Hybrid                    P2
+ Fees                  biaya                     data referensi
+ Budgeting &           Budget vs actual,
+                                                 Tidak wajib            ERP                       P2
+ Financial Report      konsolidasi
+
+
+
+
+HR, Quality & Enterprise
+ Modul                 Ruang lingkup inti        FHIR / standar         Jenis                     Prio
+                                                 terkait
+                       Employee, shift,          Practitioner sebagai
+ HR Master / Payroll                                                    ERP                       P2
+                       attendance, payroll       referensi Nakes
+ Recruitment &         ATS, training,
+                                                 Tidak wajib            ERP                       P2
+ Talent                competency
+                       Incident, RCA, action     AdverseEvent bila
+ Patient Safety                                                         Hybrid                    P1
+                       plan                      relevan
+                                                 Measure/
+ Quality & Clinical
+                       KPI, audits, thresholds   MeasureReport bila     Hybrid                    P1
+ Indicators
+                                                 tepat
+                       Risk register,            RiskAssessment untuk
+ Risk Management                                                        Hybrid                    P2
+                       mitigation                risiko klinis
+                       Pelaporan fasyankes,
+ RL / SIRS Reporting                             Dataset klinis+ERP     Hybrid                    P1
+                       rekonsiliasi
+ Dynamic Reporting /   Self-service analytics,   Data warehouse,
+                                                                        Hybrid                    P1
+ BI                    cubes                     Measure opsional
+ Multi-Hospital        Master, konsolidasi       Organization +
+                                                                        Hybrid                    P2
+ Consolidation         jaringan RS               agregasi ERP
+                       Balanced scorecard,
+ Portal Manajemen                                Tidak wajib            ERP                       P2
+                       approval
+                                                 AuditEvent/
+ Audit, Compliance &   Audit akses, log,
+                                                 Provenance bila        Hybrid                    P0
+ BCP                   disaster recovery
+                                                 relevan
+
+
+
+                                                                                 Baseline arsitektur 30-10-2026 • Halaman 7
+<PARSED TEXT FOR PAGE: 8 / 28>
+                                                                                         SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+
+3.1 Matriks benchmark dan status sumber
+ Sumber                                     Yang diambil                              Batas interpretasi
+                                                                                      Dokumen mengusulkan FHIR Server
+                                            6 domain developer, resource utama,
+ new simrs.pdf (unggahan)                                                             terpusat; keputusan tersebut
+                                            bridge, risiko masing-masing
+                                                                                      DIGANTI: tanpa FHIR Server.
+                                            Workflow dan komponen                     Status setiap feature perlu diperiksa
+ SIMRS-Sensi                                React/TypeScript, rules, test, data dan   di kode; tidak otomatis tersedia di
+                                            epic benchmark                            sistem baru.
+                                            Ruang lingkup kandidat modul klinis       Katalog di atas tidak menyatakan
+ NUHA / SIMGOS / Khanza
+                                            dan operasional                           kesetaraan fungsional pasti.
+                                            Norma FHIR R4 dan API integrasi use       Profil dapat berubah; cek versi saat
+ HL7 & SATUSEHAT resmi
+                                            case                                      implementasi.
+
+
+
+
+4. Technology Stack dan Keputusan Arsitektur
+ Lapisan                                    Baseline                                  Alasan dan batasan
+                                            React + TypeScript, Tailwind/shadcn,      Komponen reusable, tiping kuat,
+ UI Web
+                                            TanStack Query/Router                     reuse dari SIMRS-Sensi.
+                                            Go (Echo atau Gin, diputuskan lewat       API typed, transaksi, integrasi, satu
+ Backend bisnis
+                                            spike)                                    binary; tetap perlu disiplin domain.
+                                                                                      ACID, FK, reporting, JSONB selektif,
+ Database                                   PostgreSQL; SQL migrations
+                                                                                      tenant isolation.
+                                                                                      Kontrak eksplisit; generate client
+ API                                        REST JSON + OpenAPI 3.x
+                                                                                      TypeScript.
+                                            Go worker + PostgreSQL                    Tidak memerlukan message broker
+ Async jobs
+                                            transactional outbox                      di awal.
+                                                                                      Tambahkan hanya jika profil
+ Cache                                      Redis opsional
+                                                                                      penggunaan membuktikan perlu.
+                                                                                      File besar dan dokumen tidak di-
+ Storage dokumen                            S3-compatible object storage
+                                                                                      BLOB tabel core.
+                                            Orthanc/mitra PACS, DICOMweb,
+ PACS                                                                                 DICOM binary bukan resource FHIR.
+                                            web viewer
+                                            HL7 v2 / ASTM / vendor protocol
+ Analyzer                                                                             Vendor-specific mapping terisolasi.
+                                            adapter
+                                                                                      Bukan bagian alur transaksional
+ AI                                         Python service opsional
+                                                                                      wajib.
+                                            Docker + reverse proxy, CI/CD +           Hindari k8s kompleks sebelum
+ Infrastructure
+                                            telemetry                                 kebutuhan terbukti.
+
+
+
+
+4.1 Rekomendasi struktur repository
+  simrs/
+   apps/web/           # React + TypeScript
+   services/api/       # Go modular monolith
+    internal/platform/     # auth, db, audit, config, outbox
+    internal/domains/      # patient, encounter, order, ...
+    internal/integrations/ # satusehat, bpjs, lis, pacs
+   contracts/openapi/      # spesifikasi API, generated client
+   contracts/events/      # event schema & semantic versions
+   database/migrations/      # SQL incremental
+   tests/          # contract, integration, e2e
+   deploy/           # docker-compose, config, pipelines
+   docs/            # ADR, data dictionary, playbooks
+
+
+
+
+                                                                                      Baseline arsitektur 30-10-2026 • Halaman 8
+<PARSED TEXT FOR PAGE: 9 / 28>
+                                                                                     SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+
+4.2 Keputusan teknis yang masih perlu spike
+    Topik                                  Alternatif                             Kriteria evaluasi
+                                                                                  middleware, route grouping,
+    Go HTTP framework                      Echo vs Gin                            performance p95, OpenAPI, test
+                                                                                  ergonomics
+                                                                                  compile-time SQL, transaction,
+    DB access                              database/sql + sqlc / pgx vs ORM
+                                                                                  migration, maintenance
+                                                                                  FHIR R4 constraint,
+                                           Library Go + profile-aware validator
+    FHIR validation                                                               profile/terminology, reproducibility,
+                                           sidecar/CLI
+                                                                                  licence
+                                                                                  throughput, replay, operational
+    Event delivery                         PostgreSQL polling vs broker
+                                                                                  burden
+                                                                                  MFA, SSO, session, external users,
+    Authentication                         OIDC provider managed/self-hosted
+                                                                                  compliance
+                                           shared DB with tenant key vs           data isolation, backup boundary,
+    Multi-tenancy
+                                           database/schema per RS                 migration scale
+
+
+
+
+5. Arsitektur Logis dan Deployment
+5.1 Component view
+     [Web React/TypeScript] [Portal Pasien/Manajemen]
+             | HTTPS + OIDC
+           [Reverse Proxy / API Edge]
+                    |
+            [Go Modular Monolith]
+       +-----------+-------------+------------+
+       | Clinical | Operations | Finance |
+       | Patient | Inventory | Billing |
+       | Encounter | Nutrition | Claims |
+       | Orders | CSSD                | GL / AP/AR |
+       +-----------+-------------+------------+
+               |        |         |
+          [PostgreSQL: Domain + Outbox + Audit]
+               |        |         |
+        [Go Integration Workers / FHIR Adapter]
+         | SATUSEHAT FHIR R4 | BPJS REST
+         | HL7 v2 Analyzer | DICOM/PACS
+           [Object Storage] [Observability]
+
+
+
+
+5.2 Deployment awal
+      Satu backend Go sebagai deployment aplikasi utama; pekerjaan worker dapat dijalankan sebagai
+       proses terpisah dari codebase sama.
+      PostgreSQL utama dengan backup PITR, replica read-only bila dibutuhkan, dan akses database private
+       network.
+      Reverse proxy/TLS; file/dokumen di object storage terenkripsi; PACS berdiri sendiri.
+      Secret di secret manager/env terlindungi; tidak ada kredensial SATUSEHAT pada frontend.
+      Staging menggunakan data sintetis atau deidentified; sandbox SATUSEHAT terpisah dari production.
+      Rollout berjenjang dengan observability dan rollback versi aplikasi/migrasi yang kompatibel.
+
+
+
+
+                                                                                  Baseline arsitektur 30-10-2026 • Halaman 9
+<PARSED TEXT FOR PAGE: 10 / 28>
+                                                                                           SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+5.3 Ketergantungan dan failure isolation
+    Komponen gagal                                                  Perilaku yang diharapkan
+                                                                    Transaksi internal tetap sukses; item integrasi masuk
+    SATUSEHAT
+                                                                    retry queue dan ditandai pending.
+                                                                    Transaksi terkait penjamin diberi status terkontrol;
+    BPJS                                                            langkah yang mensyaratkan bukti BPJS tidak
+                                                                    dipalsukan.
+                                                                    Input manual terotorisasi atau antrean interface
+    Analyzer LIS
+                                                                    sesuai kebijakan lab; provenance tetap dicatat.
+                                                                    Radiologi dapat menyimpan status order/report;
+    PACS/DICOM                                                      viewer menampilkan unavailable, tidak menciptakan
+                                                                    image palsu.
+                                                                    Aplikasi tidak menulis; alert, failover/restore
+    Database utama
+                                                                    mengikuti RTO/RPO yang disepakati.
+                                                                    Outbox tetap tertahan dan dapat di-replay dengan
+    Worker
+                                                                    idempotency.
+
+
+
+
+6. Domain, Kepemilikan Data dan Konsistensi
+    Bounded context       Entity utama              ID internal                 Pemilik                  Contoh event
+                          Account, role,                                                                 authorize/login/role-
+    Identity & Tenant                               user_id, tenant_id          IAM domain
+                          permission, session                                                            changed
+                          Patient, identifiers,                                                          patient.created/
+    Patient Registry                                patient_id, mrn             Patient domain
+                          merge                                                                          merged
+                          Registration,
+                                                                                                         encounter.started/
+    Encounter             encounters, bed           encounter_id                Encounter domain
+                                                                                                         discharged
+                          events
+    Clinical              Notes, assessment,                                                             document.signed/
+                                                    clinical_document_id        Clinical domain
+    Documentation         diagnosis, procedures                                                          condition.verified
+                          Service orders, order
+    Order Management                                order_id                    Orders domain            order.placed/cancelled
+                          items
+                          Specimen, test result,    specimen_id,
+    Laboratory                                                                  Laboratory domain        lab.result.verified
+                          verification              lab_result_id
+                          Exam, report, imaging
+    Radiology                                       radiology_exam_id           Radiology domain         rad.report.finalized
+                          references
+                          Prescription, dispense,   prescription_id,
+    Pharmacy                                                                    Pharmacy domain          med.dispensed
+                          MAR                       dispense_id
+                          Stock lot, reservation,
+    Inventory                                       stock_txn_id                Inventory domain         stock.posted
+                          movement
+                          Charges, invoice,                                                              charge.finalized/
+    Billing                                         charge_id, invoice_id       Billing domain
+                          payments                                                                       payment.posted
+    Finance               Journal, AP/AR, closing   journal_id                  Finance domain           journal.posted
+                          Outbox, external IDs,
+    Integration                                     delivery_id                 Integration platform     export.delivered/failed
+                          status
+                          Indicators, aggregates,
+    Quality/Analytics                               indicator_run_id            Quality/Analytics        indicator.computed
+                          controls
+
+
+
+
+6.1 Aturan konsistensi bisnis
+      Encounter memiliki state machine yang jelas; setiap SOAP, order, result dan charge selalu merujuk
+       encounter valid.
+      Order yang dibatalkan harus menginformasikan downstream dan mencegah pemrosesan baru;
+       tindakan sudah terlaksana memerlukan proses reversal yang dapat diaudit.
+
+
+
+                                                                                      Baseline arsitektur 30-10-2026 • Halaman 10
+<PARSED TEXT FOR PAGE: 11 / 28>
+                                                                                        SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+        MedicationDispense diverifikasi sebelum stock issue final; stok tidak boleh negatif tanpa kebijakan
+         resmi dan otorisasi.
+        Satu peristiwa klinis/layanan tidak boleh menghasilkan dua ChargeItem aktif; gunakan event_id atau
+         source_entity_id unik.
+        Invoice dapat dihitung ulang sesuai aturan pembatalan/reversal tetapi histori finansial tidak boleh
+         ditimpa diam-diam.
+        Dokumen klinis tertandatangani immutable; koreksi melalui addendum/version yang eksplisit.
+        Patient merge harus memperbaiki referensi longitudinal dan mempertahankan audit identifier lama.
+
+
+
+7. Desain PostgreSQL dan Master Data
+7.1 Skema awal dan tabel kandidat
+    Schema                                Tabel kandidat                             Fungsi
+                                          users, roles, permissions, user_roles,
+    identity                                                                         Auth dan authorization
+                                          sessions, mfa_challenges
+                                          organizations, locations,
+    master                                practitioners, practitioner_roles,         Master bersama
+                                          service_catalog
+                                          patients, patient_identifiers,
+    patient                                                                          Demografi/MRN
+                                          related_persons, patient_merges
+                                          encounters, admissions, bed_moves,
+    encounter                                                                        Episode pelayanan
+                                          appointments, queues
+                                          notes, diagnoses, observations,
+    clinical                                                                         RME dan catatan
+                                          procedures, allergies, care_plans
+                                          service_orders, order_items,
+    orders                                                                           CPOE dan lifecycle
+                                          order_events
+                                          specimens, lab_tests, lab_results,
+    laboratory                                                                       LIS
+                                          analyzer_messages
+                                          rad_exams, rad_reports,
+    radiology                                                                        RIS/PACS references
+                                          imaging_studies
+                                          prescriptions, dispense_events,
+    pharmacy                                                                         Farmasi klinis
+                                          administrations
+                                          items, warehouses, lots, stock_ledger,
+    inventory                                                                        Stok domain
+                                          reservations
+                                          nutrition_assessments, diet_orders,
+    nutrition                                                                        Klinis + produksi diet
+                                          menus, meal_trays
+                                          charges, invoices, invoice_lines,
+    billing                                                                          Revenue cycle
+                                          payments, refunds
+                                          accounts, journal_entries,
+    finance                                                                          Ledger accounting
+                                          journal_lines, ap, ar
+                                          outbox, deliveries, resource_links,
+    integration                                                                      API exchange
+                                          external_accounts
+                                          access_logs, change_logs,
+    audit                                                                            Traceability
+                                          disclosure_logs
+
+
+Nama tabel di atas adalah kandidat konseptual, bukan SQL DDL final. Bentuk normalisasi, indeks dan FK ditetapkan
+melalui ERD per domain.
+
+
+7.2 Field lintas entitas yang distandardkan
+    Field                                 Konvensi                                   Keterangan
+                                                                                     Primary key internal yang tidak
+    id                                    UUID/ULID; satu konvensi konsisten
+                                                                                     berubah.
+
+
+
+
+                                                                                   Baseline arsitektur 30-10-2026 • Halaman 11
+<PARSED TEXT FOR PAGE: 12 / 28>
+                                                                                     SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+ Field                                      Konvensi                              Keterangan
+                                            UUID wajib untuk tenant-scoped
+ tenant_id                                                                        Pembatas isolasi dan basis audit.
+                                            table
+ organization_id                            FK ke organisasi pelayanan            Dapat berbeda dari tenant owner.
+                                                                                  Tidak menerima status bebas tanpa
+ status                                     Enum/domain state machine
+                                                                                  transisi.
+                                                                                  Ditampilkan dalam timezone
+ created_at / updated_at                    timestamptz UTC
+                                                                                  organisasi.
+ created_by / updated_by                    actor_id + service identity           Menelusuri user atau otomatisasi.
+ version                                    Optimistic concurrency integer        Hindari lost updates.
+                                                                                  Tidak untuk penghapusan dokumen
+ deleted_at                                 Selective soft delete
+                                                                                  klinis yang harus dipertahankan.
+ source_system / source_id                  nullable + uniqueness domain          Rekonsiliasi legacy dan eksternal.
+ correlation_id                             UUID trace dari request/event         Troubleshooting lintas modul.
+
+
+
+
+7.3 Identifier dan referential model
+Patient memiliki patient_id internal, MRN unik per organisasi menurut aturan penerbit, dan external
+identifiers yang dapat mencakup IHS Number setelah verifikasi. Encounter, Practitioner, Organization,
+Location, ServiceRequest, Observation, dan resource lainnya memiliki local ID stabil. Resource ID di
+SATUSEHAT tidak disamakan otomatis dengan local ID.
+  integration.external_resource_links
+   id, tenant_id, destination_system,
+   local_entity_type, local_entity_id,
+   resource_type, external_resource_id,
+   external_version_id, last_synced_at,
+   sync_status, checksum, last_error_code
+  UNIQUE(tenant_id, destination_system,
+      local_entity_type, local_entity_id)
+
+
+
+
+7.4 Integritas multi-RS
+Tenant adalah batas administrasi keamanan dan data. Organization/fasyankes adalah identitas pelayanan.
+Satu tenant dapat mengelola beberapa Organization, tetapi setiap transaksi harus menyatakan
+organization_id yang valid. Untuk data klinis lintas RS, akses tidak otomatis terbuka; harus diperiksa
+berdasarkan hubungan pelayanan, peran, dan consent/policy. Strategi shared-schema vs schema-per-RS
+menjadi keputusan terbuka berdasarkan threat model dan kebutuhan operasional.
+
+
+
+8. FHIR-First Tanpa FHIR Server
+8.1 Arti keputusan
+Tidak akan dipasang produk dedicated FHIR Server dan tidak dibangun database kedua sebagai repositori
+FHIR. Komponen integrasi berbasis Go akan menghasilkan representasi FHIR R4 dari model domain,
+melakukan validasi, memetakan identifier, dan berkomunikasi dengan sistem target. FHIR API publik
+generic bukan fitur baseline.
+
+
+8.2 Komponen adapter yang harus dibangun
+ Komponen                                   Tanggung jawab                        Penerimaan minimum
+                                            Domain object -> FHIR R4 resource     Deterministic, tested, eksplisit semua
+ Mapper
+                                            dan sebaliknya bila perlu             mapping
+                                            Memvalidasi struktur, cardinality     Memiliki suite kasus positif/negatif
+ Profile validator
+                                            dan constraint target                 per use case
+
+
+
+                                                                                Baseline arsitektur 30-10-2026 • Halaman 12
+<PARSED TEXT FOR PAGE: 13 / 28>
+                                                                            SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+ Komponen                     Tanggung jawab                             Penerimaan minimum
+                              ValueSet, LOINC, ICD, KFA, code            Versioned mappings dan rejection
+ Terminology service/client
+                              status                                     code tidak valid
+                              Referensi
+                                                                         Menolak reference yang belum
+ Reference resolver           Patient/Encounter/Organization/Pract
+                                                                         eligible/tersinkron
+                              itioner
+                              Membentuk Bundle bila diwajibkan           Urutan dependency, entry dan ID
+ Bundle builder
+                              use case                                   sesuai profil
+                              OAuth/token lifecycle per org dan
+ Auth & credential manager                                               Secret terenkripsi, rotasi, mask log
+                              environment
+                              POST/PUT/GET sesuai izin dan use           Timeout, retries, rate limit,
+ FHIR HTTP client
+                              case                                       idempotent behavior
+ Outbox & delivery worker     Persist and dispatch event                 At least once delivery, safe replay
+                              Monitor state, cek beda internal vs        Requeue yang terotorisasi, audit
+ Reconciliation console
+                              eksternal                                  lengkap
+
+
+
+
+8.3 Mapping FHIR per domain
+ Kebutuhan                    FHIR R4 kandidat                           Catatan implementasi
+                                                                         IHS Number tidak sama dengan MRN
+ Pasien                       Patient; RelatedPerson
+                                                                         lokal; data identitas sensitif.
+                                                                         Nakes IHS, izin praktik dan penugasan
+ Tenaga kesehatan             Practitioner; PractitionerRole
+                                                                         adalah domain berbeda.
+                                                                         Org ID, lokasi layanan dan tenant harus
+ Faskes                       Organization; Location
+                                                                         dipetakan terpisah.
+                                                                         Status/period/participant dan class
+ Kunjungan                    Encounter
+                                                                         mengikuti playbook.
+                                                                         Tidak semua antrean operasional
+ Janji                        Appointment; Schedule; Slot
+                                                                         menjadi FHIR event.
+                                                                         Jenis diagnosis, category, onset,
+ Diagnosis                    Condition
+                                                                         verification konsisten.
+                                                                         Kode LOINC dan UCUM; interpretasi
+ TTV                          Observation
+                                                                         per pemeriksaan.
+                                                                         Tidak semua charge dianggap
+ Tindakan                     Procedure
+                                                                         Procedure.
+                                                                         Order dapat memiliki hasil, specimen
+ Perintah lab/rad             ServiceRequest
+                                                                         atau imaging metadata.
+                                                                         Status barcode / tabung detail tetap di
+ Specimen                     Specimen
+                                                                         LIS.
+ Lab result                   Observation; DiagnosticReport              Nilai kuantitatif dan hasil terverifikasi.
+                                                                         ImagingStudy adalah metadata, DICOM
+ Imaging                      ImagingStudy; DiagnosticReport
+                                                                         tetap di PACS.
+                                                                         KFA pada obat; obat klinis berbeda dari
+ Resep                        Medication; MedicationRequest
+                                                                         SKU gudang.
+                                                                         Status dispense terkait transaksi stock
+ Penyerahan obat              MedicationDispense
+                                                                         issue terpisah.
+ Pemberian obat               MedicationAdministration                   BCMA / MAR bersifat klinis.
+ Alergi dan keselamatan       AllergyIntolerance; DetectedIssue          Perlu provenance dan review klinis.
+ Care management              CarePlan; CareTeam; Goal                   Task jika ada aktivitas koordinasi.
+                                                                         Ikuti profil spesifik rujukan, bukan
+ Rujukan                      ServiceRequest; Task; CarePlan
+                                                                         model generik saja.
+                                                                         Produksi dapur tidak dimodelkan
+ Klinis gizi                  NutritionOrder; Observation; Condition
+                                                                         sebagai FHIR.
+                                                                         Signing workflow domain dan legal
+ Dokumen                      Composition; DocumentReference
+                                                                         non-FHIR.
+                                                                         Hanya untuk indikator sesuai semantic
+ Mutu klinis                  Measure; MeasureReport
+                                                                         measure.
+ Billing                      ChargeItem; Invoice; Account               Jurnal dan ledger tetap sistem finance.
+
+
+
+                                                                       Baseline arsitektur 30-10-2026 • Halaman 13
+<PARSED TEXT FOR PAGE: 14 / 28>
+                                                                                         SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+    Kebutuhan                                    FHIR R4 kandidat                     Catatan implementasi
+                                                                                      Tidak menggantikan kontrak BPJS/INA-
+    Insurance / klaim                            Coverage; Claim; ClaimResponse
+                                                                                      CBG.
+
+
+
+
+8.4 Resource apa yang tidak perlu disimpan sebagai JSON FHIR?
+Status bed, biaya jasa dokter, jurnal akuntansi, reservasi stok, invoice settlement, payroll, itinerary tray
+makanan, perintah pemeliharaan, inventory batch, dan audit user tidak memperoleh manfaat dari
+disimpan sebagai satu blob resource FHIR. Simpan sebagai tabel transaksional lalu hasilkan representasi
+FHIR bila memang ada use case interoperabilitas.
+
+
+8.5 Contoh representasi Observation sederhana
+     {
+         "resourceType": "Observation",
+         "status": "final",
+         "category": [{"coding": [{
+          "system": "http://terminology.hl7.org/CodeSystem/observation-category",
+          "code": "vital-signs"
+         }]}],
+         "code": {"coding": [{
+          "system": "http://loinc.org", "code": "8480-6",
+          "display": "Systolic blood pressure"
+         }]},
+         "subject": {"reference": "Patient/{patient-ihs-id}"},
+         "encounter": {"reference": "Encounter/{external-encounter-id}"},
+         "effectiveDateTime": "2026-10-30T10:00:00+07:00",
+         "valueQuantity": {"value": 120, "unit": "mm[Hg]",
+          "system": "http://unitsofmeasure.org", "code": "mm[Hg]"}
+     }
+
+
+Contoh ilustratif bentuk FHIR R4. Placeholder wajib diganti dengan ID valid; contoh ini bukan payload siap submit ke
+SATUSEHAT dan belum divalidasi terhadap profil use case target. Tekanan darah diastolik dapat direpresentasikan
+terpisah dengan kode LOINC 8462-4 sesuai kebutuhan profil.
+
+
+8.6 Validation gates
+         Schema gate: resourceType, tipe element, cardinality dan status.
+         Semantic gate: terminologi, code system, ucum, validasi nilai dan relasi.
+         Profile gate: constraint FHIR profile / use case SATUSEHAT yang spesifik.
+         Identity gate: patient IHS, org ID dan reference yang diizinkan.
+         Workflow gate: status clinical final/verified; prior dependency sudah tersinkron.
+         Delivery gate: log request, response, trace ID, retry eligibility dan reconciliation.
+
+
+
+9. API, Event dan Integrasi Eksternal
+9.1 Kontrak API internal
+API untuk UI memakai business-oriented REST JSON, bukan memaksa browser memahami resource FHIR
+penuh. API di-versioning secara eksplisit, memvalidasi request di server, dan menghasilkan RFC 7807-like
+problem detail yang aman dari PII. OpenAPI menjadi sumber pembuatan SDK TypeScript.
+    Metode / endpoint kandidat                   Makna                                Catatan
+    POST /api/v1/patients                        Create / identify patient            Dedup, identifier policy, auth.
+    POST /api/v1/encounters                      Register visit                       Idempotency-Key per transaksi.
+    POST /api/v1/encounters/{id}/notes           Create clinical note                 Author, role, draft/final.
+    POST /api/v1/service-orders                  Create lab/rad/procedure order       Encounter linkage; order items.
+
+
+
+
+                                                                                    Baseline arsitektur 30-10-2026 • Halaman 14
+<PARSED TEXT FOR PAGE: 15 / 28>
+                                                                                                   SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+    Metode / endpoint kandidat                     Makna                                        Catatan
+    POST
+                                                   Finalize lab result                          Signer, immutable result version.
+    /api/v1/laboratory/results/{id}/verify
+    POST /api/v1/prescriptions/{id}/dispense       Dispense medication                          Stock ledger + clinical dispense.
+    GET /api/v1/encounters/{id}/billing            Read charges and invoice                     Access according to financial role.
+    GET /api/v1/integrations/jobs                  Integration monitoring                       Role, tenant-scoped, PII masking.
+    POST /api/v1/integrations/jobs/{id}/retry      Manual replay                                Recorded approval and idempotency.
+
+
+
+
+9.2 Format event dan retry
+     {
+         "event_id": "uuid",
+         "event_type": "laboratory.result.verified",
+         "event_version": 1,
+         "tenant_id": "uuid",
+         "organization_id": "uuid",
+         "aggregate_type": "lab_result",
+         "aggregate_id": "uuid",
+         "occurred_at": "2026-10-30T03:00:00Z",
+         "correlation_id": "uuid",
+         "actor_id": "uuid",
+         "payload": {"encounter_id": "uuid", "result_version": 2}
+     }
+
+
+    Error class                                                          Perlakuan worker
+    Timeout, connection, 429, retryable 5xx                              Exponential backoff + jitter; hormati Retry-After.
+                                                                         Refresh token secara aman lalu retry terbatas; alert bila
+    401 / token expired
+                                                                         credentials invalid.
+    400/422 validation                                                   Tidak diulang otomatis; masuk remediation queue.
+    403 authorization/business rule                                      Tidak diulang buta; eskalasi ke konfigurasi/eligibility.
+    409 duplicate/conflict                                               Reconcile resource ID dan status; hindari POST ganda.
+    Dependency pending                                                   Tunda resource dependent sampai prerequisite berhasil.
+
+
+
+
+9.3 Integrasi spesifik
+    Tujuan                                         Protokol                                     Tanggung jawab adapter
+                                                                                                Master identity, resource mapping,
+    SATUSEHAT                                      HTTPS REST, OAuth2, HL7 FHIR R4
+                                                                                                profile validation, status/ID tracking.
+                                                   VClaim, Antrean Online, layanan              Kontrak API BPJS per layanan; SOP
+    BPJS
+                                                   terkait                                      eligibility dan claims.
+                                                                                                Parsing, instrument mapping, QC,
+    LIS analyzer                                   HL7 v2 / ASTM / vendor-specific
+                                                                                                reject quarantine.
+                                                                                                Study UID, order correlation, report
+    RIS/PACS                                       DICOM/DICOMweb, API PACS
+                                                                                                link, viewer integration.
+                                                                                                Payment intent, callback signature,
+    Payment gateway                                API provider
+                                                                                                settlement reconciliation.
+                                                                                                Versioned reporting extracts dan
+    SIRS / regulator lain                          API/file format yang berlaku
+                                                                                                audit submission.
+
+
+
+
+9.4 SATUSEHAT tanpa FHIR Server
+         Onboarding resource master (Patient, Practitioner, Organization, Location) sesuai dokumentasi resmi.
+         Rute sandbox dan production dikonfigurasi terpisah; token dan org credentials scoped.
+         Pengiriman disusun dari workflow klinis dan per use case, bukan mem-posting seluruh tabel secara
+          indiscriminatif.
+         FHIR dependency resolver melakukan pre-check terhadap referensi eksternal.
+
+
+                                                                                            Baseline arsitektur 30-10-2026 • Halaman 15
+<PARSED TEXT FOR PAGE: 16 / 28>
+                                                                             SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+   Payload yang lolos validasi disimpan sebagai snapshot terbatas untuk audit, bukan sebagai clinical
+    source of truth.
+   Payload/response berisi PII dilindungi lewat redaction, encryption dan retention policy.
+   Terdapat dashboard success/failure per organization, resource type dan encounter, tanpa mengekspos
+    data yang tidak perlu.
+
+
+
+10. Blueprint Workflow End-to-End
+10.1 Rawat Jalan
+Appointment/queue → registrasi Encounter → asesmen/TTV → Condition/Procedure → order lab/rad/obat →
+verifikasi hasil/dispense → tagihan → resume/discharge → export FHIR.
+
+   Acceptance invariant: Satu encounter konsisten untuk seluruh order dan catatan.
+   Acceptance invariant: Billing item hanya dibuat dari peristiwa layanan yang eligible.
+   Acceptance invariant: Status encounter ditutup setelah workflow klinis dan administratif yang
+    diperlukan.
+
+
+10.2 IGD
+Registrasi IGD → triase dan acuity → asesmen serial → order dan tindakan → observasi → disposition
+pulang/RI/rujuk → discharge/transfer.
+
+   Acceptance invariant: Triage timestamp dan author wajib.
+   Acceptance invariant: Perubahan lokasi tidak menghapus rangkaian episode.
+   Acceptance invariant: Status transfer/rujukan mengikuti aturan penerimaan target.
+
+
+10.3 Rawat Inap
+Admit → assign bed → nursing/care plan → visit/order → medication administration → transfer bed →
+discharge planning → resume → discharge.
+
+   Acceptance invariant: Tidak ada double occupancy aktif untuk bed yang sama.
+   Acceptance invariant: MAR/BCMA tidak mengurangi stok tanpa jejak transaksi yang konsisten.
+   Acceptance invariant: Addendum tersedia setelah dokumen ditandatangani.
+
+
+10.4 Laboratorium
+Order → specimen label/collect → accept/reject → analyzer/manual entry → QC → verification →
+DiagnosticReport → charge dan export.
+
+   Acceptance invariant: Hasil tidak boleh final sebelum verifikasi.
+   Acceptance invariant: Order/specimen/result terhubung satu-ke-banyak.
+   Acceptance invariant: Analyzer raw message dapat ditelusuri tanpa mengekspos PII di log umum.
+
+
+10.5 Radiologi
+Order → schedule → modality worklist (bila tersedia) → acquisition → PACS study → expertise → final report
+→ charge.
+
+   Acceptance invariant: StudyInstanceUID yang benar dan unik per studi.
+   Acceptance invariant: DICOM pixels tetap di PACS; FHIR hanya metadata/link.
+   Acceptance invariant: Revisi laporan memiliki version/provenance.
+
+
+
+
+                                                                        Baseline arsitektur 30-10-2026 • Halaman 16
+<PARSED TEXT FOR PAGE: 17 / 28>
+                                                                                 SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+10.6 Farmasi & Obat
+MedicationRequest → clinical verification → reservation/picking → compounding (bila ada) → dispense →
+stock ledger → charge; administration terpisah.
+
+      Acceptance invariant: KFA / katalog klinis dibedakan dari SKU dan lot gudang.
+      Acceptance invariant: Dispense reversal me-reverse ledger, bukan menghapus histori.
+      Acceptance invariant: Aturan substitusi obat perlu persetujuan dan jejak audit.
+
+
+10.7 Gizi Klinis dan Dapur
+Nutrition assessment → NutritionOrder → diet kitchen planning → menu/material issue → production → tray
+delivery → receipt → feedback dan costing.
+
+      Acceptance invariant: Order diet yang berubah memengaruhi rencana meal berikutnya.
+      Acceptance invariant: Alergi dan pembatasan tekstur diet divalidasi terhadap menu.
+      Acceptance invariant: Stock ingredient ledger terpisah dari NutritionOrder FHIR.
+
+
+10.8 Billing dan Klaim
+Verified service event → charge rule → invoice → payer split → payment/AR → coding/casemix → submission
+claims → reconciliation.
+
+      Acceptance invariant: No double-charge on replay.
+      Acceptance invariant: Tarif memiliki effective date dan payer rules.
+      Acceptance invariant: General ledger diposting dari transaksi finansial yang telah diverifikasi.
+
+
+10.9 CSSD / Laundry
+Unit request → receive/count → process → QC → release → distribute → reconcile lost/damaged.
+
+      Acceptance invariant: Batch/lot instrumen atau linen punya chain of custody.
+      Acceptance invariant: Order layanan klinis dapat menjadi referensi, bukan skema fisik proses.
+
+
+10.10 Consent dan Clinical Signing
+Consent policy check → capture/renew/revoke → data access/clinical signature → audit event → disclose only
+as permitted.
+
+      Acceptance invariant: Signed document immutable; addendum traceable.
+      Acceptance invariant: Revocation berdampak pada akses ke depan sesuai ketentuan.
+      Acceptance invariant: No UI-only enforcement.
+
+
+10.11 Integration BCP dan recovery
+Jika SATUSEHAT tidak tersedia: transaksi klinis disimpan utuh, payload dievaluasi kembali melalui outbox,
+dan pengiriman dilakukan setelah layanan pulih sesuai ketentuan use case. Jika ada mekanisme BCP
+khusus antarpenyedia (mis. BPJS), hal tersebut menjadi adapter terpisah dengan spesifikasi tersendiri dan
+tidak secara otomatis dijalankan dari retry umum.
+
+
+
+11. Keamanan, Privasi dan Audit
+11.1 Kontrol wajib
+    Area                                Minimum control                       Bukti pemeriksaan
+                                        OIDC/JWT/cookie secure, MFA step-
+    Authentication                                                            Test login, session, MFA, CSRF.
+                                        up untuk aksi kritis
+
+
+
+
+                                                                            Baseline arsitektur 30-10-2026 • Halaman 17
+<PARSED TEXT FOR PAGE: 18 / 28>
+                                                                                    SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+    Area                               Minimum control                           Bukti pemeriksaan
+                                       Server-side RBAC/ABAC;                    Negative test cross-patient/cross-
+    Authorization
+                                       tenant/org/context checking               tenant.
+                                       Policy untuk penggunaan/disclosure,
+    Consent                                                                      Decision/audit log per access.
+                                       revocation, purpose
+                                       TLS, encryption at rest, field
+    Encryption                                                                   Key rotation dan audit configuration.
+                                       encryption bila perlu
+                                       Author, signed_at,
+                                                                                 Test tamper-resistance dan
+    Clinical integrity                 correction/addendum, immutable
+                                                                                 correction.
+                                       history
+                                       Akses clinical, mutation, export,         Searchable append-only retention
+    Audit
+                                       admin, break-glass                        policy.
+                                       PII minimization, secret masking,
+    Logging                                                                      Redaction scan dan log review.
+                                       correlation IDs
+                                       SCA, secret scan, SAST, pen-test
+    Vulnerability                                                                Remediation log sebelum release.
+                                       terencana
+    Backup & restore                   PITR, encrypted backups, rehearsal        Restore evidence & recovery target.
+                                       Least privilege accounts, isolated
+    Vendor interfaces                                                            Contract/connection inventory.
+                                       network
+
+
+
+
+11.2 Contoh kontrol risiko klinis
+      Perawat hanya dapat mencatat administrasi obat untuk pasien/ward sesuai otorisasi dan hubungan
+       pelayanan.
+      Dokter dapat menandatangani catatan yang memang dibuat atau ditugaskan kepadanya; administrator
+       tidak dapat mengubah konten klinis final secara diam-diam.
+      Petugas farmasi tidak dapat menyimpan interaksi klinis atas nama dokter.
+      Akses darurat (“break-glass”) bila dibutuhkan harus memiliki alasan, pembatasan waktu dan review
+       audit.
+      Portal pasien memiliki policy untuk akses dokumen sensitif dan data anak/perwakilan.
+
+
+
+12. Non-functional Requirements dan Operasional
+Target berikut merupakan usulan untuk perancangan dan kapasitas awal, bukan SLA yang sudah
+disepakati. Nilai final ditentukan dari jumlah pasien, concurrent users, lokasi fasilitas, jaringan, serta risk
+assessment.
+    Aspek                              Usulan target awal                        Metode verifikasi
+                                       SLO dibedakan: core clinical, portal,     Synthetic checks + uptime
+    Availability
+                                       interface jobs                            measurement.
+                                       p95 mayoritas layar transaksi             Load test per endpoint/UI; bukan
+    Responsiveness
+                                       normal < 2 detik dalam profil uji         satu klaim global.
+                                       0 lost committed transactions pada        Crash simulation dan WAL/restore
+    Write integrity
+                                       failure injection                         test.
+                                       P95 delay terukur; backlog visible;       Outbox lag metric dan error
+    Integration delivery
+                                       tidak menjamin upstream                   dashboard.
+                                       Tidak ada unauthorized cross-tenant
+    Multi-tenant isolation                                                       Automated security negative tests.
+                                       read/write
+                                       RPO/RTO disepakati berdasar
+    Database recovery                                                            Restore rehearsal berkala.
+                                       layanan dan anggaran
+                                       Trace ID dari UI->Go->DB->worker-
+    Observability                                                                Dashboards dan sample trace.
+                                       >external
+                                       Input RME inti nyaman untuk
+    Clinical UX                                                                  Usability sessions dokter/perawat.
+                                       keyboard, draft autosave aman
+
+
+
+
+                                                                               Baseline arsitektur 30-10-2026 • Halaman 18
+<PARSED TEXT FOR PAGE: 19 / 28>
+                                                                                     SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+    Aspek                                Usulan target awal                       Metode verifikasi
+                                         Kontras cukup dan navigasi
+    Accessibility                                                                 A11y checks manual/otomatis.
+                                         keyboard untuk modul utama
+                                         Field mandatory, coded values,
+    Data quality                                                                  Rules engine dan quality dashboard.
+                                         completeness score
+
+
+
+
+12.1 Backup, Disaster Recovery dan BCP
+      Definisikan tier data: clinical record/ledger, file dokumen, media DICOM, cache dan log.
+      Gunakan PITR PostgreSQL, encrypted backups di lokasi terpisah, periodik restore drill dan alert gagal
+       backup.
+      Setiap migrasi database memiliki forward plan, compatibility window dan rollback strategi.
+      Kegiatan klinis yang harus terus berjalan saat internet/mitra eksternal down memiliki prosedur
+       manual/queue yang terdokumentasi.
+      DICOM/PACS dan database transaksi memiliki kebijakan retensi, replikasi dan disaster recovery
+       terpisah.
+
+
+
+13. Quality Engineering dan Uji Penerimaan
+13.1 Piramida test
+    Jenis                                Yang harus diuji                         Gate
+                                         State machine, tarif, rule klinis,
+    Unit                                                                          Wajib di setiap PR.
+                                         terminologi, stok ledger
+                                         ACID, FK, tenant constraints,
+    DB Integration                                                                Wajib domain kritis.
+                                         migration, race condition
+                                         OpenAPI, event schema, provider
+    Contract                                                                      Wajib sebelum merge cross-team.
+                                         adapter, FHIR fixtures
+                                         Resource positive/negative,
+    FHIR profile                                                                  Wajib tiap use case SATUSEHAT.
+                                         reference, code system
+    E2E clinical                         RJ, IGD, RI, lab, farmasi, discharge     Wajib sebelum pilot.
+                                         Authorization, MFA, CSRF, IDOR,
+    Security                                                                      Wajib high-risk flows.
+                                         tamper tests
+                                         Load, worker retry, DB failure,
+    Performance / resilience                                                      Wajib sebelum production.
+                                         partial outage
+                                         Dokter, perawat, lab, rad, farmasi,
+    UAT                                                                           Sign-off per workflow.
+                                         kasir
+
+
+
+
+13.2 Kriteria Definition of Done
+      API contract dan validation rules tersedia; dokumentasi perubahan cukup.
+      Migrasi skema otomatis, repeatable dan direview.
+      Unit test dan integration test pada aturan kritis lulus.
+      Access control, audit dan tenant isolation diuji.
+      Tracing/logging cukup tanpa mengungkap PII secara berlebihan.
+      Jika data dipetakan ke FHIR, fixture positif dan negatif terdokumentasi.
+      User acceptance dan SOP operasional disiapkan sebelum go-live modul.
+
+
+
+
+                                                                                Baseline arsitektur 30-10-2026 • Halaman 19
+<PARSED TEXT FOR PAGE: 20 / 28>
+                                                                                     SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+
+14. Organisasi Tim dan Tata Kelola
+14.1 Struktur tim enam developer dari dokumen sumber
+ PIC                                      Domain                                  Tanggung jawab awal
+                                                                                  Patient, organization, practitioner,
+                                                                                  appointment, encounter;
+ D1                                       Core Admin & Front Office
+                                                                                  appointment/BPJS adapter
+                                                                                  interactions.
+                                                                                  Clinical documentation, condition,
+ D2                                       Core EMR                                procedure, care plans, service order
+                                                                                  lifecycle.
+                                                                                  LIS, specimen, analyzer, LOINC,
+ D3                                       Laboratorium
+                                                                                  DiagnosticReport.
+                                                                                  RIS, PACS/DICOM integration,
+ D4                                       Radiologi
+                                                                                  ImagingStudy, expertise.
+                                                                                  Medication, prescription, dispense
+ D5                                       Farmasi
+                                                                                  dan koneksi stock ledger.
+                                                                                  Charge capture, invoice, insurance,
+ D6                                       Finance, Billing & Claims
+                                                                                  claims, reconciliation.
+
+
+Pembagian developer berdasarkan PDF dipakai sebagai baseline ownership, tetapi tidak boleh membuat
+enam integrasi FHIR, enam auth stack, atau enam audit system. Platform capability lintas domain harus
+diberi PIC yang jelas dan code owner.
+
+
+14.2 Peran lintas tim
+ Peran                                                        Akuntabilitas
+ Solution Architect / Tech Lead                               ADR, domain boundaries, NFR, contract approval.
+ Clinical Product Owner                                       SOP, safety, coding rules, clinical UAT.
+ Integration Lead                                             FHIR mapper/validation, SATUSEHAT, BPJS, adapters.
+ DB/Platform Owner                                            Migrations, tenant, outbox, CI/CD, observability.
+ Security/Privacy Owner                                       Threat model, IAM, consent, audit, incident response.
+ QA Lead                                                      Test strategy, E2E data set, release gates.
+ Hospital SMEs                                                Lab, rad, farmasi, kasir, nurse, IT operational sign-off.
+
+
+
+
+14.3 RACI sederhana
+ Aktivitas                    Responsible                     Accountable                      Consulted
+                              Integration + domain
+ FHIR mapping                                                 Tech lead                        Clinical SME
+                              developer
+ Clinical workflow            Domain developer                Clinical PO                      Nurse/doctor
+ DB migration                 Owning domain                   DB/platform owner                QA/security
+ Release prod                 DevOps/Platform                 Tech lead                        Security + hospital IT
+ Consent policy               Security + clinical domain      Privacy owner                    Legal/clinical
+ Backlog priority             Product analyst                 Product owner                    All stakeholders
+
+
+
+
+15. Roadmap, Backlog dan Stage Gates
+ Gate                                     Deliverables                            Exit criteria
+                                          Master feature catalogue; gap;          Scope dan modul ditandatangani
+ G0 – Discovery & Benchmark
+                                          workflow map; priority                  Product Owner.
+
+
+
+
+                                                                                Baseline arsitektur 30-10-2026 • Halaman 20
+<PARSED TEXT FOR PAGE: 21 / 28>
+                                                                                         SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+ Gate                                     Deliverables                                Exit criteria
+                                          ADR; bounded contexts; data                 Security model dan contract rules
+ G1 – Architecture Foundation
+                                          ownership; ERD; auth; CI/CD                 lulus architecture review.
+                                          Register → Encounter → note → lab →         E2E + negative FHIR + audit + retry
+ G2 – Clinical Vertical Slice
+                                          dispense → charge → FHIR                    lulus.
+                                          RJ, IGD, RI, care team, signing,            Pilot UAT clinical dan
+ G3 – Core Clinical
+                                          discharge                                   migration/rollback runbook.
+                                          LIS, RIS/PACS, pharmacy, gizi, billing,     Reconciliation stok-finance, alat dan
+ G4 – Penunjang + Revenue
+                                          claims                                      billing.
+                                          Procurement, CSSD, laundry, assets,         Ledger integrity dan operasional unit
+ G5 – ERP & Hospital Operations
+                                          HRIS, GL                                    sign-off.
+                                          RL/SIRS, KPI, HAIs, clinical pathway,       KPI lineage, privacy, scalability dan
+ G6 – Quality + Enterprise
+                                          multi-RS                                    DR drill.
+
+
+
+
+15.1 Urutan backlog prioritas awal
+ ID                             Work package                   Prioritas                          Acceptance sketch
+                                                                                                  Create/find/merge
+                                Patient Registry + MRN/ID
+ B01                                                           P0                                 safeguards, unit+negative
+                                mapping
+                                                                                                  tests
+                                                                                                  Server-side permission and
+ B02                            Tenant/Organization/Role       P0
+                                                                                                  isolation
+ B03                            Encounter + Appointment        P0                                 State machine RJ/IGD/RI
+                                Clinical notes +                                                  Clinical author +
+ B04                                                           P0
+                                TTV/Condition                                                     sign/version
+                                                                                                  Order placed/cancelled
+ B05                            Service order general          P0
+                                                                                                  events
+                                                                                                  Specimen, result, verified
+ B06                            Laboratory basic               P0
+                                                                                                  report
+                                Medication                                                        Dispense + stock
+ B07                                                           P0
+                                request/dispense                                                  idempotence
+                                                                                                  No double charge and
+ B08                            Charge capture + invoice       P0
+                                                                                                  payer mapping
+                                FHIR adapter + validator +                                        Correct R4 output + profile
+ B09                                                           P0
+                                credentials                                                       tests
+                                                                                                  Crash-safe events and
+ B10                            Outbox/retry/reconciliation    P0
+                                                                                                  error queues
+                                                                                                  Access controls on
+ B11                            Security audit + MFA           P0
+                                                                                                  sensitive actions
+ B12                            Radiology basic + PACS refs    P1                                 Order-report-study linking
+                                                                                                  Ward transfer and
+ B13                            Inpatient bed/care plan        P1
+                                                                                                  discharge
+                                                                                                  Environment-scoped
+ B14                            BPJS adapter                   P1
+                                                                                                  integrations and logs
+                                                                                                  Diet constraints, tray
+ B15                            Nutrition clinical + kitchen   P1
+                                                                                                  traceability
+                                RL reporting / quality                                            Verified lineage and
+ B16                                                           P1
+                                dashboard                                                         aggregation
+                                                                                                  Balanced journals +
+ B17                            Finance GL + AR/AP             P1
+                                                                                                  reconciliation
+                                                                                                  Lifecycle and operational
+ B18                            CSSD/Laundry/Asset/HRIS        P2
+                                                                                                  audit
+
+
+
+
+                                                                                    Baseline arsitektur 30-10-2026 • Halaman 21
+<PARSED TEXT FOR PAGE: 22 / 28>
+                                                                                       SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+15.2 Rencana proof-of-architecture (tanpa estimasi kalender yang mengikat)
+        Sprint desain: finalize glossary, entity ownership, API naming, tenant model, security threat model.
+        Sprint fondasi: bootstrap repo, PostgreSQL migrations, auth/role, audit, trace, OpenAPI.
+        Sprint vertical slice: patient+encounter+note+order+lab result+medication dispense+charge.
+        Sprint FHIR: mapping, validator, SATUSEHAT sandbox, outbox, error console.
+        Sprint verification: concurrency, failure injection, security negative tests dan UAT pengguna klinis.
+Jumlah sprint, person-days dan biaya memerlukan estimasi setelah discovery, jumlah tim, integrasi nyata, dan kapasitas
+fasilitas ditentukan.
+
+
+
+16. Migrasi / Re-use SIMRS-Sensi
+SIMRS-Sensi saat ini menggunakan React + TypeScript dan Node runtime internal dengan PostgreSQL. Kode
+frontend, workflow, master, test cases dan business rules dipertimbangkan untuk reuse; backend Go baru
+tidak dapat memakai server functions Node tanpa adaptasi eksplisit.
+    Aset existing                           Strategi                                Guardrail
+                                            Port sesuai desain shared component
+    React components, forms, route UX                                               Review accessibility dan permission.
+                                            library
+    Clinical workflow / business rules      Extract use cases dan fixtures          Jangan copy rule tanpa validasi SOP.
+                                            Mapping ke domain baru; migration       Avoid schema coupling dan duplicate
+    PostgreSQL schema / migrations
+                                            scripts                                 master.
+                                                                                    Parallel-run contract tests sebelum
+    Node API/server functions               Reimplement kontrak di Go bertahap
+                                                                                    cutover.
+    FHIR integrations                       Audit mappings dan reuse test data      Periksa profil terbaru SATUSEHAT.
+                                            Retain proven controls, redesign
+    Security modules                                                                No regression MFA/tenant/consent.
+                                            threat model
+                                            Reuse query semantics dan KPI           Tidak ada data simulasi pada
+    Dashboard, reports
+                                            lineage                                 dashboard prod.
+
+
+
+
+16.1 Strategi coexistence
+        Tidak mengubah repository SIMRS-Sensi main hanya karena blueprint baru disepakati.
+        Buat kontrak API dan test fixtures yang memungkinkan modul frontend eksisting terhubung ke
+         backend Go baru.
+        Gunakan shadow comparison / read-only dual run untuk validasi migrasi, bukan dual-write bebas.
+        Setiap cutover domain memiliki data mapping, reconciled counts, fallback, dan ownership jelas.
+        Audit feature parity existing vs kandidat baru sebelum membuat backlog rewrite.
+
+
+
+17. Risiko, Asumsi dan Keputusan Terbuka
+    ID                            Risiko                        Tingkat                        Mitigasi
+                                                                                               Gunakan domain model
+                                  FHIR-first ditafsirkan
+    R01                                                         Tinggi                         relasional + mapping
+                                  semua tabel JSON FHIR
+                                                                                               matrix; ADR.
+                                                                                               Versioned profile
+                                  FHIR profile SATUSEHAT
+    R02                                                         Tinggi                         validation + regression
+                                  berubah
+                                                                                               fixtures.
+                                                                                               Data owner + unique
+    R03                           Duplikasi source of truth     Tinggi                         external mapping +
+                                                                                               reconciliation.
+                                                                                               Server-side authorization,
+    R04                           Cross-tenant leakage          Kritis
+                                                                                               row policies, negative tests.
+
+
+
+
+                                                                                  Baseline arsitektur 30-10-2026 • Halaman 22
+<PARSED TEXT FOR PAGE: 23 / 28>
+                                                                                             SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+    ID                             Risiko                           Tingkat                       Mitigasi
+                                                                                                  ACID, outbox,
+                                   Stok dan billing tidak
+    R05                                                             Kritis                        idempotency, reversal
+                                   konsisten
+                                                                                                  ledger.
+                                                                                                  Adapter per
+                                   Integrasi analyzer vendor
+    R06                                                             Sedang                        protocol/vendor,
+                                   beragam
+                                                                                                  quarantine messages.
+                                   PACS latensi dan biaya                                         DICOMweb streaming,
+    R07                                                             Sedang
+                                   storage                                                        storage lifecycle, metrics.
+                                   Keterbatasan enam                                              Platform owner, vertical
+    R08                                                             Tinggi
+                                   developer                                                      slice, staged rollout.
+                                   Migrasi rules dari Node ke                                     Contract test + shadow
+    R09                                                             Sedang
+                                   Go                                                             comparison.
+                                                                                                  Usability test, cached
+    R10                            Clinical UX terlalu lambat       Tinggi
+                                                                                                  reads, autosave semantik.
+                                   Klaim BPJS dianggap                                            Dedicated BPJS adapter
+    R11                                                             Tinggi
+                                   murni FHIR                                                     dan payer business rules.
+                                   Backup ada tetapi restore                                      Restore drill, PITR testing
+    R12                                                             Kritis
+                                   gagal                                                          dan BCP.
+
+
+
+
+17.1 Asumsi perancangan
+        Fasilitas menginginkan sistem berbasis web, tidak seluruhnya bergantung pada koneksi eksternal
+         untuk transaksi klinis.
+        Sumber daya tim terbatas sehingga modular monolith lebih proporsional daripada microservices sejak
+         awal.
+        Integrasi nasional membutuhkan adaptasi terhadap use case, profile dan entitlement masing-masing
+         organisasi.
+        Product Owner rumah sakit dan Clinical SMEs tersedia untuk validasi formulir dan alur pelayanan.
+        Informasi modul produk pembanding akan diverifikasi sebelum digunakan sebagai requirement final.
+
+
+17.2 Keputusan yang masih terbuka
+    Keputusan                                  Opsi / input yang dibutuhkan             Kapan
+    Echo vs Gin                                Spike API/OpenAPI/test ergonomics        G1
+                                               Evidence concurrency, migration,
+    SQLC/pgx vs ORM                                                                     G1
+                                               developer skills
+    Tenant isolation model                     Risk tier, multi-RS governance, ops      G1
+                                               Profile coverage, licences,
+    FHIR validator implementation                                                       G2
+                                               performance
+                                               Existing infrastructure, DICOM
+    PACS vendor/Orthanc                                                                 G4
+                                               compatibility
+                                               Load projections, at-least-once
+    Queue architecture                                                                  G2–G4
+                                               semantics
+                                               Clinical safety risk, infrastructure
+    RTO/RPO dan SLO                                                                     G1
+                                               cost
+    Data retention/legal signing               Applicable policies, legal review        G1–G3
+
+
+
+
+                                                                                      Baseline arsitektur 30-10-2026 • Halaman 23
+<PARSED TEXT FOR PAGE: 24 / 28>
+                                                                                          SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+
+18. Referensi dan Traceability
+18.1 Bahan yang berasal dari pengguna
+      Dokumen unggahan: “new simrs.pdf”, 2 halaman. Isi eksplisit: pembagian enam domain developer;
+       daftar resource FHIR untuk Core Admin/EMR/Lab/Rad/Pharmacy/Finance; dan usulan awal
+       penggunaan FHIR Server yang telah ditolak dalam keputusan terbaru.
+      Diskusi proyek sebelumnya: kesepakatan FHIR-first, PostgreSQL sebagai source of truth, tanpa
+       dedicated FHIR Server, backend Go dan frontend React/TypeScript; benchmark
+       NUHA/SIMGOS/Khanza/SIMRS-Sensi sebagai sumber kebutuhan.
+
+
+18.2 Referensi publik resmi
+    Referensi                                                 URL
+    HL7 FHIR R4 – Resource definitions                        https://hl7.org/fhir/R4/resource.html
+    HL7 FHIR R4 – StructureDefinition                         https://hl7.org/fhir/R4/structuredefinition.html
+    HL7 FHIR R4 – CapabilityStatement                         https://hl7.org/fhir/R4/capabilitystatement.html
+                                                              https://satusehat.kemkes.go.id/platform/docs/id/playbook/
+    SATUSEHAT – Introduction
+                                                              introduction/
+                                                              https://satusehat.kemkes.go.id/platform/docs/id/api-
+    SATUSEHAT – API interoperability catalogue
+                                                              catalogue/integrations/
+                                                              https://satusehat.kemkes.go.id/platform/docs/id/api-
+    SATUSEHAT – Onboarding prerequisites
+                                                              catalogue/onboardings/
+                                                              https://satusehat.kemkes.go.id/platform/docs/id/postman-
+    SATUSEHAT – Endpoint information
+                                                              workshop/endpoint-information/
+                                                              https://satusehat.kemkes.go.id/platform/docs/id/
+    SATUSEHAT – Playbook Gizi
+                                                              interoperability/gizi/
+                                                              https://satusehat.kemkes.go.id/platform/docs/id/terminology/
+    SATUSEHAT – Terminologi
+                                                              standar-terminologi/
+
+
+Rujukan publik digunakan untuk memeriksa prinsip dan endpoint umum; keberlakuan isi dan versi playbook harus
+diperiksa kembali pada tanggal implementasi.
+
+
+18.3 Traceability asal keputusan
+    Pernyataan                              Asal                                       Status
+    6 domain developer                      PDF unggahan                               Source input
+                                                                                       Superseded oleh keputusan
+    FHIR Server wajib                       PDF unggahan
+                                                                                       pengguna: tidak digunakan
+    FHIR-first tanpa server                 Kesepakatan percakapan                     Locked baseline
+    Go + React + PostgreSQL                 Kesepakatan percakapan                     Locked baseline
+    Katalog modul enterprise                Sintesis kebutuhan dan benchmark           Candidate scope; requires discovery
+    API paths, schema dan metrics           Usulan desain di dokumen ini               Illustrative; not yet implemented
+    Resource mapping FHIR                   HL7 R4 + diskusi domain                    Candidate; validate per use case
+
+
+
+
+                                                                                  Baseline arsitektur 30-10-2026 • Halaman 24
+<PARSED TEXT FOR PAGE: 25 / 28>
+                                                                                                  SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+
+Lampiran A. Data Dictionary Awal untuk Vertical Slice
+ Tabel                                        Kolom kandidat                                   Rule penting
+                                              id, tenant_id, org_id, mrn, full_name,           patient_id stable; source identifiers
+ patients
+                                              dob, sex, status                                 indexed.
+                                              patient_id, system, value, valid_from,           UNIQUE constraints scoped by
+ patient_identifiers
+                                              valid_to                                         system/org.
+ practitioners                                id, org_id, name, external_ihs_id, active        Credentials and clinical role separately.
+                                              id, tenant_id, patient_id, org_id, type,         Valid lifecycle and participant
+ encounters
+                                              status, started_at, ended_at                     references.
+                                              id, encounter_id, author_id, type, status,
+ clinical_notes                                                                                Immutable final / addendum.
+                                              body, signed_at, version
+                                              id, encounter_id, code_system, code,
+ observations                                                                                  Coding + UCUM; provenance.
+                                              unit, value, effective_at, status
+                                              id, encounter_id, code_system, code,
+ diagnoses                                                                                     Encounter and author references.
+                                              category, status
+                                              id, encounter_id, requester_id, kind,
+ service_orders                                                                                CPOE workflow; idempotent create.
+                                              status, placed_at
+                                              id, order_id, barcode, specimen_type,
+ specimens                                                                                     Specimen identity and chain-of-custody.
+                                              collected_at, received_at
+                                              id, order_id, specimen_id, code, value,
+ lab_results                                                                                   Observed result versioning.
+                                              unit, status, verified_by
+ prescriptions                                id, encounter_id, prescriber_id, status          Clinical medication intent.
+                                              id, prescription_id, pharmacy_id, qty,
+ dispenses                                                                                     Stock issue generated exactly once.
+                                              status, dispensed_at
+                                              id, item_id, lot_id, location_id, qty_delta,
+ stock_ledger                                                                                  Immutable stock movement + reversal.
+                                              txn_type, reference
+                                              id, encounter_id, source_type,
+ charges                                                                                       UNIQUE active charge per source event.
+                                              source_id, tariff_id, amount, status
+                                              id, patient_id, encounter_id, payer_id,
+ invoices                                                                                      Invoice snapshots and payer splits.
+                                              status, total
+                                              event_id, type, aggregate_id, payload,
+ outbox_events                                                                                 Atomic insert with business transaction.
+                                              attempts, available_at, status
+                                              id, event_id, destination, request_hash,
+ integration_deliveries                                                                        PII-safe storage, retention.
+                                              http_status, response, status
+                                              local_entity_id, resource_type,
+ external_resource_links                                                                       No double-create external resources.
+                                              external_id, destination, checksum
+
+
+
+
+Lampiran B. Contoh Kontrak dan Business Rule
+B.1 Contoh create encounter (illustrative)
+  POST /api/v1/encounters
+  Idempotency-Key: 1b40e2fe-...
+  Content-Type: application/json
+
+  {
+      "tenant_id": "uuid",
+      "organization_id": "uuid",
+      "patient_id": "uuid",
+      "class": "outpatient",
+      "service_location_id": "uuid",
+      "appointment_id": "uuid-or-null"
+  }
+
+  201 Created
+  {
+    "id": "uuid", "status": "in-progress",
+    "patient_id": "uuid", "organization_id": "uuid",
+
+
+
+
+                                                                                             Baseline arsitektur 30-10-2026 • Halaman 25
+<PARSED TEXT FOR PAGE: 26 / 28>
+                                                                                SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+        "created_at": "2026-10-30T03:00:00Z"
+    }
+
+
+
+
+B.2 Contoh event and outbox invariant
+    BEGIN;
+     INSERT INTO encounters (...) VALUES (...);
+     INSERT INTO outbox_events
+      (event_id, type, aggregate_id, payload, status)
+     VALUES (..., 'encounter.started', ..., ..., 'pending');
+    COMMIT;
+
+    # Worker (simplified)
+    # claim pending -> lock -> validate dependencies
+    # send to external system if eligible
+    # persist response / external id / state
+    # mark delivered or categorized failure
+    # retry is safe through idempotency and reconciliation
+
+
+
+
+B.3 Ketentuan validasi minimum
+        Permintaan pembuatan encounter pasien yang tidak memiliki tenant/org valid harus ditolak.
+        Kunjungan tidak dapat di-discharge dua kali tanpa proses koreksi yang sah.
+        Order laboratorium yang sudah diverifikasi tidak boleh diedit bebas; gunakan amandemen.
+        Double request dengan Idempotency-Key yang sama mengembalikan hasil setara, tidak membuat
+         transaksi kedua.
+        Worker tidak mengirim FHIR resource dependent sebelum external reference tersedia.
+        Policy cross-tenant tetap ditegakkan pada query dan command internal meskipun user mengetahui
+         UUID objek.
+
+
+
+Lampiran C. Contoh Acceptance Test / Scenario
+    ID                                              Area                     Acceptance scenario
+                                                                             Pasien dengan identifier yang sama
+    T01                                             Patient dedup            muncul sebagai existing match; tidak
+                                                                             auto-create MRN baru.
+                                                                             Create → in-progress → finished
+    T02                                             Encounter lifecycle
+                                                                             memiliki timestamp dan staff valid.
+                                                                             Pengguna RS A tidak dapat membaca
+    T03                                             Cross tenant             pasien RS B tanpa policy legal yang
+                                                                             berlaku.
+                                                                             Payload Observation dengan LOINC
+    T04                                             FHIR invalid code        yang tidak sesuai profil ditolak di
+                                                                             validator.
+                                                                             Observation tidak terkirim jika
+    T05                                             FHIR dependency          Encounter external id belum
+                                                                             tersedia.
+                                                                             Timeout setelah upstream sukses
+    T06                                             Retry duplicate          menghasilkan reconcile, bukan POST
+                                                                             ganda.
+                                                                             Hasil draft tidak muncul sebagai
+    T07                                             Lab result QC
+                                                                             DiagnosticReport final.
+                                                                             Dua dispense bersamaan tidak
+    T08                                             Pharmacy concurrency     membuat stock ledger negatif tanpa
+                                                                             izin.
+
+
+
+
+                                                                           Baseline arsitektur 30-10-2026 • Halaman 26
+<PARSED TEXT FOR PAGE: 27 / 28>
+                                                                 SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+ID                    Area                                    Acceptance scenario
+                                                              Event procedure.completed direplay
+T09                   Billing outbox replay                   tetap hanya menghasilkan satu
+                                                              charge.
+                                                              Signed note tidak dapat diam-diam
+T10                   Clinical signing                        dioverwrite; addendum
+                                                              ditambahkan.
+                                                              Akses darurat muncul di audit
+T11                   Audit break-glass
+                                                              dengan alasan dan pengguna.
+                                                              Snapshot/PITR memulihkan
+T12                   Backup restore                          encounter, ledger dan outbox secara
+                                                              konsisten.
+                                                              Tray/menu yang melanggar allergy
+T13                   Nutrition allergy
+                                                              restriction ditandai untuk review.
+                                                              Order rad tetap terdaftar; viewer
+T14                   PACS unavailable                        menunjukkan kesalahan sementara
+                                                              tanpa orphan records.
+                                                              KPI jumlah pelayanan dapat
+T15                   Report lineage                          direkonsiliasi ke encounter dan
+                                                              status terdefinisi.
+
+
+
+
+Lampiran D. Glossary dan Konvensi
+Istilah                                   Definisi
+                                          Fast Healthcare Interoperability Resources; standar
+FHIR
+                                          untuk pertukaran data kesehatan.
+FHIR R4                                   Versi 4.0.1 digunakan sebagai baseline interoperabilitas.
+                                          Layanan penyimpanan/API FHIR standar; tidak
+FHIR Server                               diterapkan sebagai dedicated component pada baseline
+                                          ini.
+                                          Mapper/validator/client/worker yang menghasilkan dan
+FHIR Adapter
+                                          menerima resource FHIR dari domain internal.
+                                          Batas model, rule dan ownership entitas dalam domain
+Bounded Context
+                                          bisnis.
+Source of Truth                           Satu sistem/entitas berwenang atas mutasi data tertentu.
+                                          Catatan event yang disimpan dalam transaksi database
+Outbox
+                                          bersama perubahan bisnis.
+                                          Pemrosesan berulang tidak menciptakan efek bisnis
+Idempotency
+                                          ganda.
+MRN                                       Medical Record Number, nomor rekam medis lokal.
+                                          Identitas resource pasien/praktisi yang dikelola dalam
+IHS
+                                          ekosistem SATUSEHAT.
+                                          Laboratory / Radiology Information System / Picture
+LIS / RIS / PACS
+                                          Archiving and Communication System.
+DICOMweb                                  Akses dan pertukaran DICOM melalui protokol web.
+CPOE                                      Computerized Provider Order Entry.
+RTO / RPO                                 Recovery Time Objective / Recovery Point Objective.
+                                          Prioritas candidate work package; bukan status
+P0/P1/P2
+                                          implementasi.
+                                          Architecture Decision Record, dokumen jejak keputusan
+ADR
+                                          teknis.
+API Contract                              Kontrak permintaan/response dan error antarkomponen.
+UAT                                       User Acceptance Testing oleh pengguna bisnis/klinis.
+
+
+
+
+                                                            Baseline arsitektur 30-10-2026 • Halaman 27
+<PARSED TEXT FOR PAGE: 28 / 28>
+                                                                           SIMRS FHIR-FIRST | MASTER PLAN
+
+
+
+
+Penutup
+Blueprint ini mengunci pilihan FHIR-first tanpa FHIR Server khusus; tidak mengunci setiap tabel, endpoint
+atau jadwal sebelum discovery. Keberhasilan desain ditentukan oleh konsistensi identitas, keamanan klinis,
+ledger operasional, kontrak lintas domain, dan ketahanan integrasi. Aktivitas berikut yang harus dilakukan
+adalah memperinci Master Feature Catalogue, membangun domain/event model, menulis mapping FHIR
+berdasarkan Playbook resmi, dan mengimplementasikan satu vertical slice yang bisa diuji secara end-to-
+end.
+
+ Baseline untuk langkah berikut: G0 Feature Catalogue → G1 Architecture Foundation → G2 Clinical
+ Vertical Slice.
+
+
+
+
+                                                                      Baseline arsitektur 30-10-2026 • Halaman 28
