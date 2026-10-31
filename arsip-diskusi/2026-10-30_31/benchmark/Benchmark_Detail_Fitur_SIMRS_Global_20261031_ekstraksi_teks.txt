@@ -1,0 +1,1979 @@
+SUMBER: Benchmark_Detail_Fitur_SIMRS_Global_Indonesia_20261031.docx
+CATATAN: EKSTRAKSI TEKS dari Library ChatGPT. Bukan DOCX asli; tampilan, gambar, bagan, tabel, dan styling bisa hilang.
+
+<PARSED TEXT FOR PAGE: 1 / 32>
+                                                              SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+STUDI BENCHMARK
+FITUR SIMRS GLOBAL
+DAN INDONESIA
+Analisis rinci 47 kelompok fitur pada 10 sistem, gap SIMRS-Sensi, dan acuan pengembangan
+SIMRS enterprise baru
+
+
+
+
+ 10                                      47                                          6
+ Sistem pembanding                       Kelompok fitur                              Domain analisis
+
+
+VERSI DOKUMEN: 1.0 | TANGGAL: 31 OKTOBER 2026
+
+CAKUPAN: Epic, InterSystems TrakCare, Oracle Health, MEDITECH Expanse, NUHA, SIMGOS V2, Khanza,
+teraMedik, TrustMe SIMRS, dan SIMRS-Sensi.
+
+
+PRINSIP PENTING: Katalog vendor bukan bukti bahwa semua fitur sudah aktif atau diterima di produksi.
+Semua status SIMRS-Sensi harus dibaca bersama bukti build, pengujian, UAT, integrasi provider, dan
+deployment.
+Bahan keputusan produk dan arsitektur; bukan laporan audit independen vendor maupun rekomendasi pengadaan.
+
+
+
+
+                     31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 1
+<PARSED TEXT FOR PAGE: 2 / 32>
+                                                                  SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+Ringkasan eksekutif
+Benchmark ini membandingkan 4 produk global, 4 produk/ekosistem Indonesia, 1 benchmark internal
+TrustMe SIMRS, dan 1 produk yang dikembangkan (SIMRS-Sensi). Matrik utama mencakup 47 kelompok
+fitur dalam patient access, clinical EHR, diagnostics, specialty/support, revenue/ERP, serta
+interoperability/insights. Untuk SIMRS-Sensi, fokusnya bukan jumlah menu, melainkan bukti alur dari
+input klinis sampai hasil layanan, billing, klaim, dan pelaporan.
+
+Temuan utama
+      Produk global mengutamakan kedalaman clinical workflow dan integrasi episode; Epic dan Oracle
+       Health menawarkan ekosistem spesialis mendalam, sedangkan TrakCare menonjolkan platform
+       terpadu dan MEDITECH memiliki katalog backoffice yang eksplisit. [S01–S08]
+      NUHA secara publik mengelompokkan 34 modul (25 front office, 9 back office); SIMGOS V2
+       mencantumkan alur tindakan, resep, penunjang, RL serta plugin CSSD, laundry, gizi, mutu, dan PPI;
+       Khanza menyediakan katalog 20 kelompok A–T. [S09–S12]
+      Katalog teraMedik mengonfirmasi RME, BPJS/SATUSEHAT, dashboard, stok, keuangan, serta
+       penunjang. Namun subfitur tidak semua dijelaskan sampai level proses, sehingga banyak status ?
+       harus diperlakukan sebagai belum terverifikasi, bukan tidak tersedia. [S13]
+      SIMRS-Sensi mempunyai fondasi kode klinis, billing, procurement, finance, inventory, dan adapter
+       integrasi; production readiness berbeda per domain. Paket E07 gizi masih mempunyai PR draft dan
+       belum merupakan bukti UAT/produksi. [S15–S19]
+      Rencana internal SIMRS-Sensi memuat 219 fitur pada 50 modul benchmark dan 5 topik Diskusi Fitur;
+       dokumen ini memakai 47 kelompok untuk analisis lintas vendor. Keduanya bukan unit hitung yang
+       identik. [S17–S18]
+
+Keputusan yang disarankan
+      Tetapkan satu source of truth per domain, audit versi dokumen klinis, serta penyimpanan
+       operasional yang konsisten. Data FHIR menjadi antarmuka interoperabilitas, bukan wajib menjadi
+       skema database internal.
+      Uji openEHR/EHRbase hanya sebagai PoC clinical data repository untuk satu alur rawat jalan
+       sebelum migrasi model klinis besar-besaran. Keputusan arsitektur SIMRS baru belum berlaku
+       otomatis pada repository SIMRS-Sensi existing.
+      Gunakan gerbang status: planned → implemented → staging verified → externally accepted (bila
+       relevan) → production operational. Fitur yang tidak relevan bagi jenis RS memerlukan keputusan not
+       applicable approved.
+      Dahulukan safety, identity/tenant access, transaksi uang/stok, keterhubungan order-result,
+       kelengkapan resume, dan integrasi nasional sebelum memperluas banyak specialty menu.
+
+Pertanyaan yang dijawab dokumen
+    Pertanyaan                          Jawaban pendek
+
+
+                                        4 global, 4 Indonesia, TrustMe sebagai benchmark internal, SIMRS-Sensi sebagai
+    Siapa pembandingnya?
+                                        produk yang diaudit secara terbatas.
+
+                                        Bukti publik/benchmark dan readiness implementasi; tidak ada skor kualitas klinis
+    Apa yang benar-benar diukur?
+                                        komparatif yang tervalidasi.
+
+                                        Master backlog terstruktur feature → workflow → tabel/data → API/UI → security →
+    Apa deliverable selanjutnya?
+                                        UAT → bukti release.
+
+
+
+
+                         31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 2
+<PARSED TEXT FOR PAGE: 3 / 32>
+                                                             SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+Daftar isi
+1. Ruang lingkup, pendekatan, dan aturan penilaian
+
+2. Profil dan positioning 10 sistem pembanding
+
+3. Analisis mendalam 47 kelompok fitur dalam enam domain
+
+4. Pola kekuatan dan keterbatasan benchmark
+
+5. Penilaian gap SIMRS-Sensi dan rencana paket kerja
+
+6. Rekomendasi desain SIMRS baru dan standardisasi data
+
+7. Uji end-to-end dan release acceptance gates
+
+Lampiran A. Matriks bukti 47 × 10 sistem
+
+Lampiran B. Daftar sumber dan batas penggunaan
+
+Lampiran C. Glosarium dan istilah status
+
+Catatan navigasi: nomor halaman dihasilkan Word/LibreOffice saat dibuka atau dicetak; judul bab
+menggunakan Heading Style agar mudah dibuat Navigation Pane/TOC otomatis.
+
+
+
+
+                    31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 3
+<PARSED TEXT FOR PAGE: 4 / 32>
+                                                                  SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+1. Ruang lingkup, pendekatan, dan aturan penilaian
+1.1 Lingkup produk
+ Kelompok                Produk                                Batas penelitian
+
+
+                         Epic; TrakCare; Oracle Health;        Katalog/portofolio dan modul yang dipublikasikan; tidak
+ Global
+                         MEDITECH                              dilakukan akses instalasi RS.
+
+                         NUHA; SIMGOS V2; Khanza;              Katalog resmi, dokumentasi user, plugin, bukan observasi on-
+ Indonesia
+                         teraMedik                             site.
+
+ Benchmark                                                     Dibaca sebagai benchmark PDF yang telah dipetakan ke
+                         TrustMe SIMRS
+ internal                                                      roadmap SIMRS-Sensi; tidak disamakan dengan Trustmedis.
+
+                                                               GitHub main/README/use guide/roadmap serta status PR; tidak
+ Proyek                  SIMRS-Sensi
+                                                               melakukan deployment/UAT ulang.
+
+
+
+
+1.2 Unit analisis
+Terdapat 47 kelompok fitur. Satu kelompok dapat mencakup banyak subfitur dan skenario, sehingga 47
+bukan jumlah menu dan bukan sinonim dari 219 fitur pada benchmark NUHA internal. Setiap kelompok
+mempunyai: (a) tujuan workflow, (b) bukti katalog/dokumen, (c) baseline Sensi, (d) gap dan acceptance
+criteria, serta (e) data/standar yang perlu dipertimbangkan.
+
+ Domain                           Jumlah               Keterangan
+                                  kelompok
+
+
+ A. Patient access                7                    Akses dan alur awal pasien
+
+ B. Clinical EHR                  9                    Dokumentasi dan keselamatan klinis
+
+ C. Diagnostics                   5                    Order-result dan farmasi
+
+ D. Specialty                     11                   Layanan khusus dan penunjang
+
+ E. Revenue & ERP                 7                    Pendapatan, keuangan, logistik, SDM
+
+ F. Interop & insights            8                    Regulator, integrasi, keamanan, analitik
+
+
+
+
+1.3 Aturan kode bukti
+ Kode           Arti                                                 Apa yang TIDAK boleh disimpulkan
+
+
+                Fitur disebut dalam katalog atau dokumentasi         Tidak membuktikan fitur ada di kontrak, telah
+ D
+                resmi publik.                                        diimplementasi dan aman di produksi.
+
+                Fitur tertera pada benchmark internal TrustMe        Tidak membuktikan status produk TrustMe live atau
+ B
+                yang pernah dibahas.                                 pada seluruh RS.
+
+                Fondasi implementasi muncul pada                     Tidak otomatis menunjukkan seluruh kriteria fitur
+ I
+                kode/README/use guide main SIMRS-Sensi.              terpenuhi.
+
+                Parsial, terbatas atau masih butuh
+ P                                                                   Tidak selalu berarti tidak ada kode.
+                bukti/pendalaman.
+
+                Parsial dan terdapat pengembangan terkait di PR
+ P+R                                                                 Bukan fitur sudah merge atau produksi.
+                draft.
+
+
+
+
+                         31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 4
+<PARSED TEXT FOR PAGE: 5 / 32>
+                                                                SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+    Kode       Arti                                                Apa yang TIDAK boleh disimpulkan
+
+
+               Belum ada bukti memadai dari sumber yang
+    ?                                                              Bukan bukti ketidaktersediaan fitur.
+               diperiksa.
+
+
+
+
+1.4 Batas penilaian dan keandalan sumber
+       Produk vendor dapat berupa paket terpisah, modul opsional, solusi partner, dan perbedaan
+        lisensi/negara/versi. Katalog tidak diperlakukan sebagai BOM satu lisensi.
+       Tingkat detail publik tidak sama; SIMGOS dan Khanza mempunyai banyak panduan eksplisit,
+        sedangkan sebagian vendor menggunakan ringkasan pemasaran. Karena itu tidak dihitung ranking
+        fitur berbasis jumlah D.
+       Oracle Health merupakan portofolio lintas produk; kapabilitas Oracle Fusion untuk ERP tidak selalu
+        sama dengan modul internal Millennium.
+       Dokumen proyek dan PR SIMRS-Sensi adalah evidence tentang kode/pekerjaan. Tidak ada pengujian
+        ulang live provider, sistem alat, RS, dan deploy pada tanggal studi ini.
+       Prioritas paket mengikuti risiko dan dependensi, bukan janji kalender. Tingkat prioritas berubah
+        sesuai layanan nyata RS, kebijakan pasien, kesiapan vendor, dan kapasitas tim.
+
+
+
+
+                       31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 5
+<PARSED TEXT FOR PAGE: 6 / 32>
+                                                             SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+2. Profil dan positioning 10 sistem pembanding
+2.1 Epic
+Kategori / bukti: Global | Referensi [S01, S02, S03]
+Cakupan terkonfirmasi: Katalog luas untuk rawat jalan, IGD ASAP, lab Beaker, radiologi Radiant,
+surgery OpTime & Anesthesia, spesialis (misalnya Cupid), MyChart dan analytics.
+Pelajaran desain: Ambil desain clinical workflow spesifik per profesi, keterkaitan order-result-report,
+portal pasien, dan analitik.
+Batas verifikasi: Produk besar dan modul spesifik tidak berarti semuanya diimplementasikan pada
+setiap pelanggan.
+
+2.2 InterSystems TrakCare
+Kategori / bukti: Global | Referensi [S04, S05]
+Cakupan terkonfirmasi: TrakCare Core plus ekstensi mencakup inpatient/outpatient/emergency,
+clinical documentation, care planning, medication, pharmacy, laboratory, surgery, referral, RCM dan
+lainnya.
+Pelajaran desain: Ambil konsistensi alur front-office hingga revenue cycle dan workflow satu rekam
+pasien yang logis.
+Batas verifikasi: Sebagian modul bersifat extension/optional; berbeda produk dengan InterSystems
+IntelliCare yang memiliki AI bawaan.
+
+2.3 Oracle Health
+Kategori / bukti: Global | Referensi [S06, S07]
+Cakupan terkonfirmasi: Portofolio Oracle Health mencakup EHR, clinical operations, care coordination,
+patient engagement dan kemampuan finansial/ERP terkait.
+Pelajaran desain: Ambil pemisahan clinical decision, high-acuity/ICU, perioperative inventory dan
+result management.
+Batas verifikasi: Oracle Health dan Oracle Fusion adalah portofolio; jangan otomatis menyamakan
+dengan satu instalasi Millennium.
+
+2.4 MEDITECH Expanse
+Kategori / bukti: Global | Referensi [S08]
+Cakupan terkonfirmasi: Daftar resmi eksplisit dari ambulatory, ED, pharmacy, lab, imaging, blood
+bank, surgical, dietary, telehealth hingga GL, AP, budget, payroll dan fixed asset.
+Pelajaran desain: Menjadi benchmark utama keseimbangan EHR plus backoffice/ERP dan data
+repository untuk reporting.
+Batas verifikasi: Ketersediaan per modul bergantung versi, lisensi dan deployment.
+
+2.5 NUHA
+Kategori / bukti: Indonesia | Referensi [S09]
+Cakupan terkonfirmasi: Situs resmi menampilkan 34 modul SIMRS/EMR (25 front office, 9 back office),
+termasuk consent, digital sign, lab, radiologi, HD, gizi, HAIs, billing, BPJS, klaim, SATUSEHAT, akuntansi,
+laporan dan RL.
+Pelajaran desain: Benchmark lokal paling luas untuk cakupan modul layanan dan pelaporan regulator.
+
+
+
+
+                    31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 6
+<PARSED TEXT FOR PAGE: 7 / 32>
+                                                            SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+Batas verifikasi: Katalog adalah daftar fitur dipasarkan, bukan bukti kinerja atau subworkflow di tiap
+implementasi.
+
+2.6 SIMGOS V2
+Kategori / bukti: Indonesia | Referensi [S10, S11, S20]
+Cakupan terkonfirmasi: Dokumentasi publik merinci registrasi, lab, radiologi, resep, diagnosa,
+pembayaran, RL, VClaim, SATUSEHAT, rekonsiliasi obat dan plugin CSSD, laundry, gizi, mutu, PPI, APM.
+Pelajaran desain: Benchmark rinci untuk proses Indonesia, data entry, pelaporan dan workflow
+logistik.
+Batas verifikasi: Panduan dapat menjelaskan fungsi versi tertentu; bukan semua plugin wajib
+terpasang.
+
+2.7 SIMKES Khanza
+Kategori / bukti: Indonesia | Referensi [S12]
+Cakupan terkonfirmasi: YASKI mencantumkan 20 kelompok A–T meliputi registrasi/billing, barcode,
+SDM/payroll, inventory medis/nonmedis, dapur, aset, keuangan, bridging, RME, UTD, dashboard,
+persuratan dan koperasi.
+Pelajaran desain: Benchmark luas domain penunjang/operasional yang sering luput dalam desain EHR
+saja.
+Batas verifikasi: Konfigurasi dan versi deployment perlu diverifikasi secara aktual.
+
+2.8 teraMedik
+Kategori / bukti: Indonesia | Referensi [S13]
+Cakupan terkonfirmasi: Katalog resmi menyebut RME, BPJS/SATUSEHAT, keuangan, laporan,
+dashboard, stok, integrasi penunjang, PACS, bank darah dan MCU.
+Pelajaran desain: Benchmark paket vendor lokal untuk integrasi klinis-keuangan dan implementasi
+rumah sakit.
+Batas verifikasi: Submodul kurang terurai publik; tanda ? di matriks bukan kelemahan produk.
+
+2.9 TrustMe SIMRS
+Kategori / bukti: Benchmark internal | Referensi [S14]
+Cakupan terkonfirmasi: Benchmark PDF yang sudah dibahas mencakup admisi/APM, antrean,
+SOAP/history, bed mapping, rawat jalan/inap, operasi, billing, backoffice dan bridging.
+Pelajaran desain: Menjadi reference workflow operasional tingkat detail lebih dekat dengan
+implementasi user.
+Batas verifikasi: Belum dilakukan pengecekan fitur live atau versi produk; tidak disamakan dengan
+vendor Trustmedis.
+
+2.10 SIMRS-Sensi
+Kategori / bukti: Proyek | Referensi [S15–S19]
+Cakupan terkonfirmasi: Codebase React/TypeScript/TanStack Start, API Node, PostgreSQL VPS; modul
+klinis, order, farmasi, billing, finance, inventory, management, BPJS/SATUSEHAT workbench dan
+pengembangan E07.
+Pelajaran desain: Baseline gap yang harus ditutup; fondasi existing tidak boleh dibuang/duplikasi saat
+membuat modul.
+
+
+
+
+                   31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 7
+<PARSED TEXT FOR PAGE: 8 / 32>
+                                                                     SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+Batas verifikasi: PR belum merge tidak boleh dihitung production; interoperabilitas provider perlu
+acceptance.
+
+
+3. Analisis mendalam 47 kelompok fitur
+Bagian ini merupakan inti dokumen. Setiap fitur dibahas dengan tujuan, contoh kemampuan
+pembanding, bukti implementasi/fondasi SIMRS-Sensi, gap yang perlu ditutup, acceptance criteria, serta
+model data relevan. Daftar pembanding yang ditampilkan hanya contoh yang memiliki status D atau B
+pada matriks, bukan klaim bahwa hanya vendor tersebut yang menyediakan fitur.
+
+3.1 Akses Pasien, Registrasi, Jadwal, dan ADT
+Keterpaduan identitas, registrasi, antrean, jadwal, kelas/bed dan pengalaman pasien; keselamatan
+identitas menjadi prasyarat seluruh modul.
+
+ Kelompok fitur                       Global (D)                      Indonesia / benchmark (D/B)         SIMRS-Sensi
+
+
+                                      Epic, TrakCare, Oracle
+ Master pasien / identitas / MPI                                      SIMGOS V2, Khanza                   Fondasi main
+                                      Health, MEDITECH
+
+                                      Epic, TrakCare, Oracle          NUHA, SIMGOS V2, Khanza,
+ Registrasi, admisi & penjamin                                                                            Fondasi main
+                                      Health, MEDITECH                teraMedik, TrustMe*
+
+                                      Epic, TrakCare, Oracle
+ Booking & jadwal dokter                                              NUHA, SIMGOS V2, TrustMe*           Fondasi main
+                                      Health, MEDITECH
+
+                                                                      NUHA, SIMGOS V2, Khanza,
+ Antrean & call/display               Epic                                                                Fondasi main
+                                                                      TrustMe*
+
+ APM / self check-in                  Epic                            NUHA, SIMGOS V2, TrustMe*           Parsial
+
+                                      Epic, TrakCare, Oracle
+ Portal / aplikasi pasien                                             NUHA                                Parsial
+                                      Health, MEDITECH
+
+                                      Epic, TrakCare, Oracle          NUHA, SIMGOS V2, Khanza,
+ ADT & bed management                                                                                     Fondasi main
+                                      Health, MEDITECH                TrustMe*
+
+
+
+
+Rincian proses dan kriteria uji
+
+01. Master pasien / identitas / MPI
+Cakupan target: Identitas MRN per RS, NIK/IHS, identifier eksternal, potensi duplikasi, penggabungan
+terkontrol.
+Baseline Sensi: Fondasi main. Kriteria UAT: Uji dua pasien mirip; merge tidak menghilangkan riwayat;
+alias nomor lama tetap dapat ditelusuri.
+Data & standar: patients, patient_identifiers, merge_audit; FHIR Patient; EHR link bukan identifier
+pasien.
+Bukti benchmark: Epic, TrakCare, Oracle Health, MEDITECH, SIMGOS V2, Khanza. [S01] [S04] [S06] [S08]
+[S10] [S12]
+
+02. Registrasi, admisi & penjamin
+Cakupan target: Registrasi baru/lama, episode dan hak penjamin, perpindahan unit tanpa input
+identitas berulang.
+Baseline Sensi: Fondasi main. Kriteria UAT: Uji perubahan penjamin setelah order dan penagihan;
+jejak koreksi tetap konsisten.
+Data & standar: patients, visits, encounters, payer_eligibility, coverage.
+
+
+
+
+                            31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 8
+<PARSED TEXT FOR PAGE: 9 / 32>
+                                                                SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+Bukti benchmark: Epic, TrakCare, Oracle Health, MEDITECH, NUHA, SIMGOS V2, Khanza, teraMedik;
+internal TrustMe. [S01] [S04] [S06] [S08] [S09] [S10]
+
+03. Booking & jadwal dokter
+Cakupan target: Slot praktik, kuota, libur, penjadwalan ulang, pembatalan, booking berulang dan
+rujukan.
+Baseline Sensi: Fondasi main. Kriteria UAT: Uji race condition pada slot terakhir dan status booking
+dibatalkan.
+Data & standar: practitioner_schedules, appointments, slots; FHIR Appointment/Schedule.
+Bukti benchmark: Epic, TrakCare, Oracle Health, MEDITECH, NUHA, SIMGOS V2; internal TrustMe. [S01]
+[S04] [S06] [S08] [S09] [S10]
+
+04. Antrean & call/display
+Cakupan target: Nomor antrean dari pendaftaran sampai loket, poli dan penunjang; prioritas IGD
+terpisah.
+Baseline Sensi: Fondasi main. Kriteria UAT: Uji panggilan ulang, no-show dan larangan menampilkan
+PII pada display publik.
+Data & standar: queues, queue_events, service_units.
+Bukti benchmark: Epic, NUHA, SIMGOS V2, Khanza; internal TrustMe. [S01] [S09] [S10] [S12] [S14]
+
+05. APM / self check-in
+Cakupan target: Kiosk dengan barcode/QR, validasi identitas dan appointment, cetak nomor antrean.
+Baseline Sensi: Parsial. Kriteria UAT: Uji pasien salah identitas, sesi kiosk kedaluwarsa, pendaftaran
+ganda.
+Data & standar: kiosk_sessions, checkin_events, appointments; akses minimum.
+Bukti benchmark: Epic, NUHA, SIMGOS V2; internal TrustMe. [S01] [S09] [S10] [S14]
+
+06. Portal / aplikasi pasien
+Cakupan target: Identitas pasien/wali, janji temu, riwayat dan dokumen yang boleh dirilis.
+Baseline Sensi: Parsial. Kriteria UAT: Uji akses wali, pasien anak, revocation, notifikasi tidak
+mengungkap informasi medis.
+Data & standar: patient_accounts, dependent_links, document_release; FHIR patient access bila relevan.
+Bukti benchmark: Epic, TrakCare, Oracle Health, MEDITECH, NUHA. [S01] [S04] [S06] [S08] [S09]
+
+07. ADT & bed management
+Cakupan target: Admission, discharge, transfer, kelas, occupancy, bed turnover, cleaning/housekeeping.
+Baseline Sensi: Fondasi main. Kriteria UAT: Uji satu bed tidak dialokasikan dua pasien pada saat yang
+sama; histori perpindahan utuh.
+Data & standar: admissions, bed_assignments, bed_movements, locations; FHIR Encounter/Location.
+Bukti benchmark: Epic, TrakCare, Oracle Health, MEDITECH, NUHA, SIMGOS V2, Khanza; internal
+TrustMe. [S01] [S04] [S06] [S08] [S09] [S10]
+
+3.2 RME, Dokumentasi Klinis, Consent, dan CDSS
+Sumber data klinis harus berversi; professional accountability, care team dan patient safety lebih penting
+daripada form kosmetik.
+
+ Kelompok fitur                  Global (D)                      Indonesia / benchmark (D/B)         SIMRS-Sensi
+
+
+ Rawat jalan & SOAP              Epic, TrakCare, Oracle          NUHA, SIMGOS V2, Khanza,            Fondasi main
+
+
+
+
+                       31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 9
+<PARSED TEXT FOR PAGE: 10 / 32>
+                                                                  SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+ Kelompok fitur                    Global (D)                     Indonesia / benchmark (D/B)          SIMRS-Sensi
+
+
+                                   Health, MEDITECH               teraMedik, TrustMe*
+
+                                   Epic, TrakCare, Oracle         NUHA, SIMGOS V2, Khanza,
+ IGD & triase                                                                                          Fondasi main
+                                   Health, MEDITECH               teraMedik, TrustMe*
+
+                                   Epic, TrakCare, Oracle         NUHA, SIMGOS V2, Khanza,
+ Rawat inap & CPPT                                                                                     Fondasi main
+                                   Health, MEDITECH               teraMedik, TrustMe*
+
+                                   Epic, TrakCare, Oracle
+ Keperawatan / asuhan                                             NUHA, SIMGOS V2, TrustMe*            Fondasi main
+                                   Health, MEDITECH
+
+ Template klinis / formulir
+                                   Epic, MEDITECH                 NUHA, SIMGOS V2, TrustMe*            Parsial
+ dinamis
+
+ Consent & tanda tangan digital    Epic                           NUHA                                 Parsial
+
+                                   Epic, TrakCare, Oracle
+ Discharge planning & resume                                      NUHA, SIMGOS V2                      Parsial
+                                   Health, MEDITECH
+
+ Rekonsiliasi obat                 Epic                           SIMGOS V2                            Parsial
+
+                                   Epic, TrakCare, Oracle
+ CDSS / clinical pathway                                          Belum teridentifikasi                Parsial
+                                   Health, MEDITECH
+
+
+
+
+Rincian proses dan kriteria uji
+
+08. Rawat jalan & SOAP
+Cakupan target: SOAP, masalah, diagnosis, alergi, order, tindakan, rencana tindak lanjut dalam satu
+episode.
+Baseline Sensi: Fondasi main. Kriteria UAT: Uji catatan disahkan tidak ditimpa; addendum dapat
+dilacak; peran pengguna valid.
+Data & standar: encounters, clinical_note_links, diagnoses; openEHR Composition; FHIR
+Encounter/Condition.
+Bukti benchmark: Epic, TrakCare, Oracle Health, MEDITECH, NUHA, SIMGOS V2, Khanza, teraMedik;
+internal TrustMe. [S01] [S04] [S06] [S08] [S09] [S10]
+
+09. IGD & triase
+Cakupan target: Triase, reassessment, skor/acuity, waktu respons, tindakan, disposition RJ/RI/rujukan.
+Baseline Sensi: Fondasi main. Kriteria UAT: Uji pergantian acuity dan eskalasi yang tercatat beserta
+timestamp.
+Data & standar: emergency_triage, assessments, encounter_events; openEHR observation/evaluation.
+Bukti benchmark: Epic, TrakCare, Oracle Health, MEDITECH, NUHA, SIMGOS V2, Khanza, teraMedik;
+internal TrustMe. [S01] [S04] [S06] [S08] [S09] [S10]
+
+10. Rawat inap & CPPT
+Cakupan target: Asesmen awal, visit harian, CPPT lintas profesi, handover dan rencana pulang.
+Baseline Sensi: Fondasi main. Kriteria UAT: Uji entri multidisiplin, kepemilikan catatan, koreksi versi
+dan otorisasi per encounter.
+Data & standar: admissions, care_team, clinical compositions, discharge_plans.
+Bukti benchmark: Epic, TrakCare, Oracle Health, MEDITECH, NUHA, SIMGOS V2, Khanza, teraMedik;
+internal TrustMe. [S01] [S04] [S06] [S08] [S09] [S10]
+
+11. Keperawatan / asuhan
+Cakupan target: Pengkajian, diagnosis keperawatan, intervensi, implementasi dan evaluasi.
+
+
+                        31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 10
+<PARSED TEXT FOR PAGE: 11 / 32>
+                                                                  SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+Baseline Sensi: Fondasi main. Kriteria UAT: Uji shift handover, overdue tugas dan bukti tindakan yang
+dilakukan.
+Data & standar: nursing_careplans, task_events; openEHR evaluation/instruction/action.
+Bukti benchmark: Epic, TrakCare, Oracle Health, MEDITECH, NUHA, SIMGOS V2; internal TrustMe. [S01]
+[S04] [S06] [S08] [S09] [S10]
+
+12. Template klinis / formulir dinamis
+Cakupan target: Form per unit/spesialisasi, field wajib, versi template dan terminologi.
+Baseline Sensi: Parsial. Kriteria UAT: Uji perubahan versi tanpa memutus keterbacaan data lama.
+Data & standar: clinical_templates, template_versions; openEHR Template/Archetype.
+Bukti benchmark: Epic, MEDITECH, NUHA, SIMGOS V2; internal TrustMe. [S01] [S08] [S09] [S10] [S14]
+
+13. Consent & tanda tangan digital
+Cakupan target: Persetujuan tindakan/akses, wali, revoke, emergency exception, e-sign dan audit
+immutable.
+Baseline Sensi: Parsial. Kriteria UAT: Uji penandatangan tak berwenang, replay, amend/addendum dan
+consent kedaluwarsa.
+Data & standar: consents, signature_evidence, document_versions; FHIR Consent bila profil berlaku.
+Bukti benchmark: Epic, NUHA. [S01] [S09]
+
+14. Discharge planning & resume
+Cakupan target: Resume medis final, obat pulang, edukasi, kontrol, rujukan, daftar dokumen klaim.
+Baseline Sensi: Parsial. Kriteria UAT: Uji konsistensi diagnosis/resume/obat pulang, lock final, revisi
+provider aman.
+Data & standar: discharge_plans, medical_summaries, document_links; FHIR
+Composition/DocumentReference.
+Bukti benchmark: Epic, TrakCare, Oracle Health, MEDITECH, NUHA, SIMGOS V2. [S01] [S04] [S06] [S08]
+[S09] [S10]
+
+15. Rekonsiliasi obat
+Cakupan target: Compare obat rumah vs masuk, pindah unit, pulang; keputusan pharmacist/DPJP.
+Baseline Sensi: Parsial. Kriteria UAT: Uji konflik alergi, duplikasi zat aktif, hold dan pencatatan alasan
+keputusan.
+Data & standar: medication_reconciliations, decisions; FHIR MedicationStatement/MedicationRequest.
+Bukti benchmark: Epic, SIMGOS V2. [S01] [S10]
+
+16. CDSS / clinical pathway
+Cakupan target: Peringatan klinis berbasis rules dan guideline versi, override terdokumentasi.
+Baseline Sensi: Parsial. Kriteria UAT: Uji false-positive, rule rollback, efek peringatan dan outcome;
+sistem tidak memutus terapi otomatis.
+Data & standar: clinical_rules, rule_versions, override_audits; FHIR PlanDefinition/GuidanceResponse
+jika perlu.
+Bukti benchmark: Epic, TrakCare, Oracle Health, MEDITECH. [S01] [S04] [S06] [S08]
+
+3.3 Order, Hasil, Farmasi, dan Penunjang Diagnostik
+Order-result reconciliation, kritikal result escalation, device safety dan pengurangan stok tidak boleh
+terputus di tengah workflow.
+
+
+
+
+                        31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 11
+<PARSED TEXT FOR PAGE: 12 / 32>
+                                                                    SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+ Kelompok fitur                      Global (D)                     Indonesia / benchmark (D/B)          SIMRS-Sensi
+
+
+                                     Epic, TrakCare, Oracle         NUHA, SIMGOS V2, Khanza,
+ Order klinis terintegrasi                                                                               Fondasi main
+                                     Health, MEDITECH               teraMedik, TrustMe*
+
+                                     Epic, TrakCare, Oracle         NUHA, SIMGOS V2, Khanza,
+ Laboratorium / LIS                                                                                      Fondasi main
+                                     Health, MEDITECH               teraMedik, TrustMe*
+
+                                     Epic, Oracle Health,           NUHA, SIMGOS V2, Khanza,
+ Radiologi / RIS / PACS                                                                                  Fondasi main
+                                     MEDITECH                       teraMedik, TrustMe*
+
+                                     Epic, TrakCare, Oracle         NUHA, SIMGOS V2, Khanza,
+ Resep, farmasi & dispensing                                                                             Fondasi main
+                                     Health, MEDITECH               teraMedik, TrustMe*
+
+ Farmasi klinis / BCMA               Epic, Oracle Health            NUHA                                 Parsial
+
+
+
+
+Rincian proses dan kriteria uji
+
+17. Order klinis terintegrasi
+Cakupan target: CPOE dengan prioritas, specimen/modality, routing, status, cancellation dan result
+correlation.
+Baseline Sensi: Fondasi main. Kriteria UAT: Uji order ganda, salah pasien, perubahan setelah specimen
+diambil dan status final.
+Data & standar: service_orders, order_items, order_events; FHIR ServiceRequest.
+Bukti benchmark: Epic, TrakCare, Oracle Health, MEDITECH, NUHA, SIMGOS V2, Khanza, teraMedik;
+internal TrustMe. [S01] [S04] [S06] [S08] [S09] [S10]
+
+18. Laboratorium / LIS
+Cakupan target: Specimen accession, collection, receipt, analyzer, QC, verifikasi dan hasil kritis.
+Baseline Sensi: Fondasi main. Kriteria UAT: Uji salah label, hasil kritis, TAT, versi hasil dan hasil tanpa
+order.
+Data & standar: lab_specimens, lab_orders, lab_results_index; FHIR
+Specimen/Observation/DiagnosticReport.
+Bukti benchmark: Epic, TrakCare, Oracle Health, MEDITECH, NUHA, SIMGOS V2, Khanza, teraMedik;
+internal TrustMe. [S01] [S04] [S06] [S08] [S09] [S10]
+
+19. Radiologi / RIS / PACS
+Cakupan target: Order jadwal imaging, pemeriksaan, laporan radiolog dan pointer DICOM/PACS.
+Baseline Sensi: Fondasi main. Kriteria UAT: Uji imaging-study linkage, status pelaporan, hasil amend
+dan pengendalian akses gambar.
+Data & standar: radiology_orders, study_refs, reports; FHIR ImagingStudy/DiagnosticReport.
+Bukti benchmark: Epic, Oracle Health, MEDITECH, NUHA, SIMGOS V2, Khanza, teraMedik; internal
+TrustMe. [S01] [S06] [S08] [S09] [S10] [S12]
+
+20. Resep, farmasi & dispensing
+Cakupan target: Prescribing, telaah farmasis, dispensing, retur, batch/ED, stok dan billing.
+Baseline Sensi: Fondasi main. Kriteria UAT: Uji resep dibatalkan setelah dispensing, retur parsial, FEFO
+dan transaksi idempotent.
+Data & standar: medication_orders, dispenses, inventory_movements; FHIR
+MedicationRequest/MedicationDispense.
+Bukti benchmark: Epic, TrakCare, Oracle Health, MEDITECH, NUHA, SIMGOS V2, Khanza, teraMedik;
+internal TrustMe. [S01] [S04] [S06] [S08] [S09] [S10]
+
+
+
+                          31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 12
+<PARSED TEXT FOR PAGE: 13 / 32>
+                                                                    SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+21. Farmasi klinis / BCMA
+Cakupan target: Screening alergi/interaksi, verifikasi e-resep, barcode medication administration.
+Baseline Sensi: Parsial. Kriteria UAT: Uji wrong patient/wrong drug/wrong time, offline recovery dan
+escalation.
+Data & standar: medication_administrations, barcode_evidence, alerts; FHIR MedicationAdministration.
+Bukti benchmark: Epic, Oracle Health, NUHA. [S01] [S06] [S09]
+
+3.4 Layanan Khusus, Unit Penunjang, dan Mutu
+Paket modul hanya dibangun bila layanan RS relevan; standar klinis, evidence pelaksanaan, traceability
+alat/material dan biaya harus koheren.
+
+ Kelompok fitur                      Global (D)                     Indonesia / benchmark (D/B)          SIMRS-Sensi
+
+
+                                     Epic, TrakCare, Oracle
+ Operasi, anestesi & recovery                                       NUHA, SIMGOS V2, TrustMe*            Parsial
+                                     Health, MEDITECH
+
+                                     Epic, TrakCare, Oracle
+ ICU / critical care                                                Belum teridentifikasi                Belum tervalidasi
+                                     Health, MEDITECH
+
+                                     Epic, TrakCare, Oracle
+ Kebidanan / maternal-neonatal                                      Belum teridentifikasi                Parsial
+                                     Health, MEDITECH
+
+ Hemodialisis                        Epic                           NUHA                                 Parsial
+
+ Fisioterapi / rehabilitasi          Epic, MEDITECH                 NUHA                                 Parsial
+
+ Medical Check Up                    Belum teridentifikasi          NUHA, teraMedik                      Parsial
+
+ Gizi klinis dan dapur produksi      Epic, MEDITECH                 NUHA, SIMGOS V2, Khanza              Parsial + draft PR
+
+ CSSD / sterilisasi                  Belum teridentifikasi          NUHA, SIMGOS V2                      Parsial
+
+ Laundry & linen                     Belum teridentifikasi          NUHA, SIMGOS V2                      Parsial
+
+ Bank darah / transfusi              Oracle Health, MEDITECH        Khanza, teraMedik                    Parsial
+
+                                     Epic, Oracle Health,
+ PPI / HAIs & manajemen risiko                                      NUHA, SIMGOS V2                      Parsial
+                                     MEDITECH
+
+
+
+
+Rincian proses dan kriteria uji
+
+22. Operasi, anestesi & recovery
+Cakupan target: Booking OK, pre-op checklist, time out, anestesi intra-op, recovery score dan BMHP.
+Baseline Sensi: Parsial. Kriteria UAT: Uji perubahan jadwal, sign-off dokter, critical event, penggunaan
+inventory dan charge.
+Data & standar: surgery_cases, anesthesia_records, perioperative_events; clinical Composition.
+Bukti benchmark: Epic, TrakCare, Oracle Health, MEDITECH, NUHA, SIMGOS V2; internal TrustMe. [S01]
+[S04] [S06] [S08] [S09] [S10]
+
+23. ICU / critical care
+Cakupan target: Flowsheet, monitoring intensif, ventilasi, vasopresor, severity scores, device data.
+Baseline Sensi: Belum tervalidasi. Kriteria UAT: Uji data bertimestamp tinggi, alarm dan koreksi
+sensor; validasi pihak klinis.
+Data & standar: critical_care_observations, device_links, careplans; openEHR Observation.
+Bukti benchmark: Epic, TrakCare, Oracle Health, MEDITECH. [S01] [S04] [S06] [S08]
+
+
+
+
+                          31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 13
+<PARSED TEXT FOR PAGE: 14 / 32>
+                                                                   SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+24. Kebidanan / maternal-neonatal
+Cakupan target: ANC, persalinan, partograph, bayi lahir, hubungan ibu-anak, neonatal care.
+Baseline Sensi: Parsial. Kriteria UAT: Uji mother-baby linking, dua identitas bayi kembar, rujukan dan
+kelahiran.
+Data & standar: maternal_episodes, deliveries, newborn_links; FHIR Patient/Encounter/Observation.
+Bukti benchmark: Epic, TrakCare, Oracle Health, MEDITECH. [S01] [S04] [S06] [S08]
+
+25. Hemodialisis
+Cakupan target: Jadwal HD, prescription dialyzer, session/vital, komplikasi, penggunaan mesin dan
+billing.
+Baseline Sensi: Parsial. Kriteria UAT: Uji sesi batal, perubahan resep dan mesin unavailable,
+pencatatan komplikasi.
+Data & standar: hd_sessions, hd_prescriptions, device_assignments, consumptions.
+Bukti benchmark: Epic, NUHA. [S01] [S09]
+
+26. Fisioterapi / rehabilitasi
+Cakupan target: Asesmen fungsi, goal, rencana terapi, sesi, evaluasi outcome dan paket kunjungan.
+Baseline Sensi: Parsial. Kriteria UAT: Uji target fungsional terukur, perubahan plan, paket sisa dan
+penagihan layanan.
+Data & standar: rehab_episodes, therapy_sessions, outcome_measures.
+Bukti benchmark: Epic, MEDITECH, NUHA. [S01] [S08] [S09]
+
+27. Medical Check Up
+Cakupan target: Paket MCU, order multipoli, hasil konsolidasi, dokter reviewer, laporan akhir.
+Baseline Sensi: Parsial. Kriteria UAT: Uji hasil terlambat, pemeriksaan ulang dan release laporan
+setelah semua verifikasi.
+Data & standar: mcu_packages, mcu_episodes, order_groups, clinical_summaries.
+Bukti benchmark: NUHA, teraMedik. [S09] [S13]
+
+28. Gizi klinis dan dapur produksi
+Cakupan target: Skrining, asesmen, validasi diet/alergi, menu, kebutuhan bahan, produksi, distribusi.
+Baseline Sensi: Parsial + draft PR. Kriteria UAT: Uji stale diet, allergy conflict, HOLD sebelum otorisasi,
+audit serah makanan.
+Data & standar: nutrition_assessments, diet_orders, production_batches, tray_dispatch; PR E07 masih
+draft.
+Bukti benchmark: Epic, MEDITECH, NUHA, SIMGOS V2, Khanza. [S01] [S08] [S09] [S10] [S12]
+
+29. CSSD / sterilisasi
+Cakupan target: Penerimaan alat, dekontaminasi, packing, lot cycle, indikator steril, distribusi ke OK.
+Baseline Sensi: Parsial. Kriteria UAT: Uji siklus gagal dan recall; traceability instrumen ke
+pasien/prosedur.
+Data & standar: sterilization_cycles, instrument_sets, sterile_lots, trace_links.
+Bukti benchmark: NUHA, SIMGOS V2. [S09] [S10]
+
+30. Laundry & linen
+Cakupan target: Permintaan linen, sortir kotor-bersih, timbang, cuci, distribusi dan kehilangan.
+Baseline Sensi: Parsial. Kriteria UAT: Uji segregasi linen infeksius, pergerakan antar-unit dan
+rekonsiliasi stok.
+
+
+
+                         31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 14
+<PARSED TEXT FOR PAGE: 15 / 32>
+                                                                 SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+Data & standar: linen_items, laundry_batches, linen_movements.
+Bukti benchmark: NUHA, SIMGOS V2. [S09] [S10]
+
+31. Bank darah / transfusi
+Cakupan target: Permintaan darah, cross-match, identifikasi unit, serah, transfusi dan adverse event.
+Baseline Sensi: Parsial. Kriteria UAT: Uji mismatch ABO, bedside identity, suhu rantai dingin, return
+dan reaksi transfusi.
+Data & standar: blood_units, crossmatches, transfusion_events; FHIR Procedure/Observation.
+Bukti benchmark: Oracle Health, MEDITECH, Khanza, teraMedik. [S06] [S08] [S12] [S13]
+
+32. PPI / HAIs & manajemen risiko
+Cakupan target: Surveilans HAIs, device-days, denominator, risk register, temuan dan CAPA.
+Baseline Sensi: Parsial. Kriteria UAT: Uji indikator konsisten, duplicate case, penutupan tindakan dan
+sumber data audit.
+Data & standar: hai_events, risk_register, indicator_versions, corrective_actions.
+Bukti benchmark: Epic, Oracle Health, MEDITECH, NUHA, SIMGOS V2. [S01] [S06] [S08] [S09] [S10]
+
+3.5 Revenue Cycle, Keuangan, Logistik, dan SDM
+Semua perubahan uang, stok, klaim, dan aset harus bertransaksi, dapat diaudit, dan bisa direkonsiliasi
+dengan sumber klinis.
+
+ Kelompok fitur                   Global (D)                     Indonesia / benchmark (D/B)          SIMRS-Sensi
+
+
+                                  Epic, TrakCare, Oracle         NUHA, SIMGOS V2, Khanza,
+ Billing & kasir                                                                                      Fondasi main
+                                  Health, MEDITECH               teraMedik, TrustMe*
+
+                                  Epic, TrakCare, Oracle
+ Coding, casemix & klaim                                         NUHA, SIMGOS V2, Khanza              Parsial
+                                  Health, MEDITECH
+
+                                                                 NUHA, SIMGOS V2, Khanza,
+ Keuangan / GL / AP / AR          Oracle Health, MEDITECH                                             Parsial
+                                                                 teraMedik
+
+ Procurement, gudang &                                           NUHA, SIMGOS V2, Khanza,
+                                  Oracle Health, MEDITECH                                             Fondasi main
+ inventory                                                       teraMedik, TrustMe*
+
+ Costing & margin layanan         Oracle Health, MEDITECH        Belum teridentifikasi                Parsial
+
+ HR, jadwal, payroll & ESS        MEDITECH                       NUHA, SIMGOS V2, Khanza              Parsial
+
+ Aset tetap & maintenance         MEDITECH                       NUHA, Khanza                         Parsial
+
+
+
+
+Rincian proses dan kriteria uji
+
+33. Billing & kasir
+Cakupan target: Charge dari aktivitas klinis, tarif, paket, deposit, refund, diskon, settlement dan audit.
+Baseline Sensi: Fondasi main. Kriteria UAT: Uji pembatalan layanan tidak menghasilkan tagihan
+ganda; kasir close dan reversal.
+Data & standar: billing_headers, billing_items, payments, refunds, deposits.
+Bukti benchmark: Epic, TrakCare, Oracle Health, MEDITECH, NUHA, SIMGOS V2, Khanza, teraMedik;
+internal TrustMe. [S01] [S04] [S06] [S08] [S09] [S10]
+
+34. Coding, casemix & klaim
+Cakupan target: Coding ICD, dokumen pendukung, grouping, submission, perbaikan, remitansi, piutang.
+
+
+
+
+                       31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 15
+<PARSED TEXT FOR PAGE: 16 / 32>
+                                                               SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+Baseline Sensi: Parsial. Kriteria UAT: Uji mismatch klinis/koding, retur klaim, status provider dan
+posting pembayaran.
+Data & standar: claim_cases, claim_documents, claim_submissions, receivable_ledger.
+Bukti benchmark: Epic, TrakCare, Oracle Health, MEDITECH, NUHA, SIMGOS V2, Khanza. [S01] [S04]
+[S06] [S08] [S09] [S10]
+
+35. Keuangan / GL / AP / AR
+Cakupan target: CoA, journal posting, invoice AP, AR payer, bank reconciliation, closing.
+Baseline Sensi: Parsial. Kriteria UAT: Uji double-entry seimbang, tutup periode, multi-cost center,
+reversal.
+Data & standar: gl_accounts, journals, ledger_entries, ap, ar, financial_periods.
+Bukti benchmark: Oracle Health, MEDITECH, NUHA, SIMGOS V2, Khanza, teraMedik. [S06] [S08] [S09]
+[S10] [S12] [S13]
+
+36. Procurement, gudang & inventory
+Cakupan target: PR→PO→receiving→QC→putaway→stock transfer/return; FEFO dan valuation.
+Baseline Sensi: Fondasi main. Kriteria UAT: Uji stok negatif, duplicate receipt, stok expired, audit
+perpindahan antar-unit.
+Data & standar: purchase_requests, purchase_orders, goods_receipts, inventory_ledger.
+Bukti benchmark: Oracle Health, MEDITECH, NUHA, SIMGOS V2, Khanza, teraMedik; internal TrustMe.
+[S06] [S08] [S09] [S10] [S12] [S13]
+
+37. Costing & margin layanan
+Cakupan target: Biaya obat/BMHP, tenaga, alat, overhead, cost center, margin pasien/unit.
+Baseline Sensi: Parsial. Kriteria UAT: Uji aturan alokasi historis, closing cost, selisih margin dengan
+jurnal.
+Data & standar: cost_pools, service_cost_rules, cogs_entries, profitability_marts.
+Bukti benchmark: Oracle Health, MEDITECH. [S06] [S08]
+
+38. HR, jadwal, payroll & ESS
+Cakupan target: Profil staff, credentialing, roster, attendance, payroll, self-service dan leave.
+Baseline Sensi: Parsial. Kriteria UAT: Uji privilege klinis setelah STR/SIP expire, payroll retroactive dan
+tenant isolation.
+Data & standar: employees, credentials, rosters, payroll_runs, leave_requests.
+Bukti benchmark: MEDITECH, NUHA, SIMGOS V2, Khanza. [S08] [S09] [S10] [S12]
+
+39. Aset tetap & maintenance
+Cakupan target: Asset registry, lifecycle/maintenance, depreciation, transfer, disposal, impairment.
+Baseline Sensi: Parsial. Kriteria UAT: Uji asset tag ganda, jadwal kalibrasi/maintenance, posting
+depresiasi ke GL.
+Data & standar: fixed_assets, maintenance_orders, depreciation_entries.
+Bukti benchmark: MEDITECH, NUHA, Khanza. [S08] [S09] [S12]
+
+3.6 Integrasi, Regulator, Analitik, dan Governance
+Batas provider, keamanan, kontrak API, provenance, indikator dan audit menjadi mekanisme inti, bukan
+hanya dashboard atau tombol sinkronisasi.
+
+
+
+
+                     31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 16
+<PARSED TEXT FOR PAGE: 17 / 32>
+                                                                  SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+ Kelompok fitur                    Global (D)                     Indonesia / benchmark (D/B)          SIMRS-Sensi
+
+
+                                                                  NUHA, SIMGOS V2, Khanza,
+ Bridging BPJS Indonesia           Belum teridentifikasi                                               Parsial
+                                                                  teraMedik, TrustMe*
+
+                                                                  NUHA, SIMGOS V2, teraMedik,
+ FHIR & SATUSEHAT                  Belum teridentifikasi                                               Parsial
+                                                                  TrustMe*
+
+                                   Epic, TrakCare, Oracle
+ Interoperabilitas umum / API                                     NUHA, SIMGOS V2, Khanza              Parsial
+                                   Health, MEDITECH
+
+ Laporan regulator / RL / SIRS     Belum teridentifikasi          NUHA, SIMGOS V2, Khanza              Parsial
+
+                                   Epic, TrakCare, Oracle         NUHA, SIMGOS V2, Khanza,
+ Executive dashboard / BI                                                                              Fondasi main
+                                   Health, MEDITECH               teraMedik, TrustMe*
+
+ Manajemen multi-RS /
+                                   Epic                           NUHA                                 Parsial
+ konsolidasi
+
+ Keamanan, consent, audit &                                       NUHA, SIMGOS V2, Khanza,
+                                   Epic, MEDITECH                                                      Fondasi main
+ RBAC                                                             teraMedik
+
+ AI / clinical documentation
+                                   Epic, Oracle Health            Belum teridentifikasi                Parsial
+ support
+
+
+
+
+Rincian proses dan kriteria uji
+
+40. Bridging BPJS Indonesia
+Cakupan target: VClaim/SEP, Antrol, Aplicares, iCare, e-Klaim sesuai kontrak provider.
+Baseline Sensi: Parsial. Kriteria UAT: Uji timeout/retry, duplicate SEP, provider status reconciliation
+dan auth.
+Data & standar: bpjs_outbox, bpjs_jobs, external_identifiers, provider_receipts.
+Bukti benchmark: NUHA, SIMGOS V2, Khanza, teraMedik; internal TrustMe. [S09] [S10] [S12] [S13] [S14]
+
+41. FHIR & SATUSEHAT
+Cakupan target: Mapping resource sesuai profil, identity/org, encounter, diagnosis, service order/result,
+retry.
+Baseline Sensi: Parsial. Kriteria UAT: Uji kontrak sandbox, 4xx/5xx, duplicate identifier, consent dan
+reconciled result.
+Data & standar: fhir_outbox, resource_links, sync_attempts; FHIR R4.
+Bukti benchmark: NUHA, SIMGOS V2, teraMedik; internal TrustMe. [S09] [S10] [S13] [S14]
+
+42. Interoperabilitas umum / API
+Cakupan target: Provider adapters untuk LIS, RIS/PACS, alat, sistem pembayar dan aplikasi lain.
+Baseline Sensi: Parsial. Kriteria UAT: Uji schema validation, payload version, signed webhook, auth dan
+dead-letter.
+Data & standar: integration_endpoints, connection_events, outboxes.
+Bukti benchmark: Epic, TrakCare, Oracle Health, MEDITECH, NUHA, SIMGOS V2, Khanza. [S01] [S04]
+[S06] [S08] [S09] [S10]
+
+43. Laporan regulator / RL / SIRS
+Cakupan target: RL otomatis dari source transaksi, numerator/denominator, approval, export dan
+koreksi.
+Baseline Sensi: Parsial. Kriteria UAT: Uji RL terhadap data dasar dan cut-off bulanan; perubahan
+definisi terkontrol.
+
+
+
+                        31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 17
+<PARSED TEXT FOR PAGE: 18 / 32>
+                                                               SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+Data & standar: rl_definitions, reporting_snapshots, data_quality_checks.
+Bukti benchmark: NUHA, SIMGOS V2, Khanza. [S09] [S10] [S12]
+
+44. Executive dashboard / BI
+Cakupan target: BOR/LOS/TOI/BTO, patient-flow, TAT, revenue, margin, claim aging, PPI.
+Baseline Sensi: Fondasi main. Kriteria UAT: Uji KPI source lineage, filter periode, nol vs belum tersedia,
+tidak ada angka sintetis.
+Data & standar: fact tables, marts, kpi_dictionary, reporting views.
+Bukti benchmark: Epic, TrakCare, Oracle Health, MEDITECH, NUHA, SIMGOS V2, Khanza, teraMedik;
+internal TrustMe. [S01] [S04] [S06] [S08] [S09] [S10]
+
+45. Manajemen multi-RS / konsolidasi
+Cakupan target: Multi-tenant isolation, group-level CoA roll-up, cross-facility metrics tanpa data klinis
+berlebihan.
+Baseline Sensi: Parsial. Kriteria UAT: Uji tenant leakage, consolidation elimination dan RO-based
+permissions.
+Data & standar: hospital_id, group_marts, consolidation_rules, access_scope.
+Bukti benchmark: Epic, NUHA. [S01] [S09]
+
+46. Keamanan, consent, audit & RBAC
+Cakupan target: RBAC + ABAC episode, MFA step-up, break-glass, audit immutable dan backup/recovery.
+Baseline Sensi: Fondasi main. Kriteria UAT: Uji akses lintas RS, akses tanpa penugasan, audit read,
+restore dan revoke.
+Data & standar: roles, scopes, consent, audit_events, security_policies.
+Bukti benchmark: Epic, MEDITECH, NUHA, SIMGOS V2, Khanza, teraMedik. [S01] [S08] [S09] [S10] [S12]
+[S13]
+
+47. AI / clinical documentation support
+Cakupan target: Draft clinical summarization, safety hints, coders aid, reviewer sign-off, traceability.
+Baseline Sensi: Parsial. Kriteria UAT: Uji hallucination, PHI leakage, provenance, no auto-sign/no auto-
+treatment.
+Data & standar: ai_requests, recommendations, reviewer_actions; read-only clinical context.
+Bukti benchmark: Epic, Oracle Health. [S01] [S06]
+
+
+
+
+                     31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 18
+<PARSED TEXT FOR PAGE: 19 / 32>
+                                                                    SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+4. Pola kekuatan dan keterbatasan benchmark
+4.1 Pola lintas produk
+    Prinsip desain                      Implikasi
+
+
+                                        Pasien, encounter, order, tindakan, result, billing dan klaim merupakan backbone
+    Alur episode sebagai pusat
+                                        yang berulang di setiap EHR/HIS kelas enterprise.
+
+    Order terpisah dari                 Tidak cukup hanya tabel order; harus ada event/status pelaksanaan, verifikasi, hasil,
+    pelaksanaan/hasil                   koreksi dan metadata waktu.
+
+                                        Kinerja UI dipengaruhi konteks dokter, perawat, farmasi, lab, radiologi, OK dan PPI,
+    Profesi dan spesialisasi
+                                        bukan satu form generik untuk semua.
+
+                                        Dashboard menggunakan read model/mart yang dapat ditelusuri ke transaksi, bukan
+    Reporting layer
+                                        sekadar query langsung ke semua tabel OLTP.
+
+                                        BPJS, SATUSEHAT, RL/SIRS, e-Klaim dan alur penjamin Indonesia merupakan
+    Local compliance
+                                        kewajiban implementasi lokal, bukan fitur yang harus dibandingkan pada Epic global.
+
+                                        Tanda tangan, versi, audit, akses per RS/episode, approval, inventory trace, dan
+    Governance dan safety
+                                        rekonsiliasi uang adalah acceptance yang harus dibuktikan.
+
+
+
+
+4.2 Pembacaan relatif yang aman
+      Epic: sangat relevan sebagai inspirasi clinical specialty dan patient engagement; tidak perlu meniru
+       teknologi penyimpanan proprietary-nya.
+      TrakCare: contoh workflow administratif-klinis-finansial yang terasa sebagai satu produk; perlu
+       metadata/identitas bersama jika kita memisah DB.
+      Oracle Health: penekanan critical care, medication management dan perioperative inventory;
+       produk lintas portofolio harus dibedakan.
+      MEDITECH: contoh eksplisit jalur clinical + diagnostic + ERP; penting untuk membangun SIMRS yang
+       tidak hanya fokus RME.
+      NUHA dan SIMGOS: sumber unggulan untuk kebutuhan modul lokal dan detail operasional; demo
+       diperlukan untuk menilai batas implementasi dan integrasi.
+      Khanza: sangat berguna untuk cakupan fungsi umum rumah sakit seperti SDM, dapur, aset, parkir
+       dan unit usaha; tidak seluruhnya wajib bagi setiap RS.
+      TeraMedik dan TrustMe: berguna untuk melihat packaging solusi dan kebutuhan implementasi
+       harian, namun detail bukti lebih terbatas.
+
+4.3 Mengapa tidak ada skor produk 0–100?
+Jumlah indikator D bergantung pada kelengkapan dokumentasi, lisensi, level fitur dan cara perusahaan
+mengelompokkan produk. Memberi skor 90 untuk vendor dengan dokumentasi rinci dan 60 untuk
+vendor dengan katalog singkat akan menghasilkan bias. Skor baru layak dibuat setelah setiap subfitur
+diperiksa melalui demo, acceptance script yang sama, bukti vendor, serta rating kinerja/UX terukur.
+
+
+
+
+                          31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 19
+<PARSED TEXT FOR PAGE: 20 / 32>
+                                                               SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+5. Penilaian gap SIMRS-Sensi dan paket eksekusi
+5.1 Pembacaan baseline existing
+README main SIMRS-Sensi mengonfirmasi React 19/TypeScript/TanStack Start + PostgreSQL VPS dengan
+alur registrasi, RJ, UGD, RI, lab, radiologi, farmasi, billing, RME, laporan dan master. Dokumen roadmap
+menyebut fondasi tambahan untuk safety, BCMA, EHR consent, surgery, nutrition, HR, finance, inventory,
+claims, dashboard, dan integrasi. Fitur bersifat staging-ready, bukan seluruhnya terverifikasi produksi.
+[S15–S18]
+
+ Label baseline       Jumlah kelompok         Makna yang benar
+
+
+ I                    17                      Ada fondasi di main menurut dokumen proyek, bukan UAT
+
+ P                    28                      Sebagian kemampuan tersedia atau perlu validasi
+
+ ?                    1                       Belum cukup bukti fitur secara lengkap
+
+ P+R                  1                       Masih parsial dan ada pekerjaan draft PR terkait
+
+
+
+PENTING: jumlah di atas menggambarkan klasifikasi 47 kelompok dalam matriks, bukan completion
+percentage dan bukan penilaian kualitas aplikasi.
+
+5.2 Pekerjaan prioritas (berbasis dependensi, bukan janji kalender)
+5.2.1 Kelengkapan RJ–IGD–RI — P0
+Target penerimaan: Validasi registration→order→result→resume→billing→klaim dan satu episode FHIR
+Kondisi/gap: Fondasi main tersedia; detail workflow dan provider/UAT perlu validasi
+Acuan: Epic/TrakCare/Oracle/NUHA
+
+5.2.2 Interoperabilitas SATUSEHAT — P0
+Target penerimaan: Uji sandbox lalu acceptance resmi, mapping resource, retry/reconciliation
+Kondisi/gap: FHIR workbench dan sync-job ada; kontrak/credential/acceptance live belum tuntas
+Acuan: SIMGOS/NUHA
+
+5.2.3 BPJS + claim — P0
+Target penerimaan: VClaim/Antrol/SEP, e-Klaim dengan sumber bukti dan status klaim
+Kondisi/gap: Workflow/job staging tersedia; provider live belum diterima
+Acuan: NUHA/SIMGOS/TrustMe
+
+5.2.4 Clinical safety & consent — P0
+Target penerimaan: Consent berwenang, rekonsiliasi obat, tanda tangan, risiko duplikasi
+Kondisi/gap: Banyak safety-gate dan review; sebagian masih draft/UAT
+Acuan: Epic/MEDITECH
+
+5.2.5 Produksi dan distribusi gizi E07 — P1
+Target penerimaan: Assessment diet→otorisasi→produksi→serah; fail-closed
+Kondisi/gap: Draft PR #240–#247 belum di-merge; UAT/status produksi NO-GO
+Acuan: NUHA/SIMGOS
+
+5.2.6 Laporan dinamis + RL E06 — P1
+Target penerimaan: Laporan per unit, filter, definisi numerik, ekspor regulator
+Kondisi/gap: Fondasi dashboard; paket RL masih memerlukan validasi implementasi/UAT
+
+
+                     31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 20
+<PARSED TEXT FOR PAGE: 21 / 32>
+                                                                  SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+Acuan: SIMGOS/NUHA/Khanza
+
+5.2.7 Operasi, anestesi, recovery E05 — P1
+Target penerimaan: Scheduling, checklist, evidence anestesi, sign-off
+Kondisi/gap: Fondasi kamar operasi; kedalaman workflow perlu diverifikasi
+Acuan: Epic/MEDITECH/TrakCare
+
+5.2.8 Rehab, HD, MCU, CSSD, laundry E08–E13 — P1
+Target penerimaan: Sesi layanan, alat, stok, distribusi, biaya, keterkaitan RM
+Kondisi/gap: Sebagian ada slice awal, belum lengkap UAT/acceptance
+Acuan: NUHA/SIMGOS
+
+5.2.9 PPI/HAIs, risiko, pathway E14–E15 — P1
+Target penerimaan: Indikator berkode, event, audit, intervensi dan outcome
+Kondisi/gap: Fondasi mutu dan risiko; kedalaman E14–E15 belum tervalidasi
+Acuan: Epic/MEDITECH/NUHA
+
+5.2.10 Portal pasien E18 — P1
+Target penerimaan: Booking, dokumen pasien, autentikasi, privasi
+Kondisi/gap: Rencana/parsial; live patient access perlu uji end-to-end
+Acuan: Epic MyChart/NUHA
+
+5.2.11 GL/AP/AR, costing, HR, aset E16–E17 — P2
+Target penerimaan: Posting/jurnal, tutup buku, rekonsiliasi, payroll, ESS
+Kondisi/gap: Foundation enterprise tersedia; acceptance unit belum lengkap
+Acuan: MEDITECH/NUHA/Khanza
+
+5.2.12 Analitik klinis & multi-RS — P2
+Target penerimaan: KPI definitions, RLS tenant, agregasi konsolidasi
+Kondisi/gap: Mart/dashboard awal; perlu validasi sumber dan metrik
+Acuan: Epic Cogito/MEDITECH
+
+5.3 Khusus E07 gizi: jangan menghitung draft PR sebagai rilis
+Pengembangan akhir Oktober memuat jalur otorisasi, integritas diet, fail-closed dan audit, tetapi status
+PR #247 masih draft pada pemeriksaan. Hal yang harus diuji sebelum merge/deploy meliputi otoritas
+diet, alergi, perubahan diet yang stale, finalisasi produksi makanan, release ke pasien, SOP credential dan
+dua-RS isolation. Dokumen PR menyatakan NO-GO sebelum penerimaan operasional. [S19]
+
+5.4 Pemecahan prioritas untuk dua produk yang berbeda
+ Program                   Fokus                                                     Jangan dicampur
+
+
+                           Menutup gap terhadap 219 fitur/50 modul,
+                                                                                     Tidak otomatis mengganti skema saat
+ SIMRS-Sensi existing      mengintegrasikan yang sudah dibangun, menahan
+                                                                                     pengembangan sedang berjalan.
+                           fitur draft sampai UAT.
+
+                           Memvalidasi arsitektur PostgreSQL operasional +
+                                                                                     Belum ada bukti bahwa EHRbase sudah
+ SIMRS baru greenfield     clinical CDR (opsional openEHR) + read model +
+                                                                                     diimplementasikan di SIMRS-Sensi.
+                           FHIR adapter.
+
+
+
+
+                        31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 21
+<PARSED TEXT FOR PAGE: 22 / 32>
+                                                                  SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+6. Rekomendasi desain SIMRS baru dan standar data
+6.1 Arsitektur empat lapisan
+Lapisan                      Source of truth / tugas                                      Contoh domain
+
+
+                             Sumber transaksional patient administration, service         Patient / Encounter / ADT / Order /
+ Operational PostgreSQL
+                             order, inventory, billing, claim, GL, HR dan aset.           Billing / ERP
+
+                             Sumber catatan klinis terpilih, validasi template,           Observation, Evaluation, Instruction,
+ Clinical CDR (PoC)
+                             Composition dan versioning jika EHRbase dinilai layak.       Action, Composition
+
+                             Proyeksi terkontrol dari operational DB + clinical CDR       Diagnosis index, observation index,
+ Read Model / Analytics
+                             untuk SQL reporting dan RL.                                  lab result index, KPI marts
+
+                             Adapter khusus provider dan FHIR R4 SATUSEHAT,               FHIR, BPJS, LIS/RIS/PACS, insurer,
+ Integration Layer
+                             observabilitas sinkronisasi.                                 regulator
+
+
+
+
+6.2 Kepemilikan data yang disarankan
+Entitas/domain                Pemilik utama                             Cross-reference dan anti-pattern
+
+
+                                                                        MRN per RS, IHS dan NIK tidak disamakan; ehr_id di
+ Pasien & identifier          Operational DB
+                                                                        patient_ehr_links.
+
+                                                                        EHR Composition mereferensikan episode; tidak
+ Encounter & ADT              Operational DB
+                                                                        membuat admission ganda.
+
+ Observasi/assessment         CDR bila lulus PoC; jika tidak, model     Jangan simpan FHIR JSON + Composition sebagai dua
+ klinis                       relasional klinis berversi                sumber kebenaran.
+
+                                                                        Hasil klinis direferensikan dengan order identifier;
+ Order penunjang              Operational DB
+                                                                        status service order tidak di CDR saja.
+
+                                                                        Obat klinis dan dispensing terkait; ledger stok tetap
+ Stok & dispensing            Operational DB
+                                                                        sumber kebenaran inventori.
+
+                                                                        Referensi clinical evidence bukan salinan klinis tak
+ Tagihan & klaim              Operational DB
+                                                                        terkendali.
+
+                                                                        Projection version; mampu reconcile terhadap
+ Dashboard                    Read model
+                                                                        sumber dan tenant.
+
+
+
+
+6.3 Pemetaan standar per domain
+Domain               FHIR R4 (indicative)              openEHR (indicative)            Catatan
+
+
+ Identitas/          Patient, Encounter,               EHR.subject,                    Klaim kesesuaian hanya jika mapping
+ episode             Organization, Practitioner        COMPOSITION.context             SATUSEHAT sesuai profil aktual.
+
+                                                       OBSERVATION,
+                     Condition, Observation,           EVALUATION,                     Satu archetype bisa menghasilkan
+ SOAP/asuhan
+                     CarePlan, Composition             INSTRUCTION,                    beberapa resource FHIR.
+                                                       COMPOSITION
+
+                     ServiceRequest, Specimen,         INSTRUCTION, ACTION,            Order harus dijaga terpisah dari
+ Order/result
+                     Observation, DiagnosticReport     OBSERVATION                     eksekusi/result.
+
+ Farmasi             MedicationRequest,                INSTRUCTION, ACTION             Stok dan tagihan bukan semata data
+
+
+
+
+                        31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 22
+<PARSED TEXT FOR PAGE: 23 / 32>
+                                                               SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+    Domain        FHIR R4 (indicative)              openEHR (indicative)            Catatan
+
+
+                  MedicationDispense,
+                                                                                    openEHR.
+                  MedicationAdministration
+
+    Dokumen/      Composition,                                                      Validasi format yang dituntut regulator
+                                                    COMPOSITION / version
+    consent       DocumentReference, Consent                                        per use case.
+
+                                                                                    Gunakan relasional dan standar
+    ERP           Tidak wajib FHIR                  Tidak wajib openEHR
+                                                                                    finance/accounting yang sesuai.
+
+
+
+
+6.4 Status keputusan arsitektur
+     ADR-01 (usulan): pertahankan PostgreSQL operasional sebagai source of truth transaksi.
+     ADR-02 (usulan): uji EHRbase lewat PoC RJ, bukan migrasi langsung semua modul.
+     ADR-03 (usulan): gunakan FHIR R4 adapter sesuai profil SATUSEHAT, tanpa kewajiban FHIR Server
+      internal.
+     ADR-04 (usulan): klinis+operasional digabung melalui backend API dan read models; tidak
+      melakukan JOIN tabel internal EHRbase secara langsung.
+     ADR-05 (wajib sebelum release): tenant isolation, peran/episode-based authorization, MFA sensitif,
+      audit, idempotensi, dan backup-restore teruji.
+
+
+
+
+                     31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 23
+<PARSED TEXT FOR PAGE: 24 / 32>
+                                                                      SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+7. Uji end-to-end dan acceptance gates
+7.1 Skenario RAWAT JALAN representatif
+    Tahap      Alur                                    Hasil minimal yang harus dibuktikan
+
+
+    01         Identifikasi & registrasi               MRN unik, NIK/IHS mapping bila tersedia, deteksi potensi duplikasi.
+
+    02         Booking dan antrean                     Status appointment/queue konsisten dengan encounter.
+
+    03         SOAP & order                            Diagnosis, tanda vital, alergi, resep, ServiceRequest dengan validasi role.
+
+    04         Laboratorium/radiologi                  Specimen/instrument/report terhubung ke order, verifikasi dan audit.
+
+    05         Farmasi                                 Telaah obat, dispensing, FEFO, stok dan charge sesuai event.
+
+    06         Resume dan consent                      Tanda tangan, author, timestamp, snapshot versi dan dokumen pulang.
+
+                                                       Tagihan hanya dari aktivitas sah, klaim mencakup evidence dan provider
+    07         Billing & klaim
+                                                       ack.
+
+    08         FHIR SATUSEHAT                          Mapping, sandbox, retry, reconciliation dan FHIR resource ID.
+
+    09         Reporting                               RL/BI sama dengan sumber transaksi dan tidak bocor lintas RS.
+
+
+
+
+7.2 Skenario negatif yang diwajibkan
+        Pasien ganda, pasien tertukar, NIK/identifier salah dan akses lintas RS ditolak.
+        Koreksi signed document dan clinical result menggunakan versi/addendum, bukan overwrite.
+        Order dibatalkan, specimen terlanjur diterima, hasil kritis tidak terkirim dan retry tidak
+         menghasilkan duplikasi.
+        Dispensing gagal stok, FEFO salah, batch kadaluarsa dan billing tertagih meski order tidak
+         dilaksanakan.
+        Gizi menahan produksi/serah makanan pada diet stale, alergi dan otorisasi belum lengkap.
+        Provider BPJS/SATUSEHAT mengembalikan 4xx, 5xx atau timeout; status sinkronisasi tidak diklaim
+         sukses tanpa respons yang sah.
+        Pembayaran/refund/claim dikirim ulang; idempotensi dan ledger balance tetap terjaga.
+        Role tidak berwenang mencoba sign, grant consent, edit finance dan akses record pasien lain.
+        Dashboard tidak menampilkan nol palsu saat data tidak tersedia, dan filter dua RS tidak bocor.
+
+7.3 Jenjang kematangan fitur
+    Status                       Bukti minimal                                                        Keputusan release
+
+
+                                                                                                      Boleh
+                                 Requirement, workflow, owner, dependency, negative tests dan         merancang/mengembangka
+    planned
+                                 acceptance.                                                          n; belum masuk hitungan
+                                                                                                      selesai.
+
+                                 Data/API/UI, validasi server, migration, regresi dan                 Boleh dibuat kandidat
+    implemented
+                                 unit/integration tests pada SHA.                                     staging.
+
+                                 E2E positif-negatif, tenant isolation, usability pilot dan capture   Boleh dipertimbangkan
+    staging_verified
+                                 evidence.                                                            untuk rollout/pilot terbatas.
+
+                                 Bukti provider RS/regulator/alat bila dibutuhkan, contract test      Boleh mengaktifkan
+    externally_accepted
+                                 dan ack.                                                             integrasi live yang relevan.
+
+    production_operational       Release SHA, owner, SOP, monitoring, backup+restore, incident        Layak dihitung sebagai
+
+
+
+
+                           31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 24
+<PARSED TEXT FOR PAGE: 25 / 32>
+                                                                  SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+    Status                   Bukti minimal                                                         Keputusan release
+
+
+                                                                                                   modul production
+                             plan dan metrik operasi.
+                                                                                                   operational.
+
+                                                                                                   Tidak dihitung selesai;
+    not_applicable_approve   Alasan unit layanan tidak ada dan owner RS menyetujui
+                                                                                                   dikecualikan sah dari scope
+    d                        pengecualian.
+                                                                                                   RS.
+
+
+
+
+7.4 Kriteria penerimaan lintas seluruh domain
+      Fitur mempunyai definisi yang dapat ditelusuri ke sumber benchmark dan kebutuhan pengguna.
+      Setiap perubahan data sensitif terikat RS, unit, episode, dan role; denial dibuktikan lewat server tests.
+      Riwayat klinis, inventory, billing, dan jurnal memiliki model koreksi/reversal yang aman.
+      Tidak ada kode atau nomor PR yang otomatis memberi status production-ready.
+      Metrik operasional, audit, backup, recovery, dan incident response siap sebelum go-live.
+
+
+
+
+                        31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 25
+<PARSED TEXT FOR PAGE: 26 / 32>
+                                                                 SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+Lampiran A. Matriks bukti 47 × 10 sistem
+Pencatatan kode mengikuti workbook benchmark yang disusun sebelumnya. D/B adalah indikasi
+dokumentasi atau benchmark; I/P/R/? khusus Sensi. Dalam lampiran ini produk dibagi dua tabel agar
+terbaca dan tidak mengesankan angka D sebagai peringkat vendor.
+
+A1. Global
+Akses Pasien, Registrasi, Jadwal, dan ADT
+   #    Kelompok fitur                                                 Epic         TrakCare       Oracle    MEDITECH
+                                                                                                   Health
+
+
+   1    Master pasien / identitas / MPI                                D            D              D         D
+
+   2    Registrasi, admisi & penjamin                                  D            D              D         D
+
+   3    Booking & jadwal dokter                                        D            D              D         D
+
+   4    Antrean & call/display                                         D            ?              ?         ?
+
+   5    APM / self check-in                                            D            ?              ?         ?
+
+   6    Portal / aplikasi pasien                                       D            D              D         D
+
+   7    ADT & bed management                                           D            D              D         D
+
+
+
+
+RME, Dokumentasi Klinis, Consent, dan CDSS
+   #    Kelompok fitur                                                 Epic         TrakCare       Oracle    MEDITECH
+                                                                                                   Health
+
+
+   8    Rawat jalan & SOAP                                             D            D              D         D
+
+   9    IGD & triase                                                   D            D              D         D
+
+   10   Rawat inap & CPPT                                              D            D              D         D
+
+   11   Keperawatan / asuhan                                           D            D              D         D
+
+   12   Template klinis / formulir dinamis                             D            ?              ?         D
+
+   13   Consent & tanda tangan digital                                 D            ?              ?         ?
+
+   14   Discharge planning & resume                                    D            D              D         D
+
+   15   Rekonsiliasi obat                                              D            ?              ?         ?
+
+   16   CDSS / clinical pathway                                        D            D              D         D
+
+
+
+
+Order, Hasil, Farmasi, dan Penunjang Diagnostik
+   #    Kelompok fitur                                                 Epic         TrakCare       Oracle    MEDITECH
+                                                                                                   Health
+
+
+   17   Order klinis terintegrasi                                      D            D              D         D
+
+   18   Laboratorium / LIS                                             D            D              D         D
+
+   19   Radiologi / RIS / PACS                                         D            ?              D         D
+
+   20   Resep, farmasi & dispensing                                    D            D              D         D
+
+   21   Farmasi klinis / BCMA                                          D            ?              D         ?
+
+
+
+
+                       31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 26
+<PARSED TEXT FOR PAGE: 27 / 32>
+                                                                    SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+Layanan Khusus, Unit Penunjang, dan Mutu
+   #    Kelompok fitur                                                    Epic         TrakCare       Oracle    MEDITECH
+                                                                                                      Health
+
+
+   22   Operasi, anestesi & recovery                                      D            D              D         D
+
+   23   ICU / critical care                                               D            D              D         D
+
+   24   Kebidanan / maternal-neonatal                                     D            D              D         D
+
+   25   Hemodialisis                                                      D            ?              ?         ?
+
+   26   Fisioterapi / rehabilitasi                                        D            ?              ?         D
+
+   27   Medical Check Up                                                  ?            ?              ?         ?
+
+   28   Gizi klinis dan dapur produksi                                    D            ?              ?         D
+
+   29   CSSD / sterilisasi                                                ?            ?              ?         ?
+
+   30   Laundry & linen                                                   ?            ?              ?         ?
+
+   31   Bank darah / transfusi                                            ?            ?              D         D
+
+   32   PPI / HAIs & manajemen risiko                                     D            ?              D         D
+
+
+
+
+Revenue Cycle, Keuangan, Logistik, dan SDM
+   #    Kelompok fitur                                                    Epic         TrakCare       Oracle    MEDITECH
+                                                                                                      Health
+
+
+   33   Billing & kasir                                                   D            D              D         D
+
+   34   Coding, casemix & klaim                                           D            D              D         D
+
+   35   Keuangan / GL / AP / AR                                           ?            ?              D         D
+
+   36   Procurement, gudang & inventory                                   ?            ?              D         D
+
+   37   Costing & margin layanan                                          ?            ?              D         D
+
+   38   HR, jadwal, payroll & ESS                                         ?            ?              ?         D
+
+   39   Aset tetap & maintenance                                          ?            ?              ?         D
+
+
+
+
+Integrasi, Regulator, Analitik, dan Governance
+   #    Kelompok fitur                                                    Epic         TrakCare       Oracle    MEDITECH
+                                                                                                      Health
+
+
+   40   Bridging BPJS Indonesia                                           ?            ?              ?         ?
+
+   41   FHIR & SATUSEHAT                                                  ?            ?              ?         ?
+
+   42   Interoperabilitas umum / API                                      D            D              D         D
+
+   43   Laporan regulator / RL / SIRS                                     ?            ?              ?         ?
+
+   44   Executive dashboard / BI                                          D            D              D         D
+
+   45   Manajemen multi-RS / konsolidasi                                  D            ?              ?         ?
+
+   46   Keamanan, consent, audit & RBAC                                   D            ?              ?         D
+
+   47   AI / clinical documentation support                               D            ?              D         ?
+
+
+
+
+                          31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 27
+<PARSED TEXT FOR PAGE: 28 / 32>
+                                                                  SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+A2. Indonesia & internal
+Akses Pasien, Registrasi, Jadwal, dan ADT
+    #    Kelompok fitur                                    NUHA      SIMGOS     Khanz     teraMed    TrustM   SIMRS-Sensi
+                                                                     V2         a         ik         e
+
+
+    1    Master pasien / identitas / MPI                    ?        D           D        ?           ?       I
+
+    2    Registrasi, admisi & penjamin                      D        D           D        D           B       I
+
+    3    Booking & jadwal dokter                            D        D           ?        ?           B       I
+
+    4    Antrean & call/display                             D        D           D        ?           B       I
+
+    5    APM / self check-in                                D        D           ?        ?           B       P
+
+    6    Portal / aplikasi pasien                           D        ?           ?        ?           ?       P
+
+    7    ADT & bed management                               D        D           D        ?           B       I
+
+
+
+
+RME, Dokumentasi Klinis, Consent, dan CDSS
+    #    Kelompok fitur                                    NUHA      SIMGOS     Khanz     teraMed    TrustM   SIMRS-Sensi
+                                                                     V2         a         ik         e
+
+
+    8    Rawat jalan & SOAP                                 D        D           D        D           B       I
+
+    9    IGD & triase                                       D        D           D        D           B       I
+
+    10   Rawat inap & CPPT                                  D        D           D        D           B       I
+
+    11   Keperawatan / asuhan                               D        D           ?        ?           B       I
+
+    12   Template klinis / formulir dinamis                 D        D           ?        ?           B       P
+
+    13   Consent & tanda tangan digital                     D        ?           ?        ?           ?       P
+
+    14   Discharge planning & resume                        D        D           ?        ?           ?       P
+
+    15   Rekonsiliasi obat                                  ?        D           ?        ?           ?       P
+
+    16   CDSS / clinical pathway                            ?        ?           ?        ?           ?       P
+
+
+
+
+Order, Hasil, Farmasi, dan Penunjang Diagnostik
+    #    Kelompok fitur                                    NUHA      SIMGOS     Khanz     teraMed    TrustM   SIMRS-Sensi
+                                                                     V2         a         ik         e
+
+
+    17   Order klinis terintegrasi                          D        D           D        D           B       I
+
+    18   Laboratorium / LIS                                 D        D           D        D           B       I
+
+    19   Radiologi / RIS / PACS                             D        D           D        D           B       I
+
+    20   Resep, farmasi & dispensing                        D        D           D        D           B       I
+
+    21   Farmasi klinis / BCMA                              D        ?           ?        ?           ?       P
+
+
+
+
+                        31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 28
+<PARSED TEXT FOR PAGE: 29 / 32>
+                                                                  SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+Layanan Khusus, Unit Penunjang, dan Mutu
+    #    Kelompok fitur                                    NUHA      SIMGOS     Khanz     teraMed    TrustM   SIMRS-Sensi
+                                                                     V2         a         ik         e
+
+
+    22   Operasi, anestesi & recovery                       D        D           ?        ?           B       P
+
+    23   ICU / critical care                                ?        ?           ?        ?           ?       ?
+
+    24   Kebidanan / maternal-neonatal                      ?        ?           ?        ?           ?       P
+
+    25   Hemodialisis                                       D        ?           ?        ?           ?       P
+
+    26   Fisioterapi / rehabilitasi                         D        ?           ?        ?           ?       P
+
+    27   Medical Check Up                                   D        ?           ?        D           ?       P
+
+    28   Gizi klinis dan dapur produksi                     D        D           D        ?           ?       P+R
+
+    29   CSSD / sterilisasi                                 D        D           ?        ?           ?       P
+
+    30   Laundry & linen                                    D        D           ?        ?           ?       P
+
+    31   Bank darah / transfusi                             ?        ?           D        D           ?       P
+
+    32   PPI / HAIs & manajemen risiko                      D        D           ?        ?           ?       P
+
+
+
+
+Revenue Cycle, Keuangan, Logistik, dan SDM
+    #    Kelompok fitur                                    NUHA      SIMGOS     Khanz     teraMed    TrustM   SIMRS-Sensi
+                                                                     V2         a         ik         e
+
+
+    33   Billing & kasir                                    D        D           D        D           B       I
+
+    34   Coding, casemix & klaim                            D        D           D        ?           ?       P
+
+    35   Keuangan / GL / AP / AR                            D        D           D        D           ?       P
+
+    36   Procurement, gudang & inventory                    D        D           D        D           B       I
+
+    37   Costing & margin layanan                           ?        ?           ?        ?           ?       P
+
+    38   HR, jadwal, payroll & ESS                          D        D           D        ?           ?       P
+
+    39   Aset tetap & maintenance                           D        ?           D        ?           ?       P
+
+
+
+
+Integrasi, Regulator, Analitik, dan Governance
+    #    Kelompok fitur                                    NUHA      SIMGOS     Khanz     teraMed    TrustM   SIMRS-Sensi
+                                                                     V2         a         ik         e
+
+
+    40   Bridging BPJS Indonesia                            D        D           D        D           B       P
+
+    41   FHIR & SATUSEHAT                                   D        D           ?        D           B       P
+
+    42   Interoperabilitas umum / API                       D        D           D        ?           ?       P
+
+    43   Laporan regulator / RL / SIRS                      D        D           D        ?           ?       P
+
+    44   Executive dashboard / BI                           D        D           D        D           B       I
+
+    45   Manajemen multi-RS / konsolidasi                   D        ?           ?        ?           ?       P
+
+    46   Keamanan, consent, audit & RBAC                    D        D           D        D           ?       I
+
+    47   AI / clinical documentation support                ?        ?           ?        ?           ?       P
+
+
+
+
+                        31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 29
+<PARSED TEXT FOR PAGE: 30 / 32>
+                                                                 SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+Lampiran B. Sumber, provenance, dan batas penggunaan
+Tautan berikut merupakan sumber utama yang digunakan untuk klaim fitur. Rujukan internal SIMRS-
+Sensi mewakili snapshot dokumentasi/kode dan status PR pada saat studi. Dokumen ini tidak mengutip
+data pasien, credential, atau rahasia perusahaan.
+
+[S01] Epic — Epic software portfolio. https://www.epic.com/software/
+Katalog produk/portofolio, bukan checklist instalasi RS.
+
+[S02] Epic — Specialty product workflows. https://www.epic.com/software/specialties/
+Beaker, Radiant, ASAP, OpTime/Anesthesia dan spesialis lain.
+
+[S03] Epic — MyChart Central. https://www.epic.com/software/mychart-central/
+Contoh patient engagement lintas organisasi.
+
+[S04] InterSystems — TrakCare settings, departments and extensions.
+https://www.intersystems.com/sg/products/trakcare/settings-departments/
+Core + extension opsional, bukan semua aktif di tiap RS.
+
+[S05] InterSystems — TrakCare product overview. https://www.intersystems.com/sg/products/trakcare/
+FHIR, RCM, patient portal, positioning resmi.
+
+[S06] Oracle Health — Oracle Health products. https://www.oracle.com/health/products/
+Portfolio antarproduk; paket berbeda.
+
+[S07] Oracle Health — Clinical operations. https://www.oracle.com/health/clinical-operations/
+Workflow perioperative, clinical supply chain dan lainnya.
+
+[S08] MEDITECH — MEDITECH Expanse product list. https://ehr.meditech.com/meditech-product-list
+Daftar produk klinis, diagnostik, keuangan, HR.
+
+[S09] NUHA — SIMRS & EMR: 34 modules. https://nuha.care/produk/simrs-emr
+Katalog 25 front office + 9 back office.
+
+[S10] SIMGOS — SIMGOS V2 documentation. https://docs.simgos2.simpel.web.id/docs/
+Panduan modul utama, pelaporan, integrasi, plugins.
+
+[S11] SIMGOS — SIMGOS plugins. https://docs.simgos2.simpel.web.id/docs/panduan/plugins/
+CSSD, laundry, gizi, mutu, risk register dan lainnya.
+
+[S12] Khanza — YASKI: Fitur SIMKES Khanza. https://www.yaski.or.id/fitur
+20 kelompok fitur A–T, detail tersedia per grup.
+
+[S13] teraMedik — Aplikasi teraMedik SIMRS. https://www.teramedik.com/id/teramedik-simrs-sistem-
+informasi-manajemen-rumah-sakit
+Katalog tingkat tinggi; kemampuan spesifik perlu demo.
+
+[S14] TrustMe benchmark — Gap roadmap SIMRS-Sensi vs TrustMe PDF. https://github.com/bofandra/simrs-
+sensi/blob/main/SELISIH_DENGAN_ROADMAP.md
+Sumber benchmark internal, bukan audit live TrustMe.
+
+[S15] SIMRS-Sensi — README pada main. https://github.com/bofandra/simrs-sensi/blob/main/README.md
+Route aplikasi dan stack; belum membuktikan UAT.
+
+[S16] SIMRS-Sensi — Use Guide pada main.
+https://github.com/bofandra/simrs-sensi/blob/main/USE_GUIDE.md
+Cara pakai dan batas fitur staging.
+
+
+
+
+                       31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 30
+<PARSED TEXT FOR PAGE: 31 / 32>
+                                                               SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+[S17] SIMRS-Sensi — Roadmap benchmark SIMRS 219 fitur.
+https://github.com/bofandra/simrs-sensi/blob/main/RENCANA_PENGEMBANGAN_BENCHMARK_SIMRS.m
+d
+Baseline historis 27 Oktober; planned bukan released.
+
+[S18] SIMRS-Sensi — Rencana eksekusi benchmark NUHA.
+https://github.com/bofandra/simrs-sensi/blob/main/RENCANA_EKSEKUSI_BENCHMARK_NUHA_20261028.
+md
+Rencana, status teknis dan release gates.
+
+[S19] SIMRS-Sensi — Nutrition E07 draft PR #247. https://github.com/bofandra/simrs-sensi/pull/247
+Draft, bukan deploy; tidak ada bukti UAT/production acceptance.
+
+[S20] Kementerian Kesehatan — SIMGOS V2 enrollment. https://keslan.kemkes.go.id/simgos
+Informasi program implementasi, bukan rincian kode.
+
+
+
+
+                     31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 31
+<PARSED TEXT FOR PAGE: 32 / 32>
+                                                             SIMRS ENTERPRISE / BENCHMARK FITUR GLOBAL & INDONESIA
+
+
+
+
+Lampiran C. Glosarium
+ Istilah             Makna
+
+
+ ADT                 Admission, Discharge, Transfer.
+
+ APM                 Anjungan Pendaftaran Mandiri.
+
+ AQL                 Archetype Query Language (openEHR).
+
+ BCMA                Barcode Medication Administration.
+
+ CDR                 Clinical Data Repository, mis. EHRbase.
+
+ CDSS                Clinical Decision Support System.
+
+ CPOE                Computerized Provider Order Entry.
+
+ ERP                 Enterprise Resource Planning.
+
+ FHIR                Fast Healthcare Interoperability Resources (HL7).
+
+ HAIs                Healthcare-associated Infections.
+
+ HIS/SIMRS           Hospital Information System / Sistem Informasi Manajemen Rumah Sakit.
+
+ LIS                 Laboratory Information System.
+
+ MPI                 Master Patient Index.
+
+ PACS/RIS            Picture Archiving and Communication System / Radiology Information System.
+
+ PR                  Pull Request pada GitHub, bukan bukti sudah dirilis.
+
+ RLS                 Row-level Security.
+
+ RL/SIRS             Laporan rumah sakit / Sistem Informasi Rumah Sakit.
+
+ SATUSEHAT           Platform interoperabilitas data kesehatan nasional, menggunakan profil FHIR.
+
+ Source of truth     Lokasi atau proses kanonis yang bertanggung jawab atas suatu domain informasi.
+
+ UAT                 User Acceptance Testing.
+
+
+
+
+Penutup
+Benchmark ini harus ditindaklanjuti dengan demonstrasi dan verifikasi fitur per modul, bukan hanya
+perbandingan menu. Rekomendasi praktis adalah membangun backlog dengan ID yang stabil, owner
+klinis/operasional, domain data, API/UI, kondisi penerimaan, dan bukti release. Seluruh keputusan yang
+menyangkut tata kelola klinis dan finansial memerlukan persetujuan pihak rumah sakit yang
+berwenang.
+
+
+
+
+                   31 Oktober 2026 | Studi desk research | Untuk analisis dan perancangan • Halaman 32
