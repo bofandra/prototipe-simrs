@@ -1,0 +1,1004 @@
+SOURCE: Desain_Database_SIMRS_FHIR_First_Tanpa_FHIR_Server_v1.xlsx
+STATUS: Text extraction only, NOT the original XLSX. Formula/format/validation may be lost.
+PART: 04, Lines: 3001-4000 of 7562
+
+781,I0779,billing.bpjs_transactions,ux_bpjs_transactions_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_bpjs_transactions_tenant_id ON billing.bpjs_transactions(tenant_id, id);"
+782,I0780,billing.bpjs_transactions,ix_bpjs_transactions_encounter_id,"tenant_id, encounter_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_bpjs_transactions_encounter_id ON billing.bpjs_transactions(tenant_id, encounter_id);"
+783,I0781,billing.bpjs_transactions,ix_bpjs_transactions_coverage_id,"tenant_id, coverage_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_bpjs_transactions_coverage_id ON billing.bpjs_transactions(tenant_id, coverage_id);"
+784,I0782,finance.chart_of_accounts,ux_chart_of_accounts_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_chart_of_accounts_tenant_id ON finance.chart_of_accounts(tenant_id, id);"
+785,I0783,finance.chart_of_accounts,ix_chart_of_accounts_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P1,"CREATE INDEX ix_chart_of_accounts_tenant_created ON finance.chart_of_accounts(tenant_id, created_at DESC);"
+786,I0784,finance.chart_of_accounts,ix_chart_of_accounts_parent_account_id,"tenant_id, parent_account_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_chart_of_accounts_parent_account_id ON finance.chart_of_accounts(tenant_id, parent_account_id);"
+787,I0785,finance.accounting_periods,ux_accounting_periods_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_accounting_periods_tenant_id ON finance.accounting_periods(tenant_id, id);"
+788,I0786,finance.accounting_periods,ix_accounting_periods_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P1,"CREATE INDEX ix_accounting_periods_tenant_created ON finance.accounting_periods(tenant_id, created_at DESC);"
+789,I0787,finance.accounting_periods,ix_accounting_periods_organization_id,"tenant_id, organization_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_accounting_periods_organization_id ON finance.accounting_periods(tenant_id, organization_id);"
+790,I0788,finance.journals,ux_journals_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_journals_tenant_id ON finance.journals(tenant_id, id);"
+791,I0789,finance.journals,ix_journals_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P1,"CREATE INDEX ix_journals_tenant_created ON finance.journals(tenant_id, created_at DESC);"
+792,I0790,finance.journals,ix_journals_accounting_period_id,"tenant_id, accounting_period_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_journals_accounting_period_id ON finance.journals(tenant_id, accounting_period_id);"
+793,I0791,finance.journal_lines,ux_journal_lines_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_journal_lines_tenant_id ON finance.journal_lines(tenant_id, id);"
+794,I0792,finance.journal_lines,ix_journal_lines_journal_id,"tenant_id, journal_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_journal_lines_journal_id ON finance.journal_lines(tenant_id, journal_id);"
+795,I0793,finance.journal_lines,ix_journal_lines_account_id,"tenant_id, account_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_journal_lines_account_id ON finance.journal_lines(tenant_id, account_id);"
+796,I0794,finance.journal_lines,ix_journal_lines_cost_center_id,"tenant_id, cost_center_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_journal_lines_cost_center_id ON finance.journal_lines(tenant_id, cost_center_id);"
+797,I0795,finance.ap_bills,ux_ap_bills_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_ap_bills_tenant_id ON finance.ap_bills(tenant_id, id);"
+798,I0796,finance.ap_bills,ix_ap_bills_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P1,"CREATE INDEX ix_ap_bills_tenant_created ON finance.ap_bills(tenant_id, created_at DESC);"
+799,I0797,finance.ap_bills,ix_ap_bills_supplier_invoice_id,"tenant_id, supplier_invoice_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_ap_bills_supplier_invoice_id ON finance.ap_bills(tenant_id, supplier_invoice_id);"
+800,I0798,finance.ap_bills,ix_ap_bills_supplier_id,"tenant_id, supplier_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_ap_bills_supplier_id ON finance.ap_bills(tenant_id, supplier_id);"
+801,I0799,finance.ap_payments,ux_ap_payments_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_ap_payments_tenant_id ON finance.ap_payments(tenant_id, id);"
+802,I0800,finance.ap_payments,ix_ap_payments_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P1,"CREATE INDEX ix_ap_payments_tenant_created ON finance.ap_payments(tenant_id, created_at DESC);"
+803,I0801,finance.ap_payments,ix_ap_payments_ap_bill_id,"tenant_id, ap_bill_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_ap_payments_ap_bill_id ON finance.ap_payments(tenant_id, ap_bill_id);"
+804,I0802,finance.ap_payments,ix_ap_payments_bank_account_id,"tenant_id, bank_account_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_ap_payments_bank_account_id ON finance.ap_payments(tenant_id, bank_account_id);"
+805,I0803,finance.ap_payments,ix_ap_payments_journal_id,"tenant_id, journal_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_ap_payments_journal_id ON finance.ap_payments(tenant_id, journal_id);"
+806,I0804,finance.ar_balances,ux_ar_balances_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_ar_balances_tenant_id ON finance.ar_balances(tenant_id, id);"
+807,I0805,finance.ar_balances,ix_ar_balances_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P1,"CREATE INDEX ix_ar_balances_tenant_created ON finance.ar_balances(tenant_id, created_at DESC);"
+808,I0806,finance.ar_balances,ix_ar_balances_invoice_id,"tenant_id, invoice_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_ar_balances_invoice_id ON finance.ar_balances(tenant_id, invoice_id);"
+809,I0807,finance.bank_accounts,ux_bank_accounts_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_bank_accounts_tenant_id ON finance.bank_accounts(tenant_id, id);"
+810,I0808,finance.bank_accounts,ix_bank_accounts_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P1,"CREATE INDEX ix_bank_accounts_tenant_created ON finance.bank_accounts(tenant_id, created_at DESC);"
+811,I0809,finance.bank_accounts,ix_bank_accounts_organization_id,"tenant_id, organization_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_bank_accounts_organization_id ON finance.bank_accounts(tenant_id, organization_id);"
+812,I0810,finance.bank_transactions,ux_bank_transactions_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_bank_transactions_tenant_id ON finance.bank_transactions(tenant_id, id);"
+813,I0811,finance.bank_transactions,ix_bank_transactions_bank_account_id,"tenant_id, bank_account_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_bank_transactions_bank_account_id ON finance.bank_transactions(tenant_id, bank_account_id);"
+814,I0812,finance.bank_transactions,ix_bank_transactions_journal_id,"tenant_id, journal_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_bank_transactions_journal_id ON finance.bank_transactions(tenant_id, journal_id);"
+815,I0813,finance.budgets,ux_budgets_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_budgets_tenant_id ON finance.budgets(tenant_id, id);"
+816,I0814,finance.budgets,ix_budgets_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_budgets_tenant_created ON finance.budgets(tenant_id, created_at DESC);"
+817,I0815,finance.budgets,ix_budgets_organization_id,"tenant_id, organization_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_budgets_organization_id ON finance.budgets(tenant_id, organization_id);"
+818,I0816,finance.budgets,ix_budgets_approved_by,"tenant_id, approved_by",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_budgets_approved_by ON finance.budgets(tenant_id, approved_by);"
+819,I0817,finance.budget_lines,ux_budget_lines_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_budget_lines_tenant_id ON finance.budget_lines(tenant_id, id);"
+820,I0818,finance.budget_lines,ix_budget_lines_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_budget_lines_tenant_created ON finance.budget_lines(tenant_id, created_at DESC);"
+821,I0819,finance.budget_lines,ix_budget_lines_budget_id,"tenant_id, budget_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_budget_lines_budget_id ON finance.budget_lines(tenant_id, budget_id);"
+822,I0820,finance.budget_lines,ix_budget_lines_account_id,"tenant_id, account_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_budget_lines_account_id ON finance.budget_lines(tenant_id, account_id);"
+823,I0821,finance.budget_lines,ix_budget_lines_cost_center_id,"tenant_id, cost_center_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_budget_lines_cost_center_id ON finance.budget_lines(tenant_id, cost_center_id);"
+824,I0822,finance.cost_centers,ux_cost_centers_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_cost_centers_tenant_id ON finance.cost_centers(tenant_id, id);"
+825,I0823,finance.cost_centers,ix_cost_centers_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_cost_centers_tenant_created ON finance.cost_centers(tenant_id, created_at DESC);"
+826,I0824,finance.cost_centers,ix_cost_centers_organization_unit_id,"tenant_id, organization_unit_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_cost_centers_organization_unit_id ON finance.cost_centers(tenant_id, organization_unit_id);"
+827,I0825,finance.cost_allocations,ux_cost_allocations_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_cost_allocations_tenant_id ON finance.cost_allocations(tenant_id, id);"
+828,I0826,finance.cost_allocations,ix_cost_allocations_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_cost_allocations_tenant_created ON finance.cost_allocations(tenant_id, created_at DESC);"
+829,I0827,finance.cost_allocations,ix_cost_allocations_accounting_period_id,"tenant_id, accounting_period_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_cost_allocations_accounting_period_id ON finance.cost_allocations(tenant_id, accounting_period_id);"
+830,I0828,finance.cost_allocations,ix_cost_allocations_source_cost_center_id,"tenant_id, source_cost_center_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_cost_allocations_source_cost_center_id ON finance.cost_allocations(tenant_id, source_cost_center_id);"
+831,I0829,finance.cost_allocations,ix_cost_allocations_target_cost_center_id,"tenant_id, target_cost_center_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_cost_allocations_target_cost_center_id ON finance.cost_allocations(tenant_id, target_cost_center_id);"
+832,I0830,finance.doctor_fee_rules,ux_doctor_fee_rules_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_doctor_fee_rules_tenant_id ON finance.doctor_fee_rules(tenant_id, id);"
+833,I0831,finance.doctor_fee_rules,ix_doctor_fee_rules_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_doctor_fee_rules_tenant_created ON finance.doctor_fee_rules(tenant_id, created_at DESC);"
+834,I0832,finance.doctor_fee_rules,ix_doctor_fee_rules_service_id,"tenant_id, service_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_doctor_fee_rules_service_id ON finance.doctor_fee_rules(tenant_id, service_id);"
+835,I0833,finance.doctor_fee_ledger,ux_doctor_fee_ledger_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_doctor_fee_ledger_tenant_id ON finance.doctor_fee_ledger(tenant_id, id);"
+836,I0834,finance.doctor_fee_ledger,ix_doctor_fee_ledger_charge_id,"tenant_id, charge_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_doctor_fee_ledger_charge_id ON finance.doctor_fee_ledger(tenant_id, charge_id);"
+837,I0835,finance.doctor_fee_ledger,ix_doctor_fee_ledger_practitioner_id,"tenant_id, practitioner_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_doctor_fee_ledger_practitioner_id ON finance.doctor_fee_ledger(tenant_id, practitioner_id);"
+838,I0836,finance.doctor_fee_ledger,ix_doctor_fee_ledger_fee_rule_id,"tenant_id, fee_rule_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_doctor_fee_ledger_fee_rule_id ON finance.doctor_fee_ledger(tenant_id, fee_rule_id);"
+839,I0837,finance.fixed_asset_depreciations,ux_fixed_asset_depreciations_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_fixed_asset_depreciations_tenant_id ON finance.fixed_asset_depreciations(tenant_id, id);"
+840,I0838,finance.fixed_asset_depreciations,ix_fixed_asset_depreciations_asset_id,"tenant_id, asset_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_fixed_asset_depreciations_asset_id ON finance.fixed_asset_depreciations(tenant_id, asset_id);"
+841,I0839,finance.fixed_asset_depreciations,ix_fixed_asset_depreciations_accounting_period_id,"tenant_id, accounting_period_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_fixed_asset_depreciations_accounting_period_id ON finance.fixed_asset_depreciations(tenant_id, accounting_period_id);"
+842,I0840,finance.fixed_asset_depreciations,ix_fixed_asset_depreciations_journal_id,"tenant_id, journal_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_fixed_asset_depreciations_journal_id ON finance.fixed_asset_depreciations(tenant_id, journal_id);"
+843,I0841,hr.employees,ux_employees_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_employees_tenant_id ON hr.employees(tenant_id, id);"
+844,I0842,hr.employees,ix_employees_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_employees_tenant_created ON hr.employees(tenant_id, created_at DESC);"
+845,I0843,hr.employees,ix_employees_practitioner_id,"tenant_id, practitioner_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_employees_practitioner_id ON hr.employees(tenant_id, practitioner_id);"
+846,I0844,hr.employment_contracts,ux_employment_contracts_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_employment_contracts_tenant_id ON hr.employment_contracts(tenant_id, id);"
+847,I0845,hr.employment_contracts,ix_employment_contracts_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_employment_contracts_tenant_created ON hr.employment_contracts(tenant_id, created_at DESC);"
+848,I0846,hr.employment_contracts,ix_employment_contracts_employee_id,"tenant_id, employee_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_employment_contracts_employee_id ON hr.employment_contracts(tenant_id, employee_id);"
+849,I0847,hr.shifts,ux_shifts_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_shifts_tenant_id ON hr.shifts(tenant_id, id);"
+850,I0848,hr.shifts,ix_shifts_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_shifts_tenant_created ON hr.shifts(tenant_id, created_at DESC);"
+851,I0849,hr.shift_assignments,ux_shift_assignments_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_shift_assignments_tenant_id ON hr.shift_assignments(tenant_id, id);"
+852,I0850,hr.shift_assignments,ix_shift_assignments_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_shift_assignments_tenant_created ON hr.shift_assignments(tenant_id, created_at DESC);"
+853,I0851,hr.shift_assignments,ix_shift_assignments_employee_id,"tenant_id, employee_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_shift_assignments_employee_id ON hr.shift_assignments(tenant_id, employee_id);"
+854,I0852,hr.shift_assignments,ix_shift_assignments_shift_id,"tenant_id, shift_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_shift_assignments_shift_id ON hr.shift_assignments(tenant_id, shift_id);"
+855,I0853,hr.shift_assignments,ix_shift_assignments_unit_id,"tenant_id, unit_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_shift_assignments_unit_id ON hr.shift_assignments(tenant_id, unit_id);"
+856,I0854,hr.attendance,ux_attendance_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_attendance_tenant_id ON hr.attendance(tenant_id, id);"
+857,I0855,hr.attendance,ix_attendance_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_attendance_tenant_created ON hr.attendance(tenant_id, created_at DESC);"
+858,I0856,hr.attendance,ix_attendance_employee_id,"tenant_id, employee_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_attendance_employee_id ON hr.attendance(tenant_id, employee_id);"
+859,I0857,hr.attendance,ix_attendance_shift_assignment_id,"tenant_id, shift_assignment_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_attendance_shift_assignment_id ON hr.attendance(tenant_id, shift_assignment_id);"
+860,I0858,hr.leave_requests,ux_leave_requests_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_leave_requests_tenant_id ON hr.leave_requests(tenant_id, id);"
+861,I0859,hr.leave_requests,ix_leave_requests_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_leave_requests_tenant_created ON hr.leave_requests(tenant_id, created_at DESC);"
+862,I0860,hr.leave_requests,ix_leave_requests_employee_id,"tenant_id, employee_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_leave_requests_employee_id ON hr.leave_requests(tenant_id, employee_id);"
+863,I0861,hr.leave_requests,ix_leave_requests_approved_by,"tenant_id, approved_by",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_leave_requests_approved_by ON hr.leave_requests(tenant_id, approved_by);"
+864,I0862,hr.payroll_runs,ux_payroll_runs_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_payroll_runs_tenant_id ON hr.payroll_runs(tenant_id, id);"
+865,I0863,hr.payroll_runs,ix_payroll_runs_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_payroll_runs_tenant_created ON hr.payroll_runs(tenant_id, created_at DESC);"
+866,I0864,hr.payroll_runs,ix_payroll_runs_organization_id,"tenant_id, organization_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_payroll_runs_organization_id ON hr.payroll_runs(tenant_id, organization_id);"
+867,I0865,hr.payroll_runs,ix_payroll_runs_approved_by,"tenant_id, approved_by",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_payroll_runs_approved_by ON hr.payroll_runs(tenant_id, approved_by);"
+868,I0866,hr.payroll_items,ux_payroll_items_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_payroll_items_tenant_id ON hr.payroll_items(tenant_id, id);"
+869,I0867,hr.payroll_items,ix_payroll_items_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_payroll_items_tenant_created ON hr.payroll_items(tenant_id, created_at DESC);"
+870,I0868,hr.payroll_items,ix_payroll_items_payroll_run_id,"tenant_id, payroll_run_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_payroll_items_payroll_run_id ON hr.payroll_items(tenant_id, payroll_run_id);"
+871,I0869,hr.payroll_items,ix_payroll_items_employee_id,"tenant_id, employee_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_payroll_items_employee_id ON hr.payroll_items(tenant_id, employee_id);"
+872,I0870,hr.job_openings,ux_job_openings_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_job_openings_tenant_id ON hr.job_openings(tenant_id, id);"
+873,I0871,hr.job_openings,ix_job_openings_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_job_openings_tenant_created ON hr.job_openings(tenant_id, created_at DESC);"
+874,I0872,hr.job_openings,ix_job_openings_organization_id,"tenant_id, organization_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_job_openings_organization_id ON hr.job_openings(tenant_id, organization_id);"
+875,I0873,hr.applications,ux_applications_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_applications_tenant_id ON hr.applications(tenant_id, id);"
+876,I0874,hr.applications,ix_applications_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_applications_tenant_created ON hr.applications(tenant_id, created_at DESC);"
+877,I0875,hr.applications,ix_applications_job_opening_id,"tenant_id, job_opening_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_applications_job_opening_id ON hr.applications(tenant_id, job_opening_id);"
+878,I0876,hr.trainings,ux_trainings_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_trainings_tenant_id ON hr.trainings(tenant_id, id);"
+879,I0877,hr.trainings,ix_trainings_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_trainings_tenant_created ON hr.trainings(tenant_id, created_at DESC);"
+880,I0878,hr.employee_trainings,ux_employee_trainings_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_employee_trainings_tenant_id ON hr.employee_trainings(tenant_id, id);"
+881,I0879,hr.employee_trainings,ix_employee_trainings_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_employee_trainings_tenant_created ON hr.employee_trainings(tenant_id, created_at DESC);"
+882,I0880,hr.employee_trainings,ix_employee_trainings_training_id,"tenant_id, training_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_employee_trainings_training_id ON hr.employee_trainings(tenant_id, training_id);"
+883,I0881,hr.employee_trainings,ix_employee_trainings_employee_id,"tenant_id, employee_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_employee_trainings_employee_id ON hr.employee_trainings(tenant_id, employee_id);"
+884,I0882,hr.competencies,ux_competencies_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_competencies_tenant_id ON hr.competencies(tenant_id, id);"
+885,I0883,hr.competencies,ix_competencies_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_competencies_tenant_created ON hr.competencies(tenant_id, created_at DESC);"
+886,I0884,hr.employee_competencies,ux_employee_competencies_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_employee_competencies_tenant_id ON hr.employee_competencies(tenant_id, id);"
+887,I0885,hr.employee_competencies,ix_employee_competencies_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_employee_competencies_tenant_created ON hr.employee_competencies(tenant_id, created_at DESC);"
+888,I0886,hr.employee_competencies,ix_employee_competencies_employee_id,"tenant_id, employee_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_employee_competencies_employee_id ON hr.employee_competencies(tenant_id, employee_id);"
+889,I0887,hr.employee_competencies,ix_employee_competencies_competency_id,"tenant_id, competency_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_employee_competencies_competency_id ON hr.employee_competencies(tenant_id, competency_id);"
+890,I0888,hr.employee_competencies,ix_employee_competencies_assessed_by,"tenant_id, assessed_by",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_employee_competencies_assessed_by ON hr.employee_competencies(tenant_id, assessed_by);"
+891,I0889,hr.performance_reviews,ux_performance_reviews_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_performance_reviews_tenant_id ON hr.performance_reviews(tenant_id, id);"
+892,I0890,hr.performance_reviews,ix_performance_reviews_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_performance_reviews_tenant_created ON hr.performance_reviews(tenant_id, created_at DESC);"
+893,I0891,hr.performance_reviews,ix_performance_reviews_employee_id,"tenant_id, employee_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_performance_reviews_employee_id ON hr.performance_reviews(tenant_id, employee_id);"
+894,I0892,hr.performance_reviews,ix_performance_reviews_reviewer_id,"tenant_id, reviewer_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_performance_reviews_reviewer_id ON hr.performance_reviews(tenant_id, reviewer_id);"
+895,I0893,quality.patient_safety_incidents,ux_patient_safety_incidents_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_patient_safety_incidents_tenant_id ON quality.patient_safety_incidents(tenant_id, id);"
+896,I0894,quality.patient_safety_incidents,ix_patient_safety_incidents_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P1,"CREATE INDEX ix_patient_safety_incidents_tenant_created ON quality.patient_safety_incidents(tenant_id, created_at DESC);"
+897,I0895,quality.patient_safety_incidents,ix_patient_safety_incidents_encounter_id,"tenant_id, encounter_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_patient_safety_incidents_encounter_id ON quality.patient_safety_incidents(tenant_id, encounter_id);"
+898,I0896,quality.patient_safety_incidents,ix_patient_safety_incidents_patient_id,"tenant_id, patient_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_patient_safety_incidents_patient_id ON quality.patient_safety_incidents(tenant_id, patient_id);"
+899,I0897,quality.patient_safety_incidents,ix_patient_safety_incidents_reported_by,"tenant_id, reported_by",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_patient_safety_incidents_reported_by ON quality.patient_safety_incidents(tenant_id, reported_by);"
+900,I0898,quality.incident_actions,ux_incident_actions_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_incident_actions_tenant_id ON quality.incident_actions(tenant_id, id);"
+901,I0899,quality.incident_actions,ix_incident_actions_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P1,"CREATE INDEX ix_incident_actions_tenant_created ON quality.incident_actions(tenant_id, created_at DESC);"
+902,I0900,quality.incident_actions,ix_incident_actions_incident_id,"tenant_id, incident_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_incident_actions_incident_id ON quality.incident_actions(tenant_id, incident_id);"
+903,I0901,quality.incident_actions,ix_incident_actions_owner_user_id,"tenant_id, owner_user_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_incident_actions_owner_user_id ON quality.incident_actions(tenant_id, owner_user_id);"
+904,I0902,quality.hai_surveillance,ux_hai_surveillance_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_hai_surveillance_tenant_id ON quality.hai_surveillance(tenant_id, id);"
+905,I0903,quality.hai_surveillance,ix_hai_surveillance_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_hai_surveillance_tenant_created ON quality.hai_surveillance(tenant_id, created_at DESC);"
+906,I0904,quality.hai_surveillance,ix_hai_surveillance_organization_id,"tenant_id, organization_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_hai_surveillance_organization_id ON quality.hai_surveillance(tenant_id, organization_id);"
+907,I0905,quality.hai_cases,ux_hai_cases_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_hai_cases_tenant_id ON quality.hai_cases(tenant_id, id);"
+908,I0906,quality.hai_cases,ix_hai_cases_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_hai_cases_tenant_created ON quality.hai_cases(tenant_id, created_at DESC);"
+909,I0907,quality.hai_cases,ix_hai_cases_surveillance_id,"tenant_id, surveillance_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_hai_cases_surveillance_id ON quality.hai_cases(tenant_id, surveillance_id);"
+910,I0908,quality.hai_cases,ix_hai_cases_encounter_id,"tenant_id, encounter_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_hai_cases_encounter_id ON quality.hai_cases(tenant_id, encounter_id);"
+911,I0909,quality.hai_cases,ix_hai_cases_patient_id,"tenant_id, patient_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_hai_cases_patient_id ON quality.hai_cases(tenant_id, patient_id);"
+912,I0910,quality.risk_register,ux_risk_register_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_risk_register_tenant_id ON quality.risk_register(tenant_id, id);"
+913,I0911,quality.risk_register,ix_risk_register_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_risk_register_tenant_created ON quality.risk_register(tenant_id, created_at DESC);"
+914,I0912,quality.risk_register,ix_risk_register_owner_user_id,"tenant_id, owner_user_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_risk_register_owner_user_id ON quality.risk_register(tenant_id, owner_user_id);"
+915,I0913,quality.risk_actions,ux_risk_actions_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_risk_actions_tenant_id ON quality.risk_actions(tenant_id, id);"
+916,I0914,quality.risk_actions,ix_risk_actions_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_risk_actions_tenant_created ON quality.risk_actions(tenant_id, created_at DESC);"
+917,I0915,quality.risk_actions,ix_risk_actions_risk_id,"tenant_id, risk_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_risk_actions_risk_id ON quality.risk_actions(tenant_id, risk_id);"
+918,I0916,quality.risk_actions,ix_risk_actions_owner_user_id,"tenant_id, owner_user_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_risk_actions_owner_user_id ON quality.risk_actions(tenant_id, owner_user_id);"
+919,I0917,quality.quality_indicators,ux_quality_indicators_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_quality_indicators_tenant_id ON quality.quality_indicators(tenant_id, id);"
+920,I0918,quality.quality_indicators,ix_quality_indicators_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P1,"CREATE INDEX ix_quality_indicators_tenant_created ON quality.quality_indicators(tenant_id, created_at DESC);"
+921,I0919,quality.indicator_runs,ux_indicator_runs_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_indicator_runs_tenant_id ON quality.indicator_runs(tenant_id, id);"
+922,I0920,quality.indicator_runs,ix_indicator_runs_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P1,"CREATE INDEX ix_indicator_runs_tenant_created ON quality.indicator_runs(tenant_id, created_at DESC);"
+923,I0921,quality.indicator_runs,ix_indicator_runs_indicator_id,"tenant_id, indicator_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_indicator_runs_indicator_id ON quality.indicator_runs(tenant_id, indicator_id);"
+924,I0922,quality.indicator_values,ux_indicator_values_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_indicator_values_tenant_id ON quality.indicator_values(tenant_id, id);"
+925,I0923,quality.indicator_values,ix_indicator_values_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P1,"CREATE INDEX ix_indicator_values_tenant_created ON quality.indicator_values(tenant_id, created_at DESC);"
+926,I0924,quality.indicator_values,ix_indicator_values_indicator_run_id,"tenant_id, indicator_run_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_indicator_values_indicator_run_id ON quality.indicator_values(tenant_id, indicator_run_id);"
+927,I0925,quality.indicator_values,ix_indicator_values_organization_id,"tenant_id, organization_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_indicator_values_organization_id ON quality.indicator_values(tenant_id, organization_id);"
+928,I0926,quality.quality_audits,ux_quality_audits_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_quality_audits_tenant_id ON quality.quality_audits(tenant_id, id);"
+929,I0927,quality.quality_audits,ix_quality_audits_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P1,"CREATE INDEX ix_quality_audits_tenant_created ON quality.quality_audits(tenant_id, created_at DESC);"
+930,I0928,quality.quality_audits,ix_quality_audits_lead_auditor_id,"tenant_id, lead_auditor_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_quality_audits_lead_auditor_id ON quality.quality_audits(tenant_id, lead_auditor_id);"
+931,I0929,quality.audit_findings,ux_audit_findings_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_audit_findings_tenant_id ON quality.audit_findings(tenant_id, id);"
+932,I0930,quality.audit_findings,ix_audit_findings_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P1,"CREATE INDEX ix_audit_findings_tenant_created ON quality.audit_findings(tenant_id, created_at DESC);"
+933,I0931,quality.audit_findings,ix_audit_findings_quality_audit_id,"tenant_id, quality_audit_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_audit_findings_quality_audit_id ON quality.audit_findings(tenant_id, quality_audit_id);"
+934,I0932,quality.audit_findings,ix_audit_findings_owner_user_id,"tenant_id, owner_user_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_audit_findings_owner_user_id ON quality.audit_findings(tenant_id, owner_user_id);"
+935,I0933,quality.rl_reporting_periods,ux_rl_reporting_periods_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_rl_reporting_periods_tenant_id ON quality.rl_reporting_periods(tenant_id, id);"
+936,I0934,quality.rl_reporting_periods,ix_rl_reporting_periods_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P1,"CREATE INDEX ix_rl_reporting_periods_tenant_created ON quality.rl_reporting_periods(tenant_id, created_at DESC);"
+937,I0935,quality.rl_reporting_periods,ix_rl_reporting_periods_organization_id,"tenant_id, organization_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_rl_reporting_periods_organization_id ON quality.rl_reporting_periods(tenant_id, organization_id);"
+938,I0936,quality.rl_report_submissions,ux_rl_report_submissions_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_rl_report_submissions_tenant_id ON quality.rl_report_submissions(tenant_id, id);"
+939,I0937,quality.rl_report_submissions,ix_rl_report_submissions_period_id,"tenant_id, period_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_rl_report_submissions_period_id ON quality.rl_report_submissions(tenant_id, period_id);"
+940,I0938,quality.data_quality_issues,ux_data_quality_issues_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_data_quality_issues_tenant_id ON quality.data_quality_issues(tenant_id, id);"
+941,I0939,quality.data_quality_issues,ix_data_quality_issues_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P1,"CREATE INDEX ix_data_quality_issues_tenant_created ON quality.data_quality_issues(tenant_id, created_at DESC);"
+942,I0940,quality.data_quality_issues,ix_data_quality_issues_assigned_to,"tenant_id, assigned_to",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_data_quality_issues_assigned_to ON quality.data_quality_issues(tenant_id, assigned_to);"
+943,I0941,quality.management_approvals,ux_management_approvals_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_management_approvals_tenant_id ON quality.management_approvals(tenant_id, id);"
+944,I0942,quality.management_approvals,ix_management_approvals_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_management_approvals_tenant_created ON quality.management_approvals(tenant_id, created_at DESC);"
+945,I0943,quality.management_approvals,ix_management_approvals_requested_by,"tenant_id, requested_by",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_management_approvals_requested_by ON quality.management_approvals(tenant_id, requested_by);"
+946,I0944,quality.management_approvals,ix_management_approvals_approved_by,"tenant_id, approved_by",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_management_approvals_approved_by ON quality.management_approvals(tenant_id, approved_by);"
+947,I0945,integration.external_systems,ux_external_systems_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_external_systems_tenant_id ON integration.external_systems(tenant_id, id);"
+948,I0946,integration.external_systems,ix_external_systems_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P0,"CREATE INDEX ix_external_systems_tenant_created ON integration.external_systems(tenant_id, created_at DESC);"
+949,I0947,integration.external_endpoints,ux_external_endpoints_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_external_endpoints_tenant_id ON integration.external_endpoints(tenant_id, id);"
+950,I0948,integration.external_endpoints,ix_external_endpoints_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P0,"CREATE INDEX ix_external_endpoints_tenant_created ON integration.external_endpoints(tenant_id, created_at DESC);"
+951,I0949,integration.external_endpoints,ix_external_endpoints_external_system_id,"tenant_id, external_system_id",btree,NO,Akses join/ref FK,P0,"CREATE INDEX ix_external_endpoints_external_system_id ON integration.external_endpoints(tenant_id, external_system_id);"
+952,I0950,integration.integration_credentials,ux_integration_credentials_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_integration_credentials_tenant_id ON integration.integration_credentials(tenant_id, id);"
+953,I0951,integration.integration_credentials,ix_integration_credentials_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P0,"CREATE INDEX ix_integration_credentials_tenant_created ON integration.integration_credentials(tenant_id, created_at DESC);"
+954,I0952,integration.integration_credentials,ix_integration_credentials_external_system_id,"tenant_id, external_system_id",btree,NO,Akses join/ref FK,P0,"CREATE INDEX ix_integration_credentials_external_system_id ON integration.integration_credentials(tenant_id, external_system_id);"
+955,I0953,integration.integration_credentials,ix_integration_credentials_organization_id,"tenant_id, organization_id",btree,NO,Akses join/ref FK,P0,"CREATE INDEX ix_integration_credentials_organization_id ON integration.integration_credentials(tenant_id, organization_id);"
+956,I0954,integration.external_resource_links,ux_external_resource_links_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_external_resource_links_tenant_id ON integration.external_resource_links(tenant_id, id);"
+957,I0955,integration.external_resource_links,ix_external_resource_links_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P0,"CREATE INDEX ix_external_resource_links_tenant_created ON integration.external_resource_links(tenant_id, created_at DESC);"
+958,I0956,integration.external_resource_links,ix_external_resource_links_external_system_id,"tenant_id, external_system_id",btree,NO,Akses join/ref FK,P0,"CREATE INDEX ix_external_resource_links_external_system_id ON integration.external_resource_links(tenant_id, external_system_id);"
+959,I0957,integration.outbox_events,ux_outbox_events_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_outbox_events_tenant_id ON integration.outbox_events(tenant_id, id);"
+960,I0958,integration.integration_deliveries,ux_integration_deliveries_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_integration_deliveries_tenant_id ON integration.integration_deliveries(tenant_id, id);"
+961,I0959,integration.integration_deliveries,ix_integration_deliveries_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P0,"CREATE INDEX ix_integration_deliveries_tenant_created ON integration.integration_deliveries(tenant_id, created_at DESC);"
+962,I0960,integration.integration_deliveries,ix_integration_deliveries_outbox_event_id,"tenant_id, outbox_event_id",btree,NO,Akses join/ref FK,P0,"CREATE INDEX ix_integration_deliveries_outbox_event_id ON integration.integration_deliveries(tenant_id, outbox_event_id);"
+963,I0961,integration.integration_deliveries,ix_integration_deliveries_external_system_id,"tenant_id, external_system_id",btree,NO,Akses join/ref FK,P0,"CREATE INDEX ix_integration_deliveries_external_system_id ON integration.integration_deliveries(tenant_id, external_system_id);"
+964,I0962,integration.integration_deliveries,ix_integration_deliveries_endpoint_id,"tenant_id, endpoint_id",btree,NO,Akses join/ref FK,P0,"CREATE INDEX ix_integration_deliveries_endpoint_id ON integration.integration_deliveries(tenant_id, endpoint_id);"
+965,I0963,integration.delivery_attempts,ux_delivery_attempts_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_delivery_attempts_tenant_id ON integration.delivery_attempts(tenant_id, id);"
+966,I0964,integration.delivery_attempts,ix_delivery_attempts_integration_delivery_id,"tenant_id, integration_delivery_id",btree,NO,Akses join/ref FK,P0,"CREATE INDEX ix_delivery_attempts_integration_delivery_id ON integration.delivery_attempts(tenant_id, integration_delivery_id);"
+967,I0965,integration.inbox_messages,ux_inbox_messages_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_inbox_messages_tenant_id ON integration.inbox_messages(tenant_id, id);"
+968,I0966,integration.inbox_messages,ix_inbox_messages_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P1,"CREATE INDEX ix_inbox_messages_tenant_created ON integration.inbox_messages(tenant_id, created_at DESC);"
+969,I0967,integration.inbox_messages,ix_inbox_messages_external_system_id,"tenant_id, external_system_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_inbox_messages_external_system_id ON integration.inbox_messages(tenant_id, external_system_id);"
+970,I0968,integration.mapping_rules,ux_mapping_rules_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_mapping_rules_tenant_id ON integration.mapping_rules(tenant_id, id);"
+971,I0969,integration.mapping_rules,ix_mapping_rules_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P0,"CREATE INDEX ix_mapping_rules_tenant_created ON integration.mapping_rules(tenant_id, created_at DESC);"
+972,I0970,integration.integration_jobs,ux_integration_jobs_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_integration_jobs_tenant_id ON integration.integration_jobs(tenant_id, id);"
+973,I0971,integration.integration_jobs,ix_integration_jobs_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P1,"CREATE INDEX ix_integration_jobs_tenant_created ON integration.integration_jobs(tenant_id, created_at DESC);"
+974,I0972,integration.integration_jobs,ix_integration_jobs_external_system_id,"tenant_id, external_system_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_integration_jobs_external_system_id ON integration.integration_jobs(tenant_id, external_system_id);"
+975,I0973,integration.webhook_subscriptions,ux_webhook_subscriptions_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_webhook_subscriptions_tenant_id ON integration.webhook_subscriptions(tenant_id, id);"
+976,I0974,integration.webhook_subscriptions,ix_webhook_subscriptions_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P2,"CREATE INDEX ix_webhook_subscriptions_tenant_created ON integration.webhook_subscriptions(tenant_id, created_at DESC);"
+977,I0975,integration.webhook_subscriptions,ix_webhook_subscriptions_external_system_id,"tenant_id, external_system_id",btree,NO,Akses join/ref FK,P2,"CREATE INDEX ix_webhook_subscriptions_external_system_id ON integration.webhook_subscriptions(tenant_id, external_system_id);"
+978,I0976,audit.access_logs,ux_access_logs_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_access_logs_tenant_id ON audit.access_logs(tenant_id, id);"
+979,I0977,audit.access_logs,ix_access_logs_actor_user_id,"tenant_id, actor_user_id",btree,NO,Akses join/ref FK,P0,"CREATE INDEX ix_access_logs_actor_user_id ON audit.access_logs(tenant_id, actor_user_id);"
+980,I0978,audit.access_logs,ix_access_logs_patient_id,"tenant_id, patient_id",btree,NO,Akses join/ref FK,P0,"CREATE INDEX ix_access_logs_patient_id ON audit.access_logs(tenant_id, patient_id);"
+981,I0979,audit.access_logs,ix_access_logs_encounter_id,"tenant_id, encounter_id",btree,NO,Akses join/ref FK,P0,"CREATE INDEX ix_access_logs_encounter_id ON audit.access_logs(tenant_id, encounter_id);"
+982,I0980,audit.change_logs,ux_change_logs_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_change_logs_tenant_id ON audit.change_logs(tenant_id, id);"
+983,I0981,audit.change_logs,ix_change_logs_actor_user_id,"tenant_id, actor_user_id",btree,NO,Akses join/ref FK,P0,"CREATE INDEX ix_change_logs_actor_user_id ON audit.change_logs(tenant_id, actor_user_id);"
+984,I0982,audit.disclosure_logs,ux_disclosure_logs_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_disclosure_logs_tenant_id ON audit.disclosure_logs(tenant_id, id);"
+985,I0983,audit.disclosure_logs,ix_disclosure_logs_patient_id,"tenant_id, patient_id",btree,NO,Akses join/ref FK,P0,"CREATE INDEX ix_disclosure_logs_patient_id ON audit.disclosure_logs(tenant_id, patient_id);"
+986,I0984,audit.disclosure_logs,ix_disclosure_logs_consent_id,"tenant_id, consent_id",btree,NO,Akses join/ref FK,P0,"CREATE INDEX ix_disclosure_logs_consent_id ON audit.disclosure_logs(tenant_id, consent_id);"
+987,I0985,audit.break_glass_events,ux_break_glass_events_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_break_glass_events_tenant_id ON audit.break_glass_events(tenant_id, id);"
+988,I0986,audit.break_glass_events,ix_break_glass_events_actor_user_id,"tenant_id, actor_user_id",btree,NO,Akses join/ref FK,P0,"CREATE INDEX ix_break_glass_events_actor_user_id ON audit.break_glass_events(tenant_id, actor_user_id);"
+989,I0987,audit.break_glass_events,ix_break_glass_events_patient_id,"tenant_id, patient_id",btree,NO,Akses join/ref FK,P0,"CREATE INDEX ix_break_glass_events_patient_id ON audit.break_glass_events(tenant_id, patient_id);"
+990,I0988,audit.break_glass_events,ix_break_glass_events_reviewed_by,"tenant_id, reviewed_by",btree,NO,Akses join/ref FK,P0,"CREATE INDEX ix_break_glass_events_reviewed_by ON audit.break_glass_events(tenant_id, reviewed_by);"
+991,I0989,audit.export_logs,ux_export_logs_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_export_logs_tenant_id ON audit.export_logs(tenant_id, id);"
+992,I0990,audit.export_logs,ix_export_logs_actor_user_id,"tenant_id, actor_user_id",btree,NO,Akses join/ref FK,P0,"CREATE INDEX ix_export_logs_actor_user_id ON audit.export_logs(tenant_id, actor_user_id);"
+993,I0991,analytics.report_definitions,ux_report_definitions_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_report_definitions_tenant_id ON analytics.report_definitions(tenant_id, id);"
+994,I0992,analytics.report_definitions,ix_report_definitions_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P1,"CREATE INDEX ix_report_definitions_tenant_created ON analytics.report_definitions(tenant_id, created_at DESC);"
+995,I0993,analytics.report_runs,ux_report_runs_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_report_runs_tenant_id ON analytics.report_runs(tenant_id, id);"
+996,I0994,analytics.report_runs,ix_report_runs_tenant_created,"tenant_id, created_at DESC",btree,NO,Audit listing/performance scoped tenant,P1,"CREATE INDEX ix_report_runs_tenant_created ON analytics.report_runs(tenant_id, created_at DESC);"
+997,I0995,analytics.report_runs,ix_report_runs_report_definition_id,"tenant_id, report_definition_id",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_report_runs_report_definition_id ON analytics.report_runs(tenant_id, report_definition_id);"
+998,I0996,analytics.report_runs,ix_report_runs_requested_by,"tenant_id, requested_by",btree,NO,Akses join/ref FK,P1,"CREATE INDEX ix_report_runs_requested_by ON analytics.report_runs(tenant_id, requested_by);"
+999,I0997,analytics.aggregate_snapshots,ux_aggregate_snapshots_tenant_id,"tenant_id, id",btree,YES,Dukungan composite FK / tenant integrity,P0,"CREATE UNIQUE INDEX ux_aggregate_snapshots_tenant_id ON analytics.aggregate_snapshots(tenant_id, id);"
+<PARSED TEXT FOR SHEET: 9 / 18 TABS
+TAB NAME: 08_RULES>
+index,08 RULES,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6
+0,DRAFT • SIMRS FHIR-First • PostgreSQL source-of-truth • no dedicated FHIR Server,,,,,,
+1,,,,,,,
+2,Table,Constraint / policy,Kind,Proposed expression / invariant,Alasan,Penegakan,Status
+3,patient.patient_identity_reviews,ck_patient_identity_reviews_match_score_nonnegative,CHECK,match_score >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+4,orders.order_items,ck_order_items_quantity_nonnegative,CHECK,quantity >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+5,pharmacy.prescription_items,ck_prescription_items_qty_prescribed_nonnegative,CHECK,qty_prescribed >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+6,pharmacy.dispense_items,ck_dispense_items_quantity_nonnegative,CHECK,quantity >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+7,pharmacy.medication_administrations,ck_medication_administrations_dose_quantity_nonnegative,CHECK,dose_quantity >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+8,inventory.stock_reservations,ck_stock_reservations_quantity_reserved_nonnegative,CHECK,quantity_reserved >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+9,inventory.stock_count_lines,ck_stock_count_lines_expected_quantity_nonnegative,CHECK,expected_quantity >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+10,inventory.stock_count_lines,ck_stock_count_lines_counted_quantity_nonnegative,CHECK,counted_quantity >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+11,inventory.stock_count_lines,ck_stock_count_lines_variance_quantity_nonnegative,CHECK,variance_quantity >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+12,inventory.reorder_rules,ck_reorder_rules_min_quantity_nonnegative,CHECK,min_quantity >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+13,inventory.reorder_rules,ck_reorder_rules_max_quantity_nonnegative,CHECK,max_quantity >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+14,nutrition.menu_items,ck_menu_items_portion_quantity_nonnegative,CHECK,portion_quantity >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+15,nutrition.recipe_ingredients,ck_recipe_ingredients_quantity_per_batch_nonnegative,CHECK,quantity_per_batch >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+16,nutrition.production_consumptions,ck_production_consumptions_quantity_used_nonnegative,CHECK,quantity_used >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+17,procurement.purchase_request_lines,ck_purchase_request_lines_quantity_nonnegative,CHECK,quantity >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+18,procurement.purchase_request_lines,ck_purchase_request_lines_estimated_price_nonnegative,CHECK,estimated_price >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+19,procurement.purchase_order_lines,ck_purchase_order_lines_ordered_quantity_nonnegative,CHECK,ordered_quantity >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+20,procurement.purchase_order_lines,ck_purchase_order_lines_unit_price_nonnegative,CHECK,unit_price >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+21,procurement.purchase_order_lines,ck_purchase_order_lines_tax_rate_nonnegative,CHECK,tax_rate >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+22,procurement.goods_receipt_lines,ck_goods_receipt_lines_received_quantity_nonnegative,CHECK,received_quantity >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+23,procurement.supplier_invoices,ck_supplier_invoices_total_amount_nonnegative,CHECK,total_amount >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+24,procurement.supplier_invoice_lines,ck_supplier_invoice_lines_qty_nonnegative,CHECK,qty >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+25,operations.linen_movements,ck_linen_movements_quantity_nonnegative,CHECK,quantity >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+26,billing.charges,ck_charges_quantity_nonnegative,CHECK,quantity >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+27,billing.charges,ck_charges_unit_price_nonnegative,CHECK,unit_price >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+28,billing.charges,ck_charges_gross_amount_nonnegative,CHECK,gross_amount >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+29,billing.charge_adjustments,ck_charge_adjustments_adjustment_amount_nonnegative,CHECK,adjustment_amount >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+30,billing.service_packages,ck_service_packages_package_price_nonnegative,CHECK,package_price >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+31,billing.service_package_items,ck_service_package_items_quantity_nonnegative,CHECK,quantity >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+32,billing.invoices,ck_invoices_gross_amount_nonnegative,CHECK,gross_amount >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+33,billing.invoices,ck_invoices_net_amount_nonnegative,CHECK,net_amount >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+34,billing.invoice_lines,ck_invoice_lines_quantity_nonnegative,CHECK,quantity >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+35,billing.invoice_lines,ck_invoice_lines_unit_price_nonnegative,CHECK,unit_price >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+36,billing.invoice_lines,ck_invoice_lines_total_amount_nonnegative,CHECK,total_amount >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+37,billing.deposits,ck_deposits_available_amount_nonnegative,CHECK,available_amount >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+38,billing.claims,ck_claims_claim_amount_nonnegative,CHECK,claim_amount >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+39,billing.claim_items,ck_claim_items_quantity_nonnegative,CHECK,quantity >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+40,billing.claim_items,ck_claim_items_claimed_amount_nonnegative,CHECK,claimed_amount >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+41,billing.claim_items,ck_claim_items_approved_amount_nonnegative,CHECK,approved_amount >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+42,billing.casemix_cases,ck_casemix_cases_tariff_amount_nonnegative,CHECK,tariff_amount >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+43,finance.ap_bills,ck_ap_bills_amount_due_nonnegative,CHECK,amount_due >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+44,finance.ap_payments,ck_ap_payments_paid_amount_nonnegative,CHECK,paid_amount >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+45,finance.ar_balances,ck_ar_balances_outstanding_amount_nonnegative,CHECK,outstanding_amount >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+46,finance.budget_lines,ck_budget_lines_budget_amount_nonnegative,CHECK,budget_amount >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+47,finance.cost_allocations,ck_cost_allocations_allocation_percent_nonnegative,CHECK,allocation_percent >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+48,finance.doctor_fee_rules,ck_doctor_fee_rules_fee_rate_nonnegative,CHECK,fee_rate >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+49,finance.doctor_fee_rules,ck_doctor_fee_rules_fixed_amount_nonnegative,CHECK,fixed_amount >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+50,finance.fixed_asset_depreciations,ck_fixed_asset_depreciations_depreciation_amount_nonnegative,CHECK,depreciation_amount >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+51,hr.performance_reviews,ck_performance_reviews_score_nonnegative,CHECK,score >= 0,Non-negatif untuk qty/uang/rate,DB CHECK,DRAFT
+52,patient.patient_identifiers,uq_patient_identifier_scope,UNIQUE / PARTIAL,"(tenant_id, identifier_system, identifier_value) WHERE valid_to IS NULL",No double patient identity; exceptions for documented merge / reuse,Partial UNIQUE index,DRAFT
+53,encounter.bed_assignments,ex_bed_occupancy,EXCLUSION,"EXCLUDE overlapping tstzrange(occupied_from,occupied_until) for each tenant_id,bed_id",Tidak ada dua encounter memakai bed sama pada waktu overlap,GiST exclusion / transactional lock,DRAFT
+54,encounter.encounters,ck_encounter_period,CHECK,ended_at IS NULL OR ended_at >= started_at,Konsistensi period encounter,DB CHECK,DRAFT
+55,scheduling.slots,ck_slot_capacity,CHECK,end_at > start_at AND capacity >= 0 AND booked >= 0 AND booked <= capacity,Capacity & waktu slot,DB CHECK plus concurrency lock,DRAFT
+56,clinical.clinical_notes,enforce_signed_immutability,TRIGGER / APP,signed_at IS NOT NULL => block UPDATE body_text/structured_content; use note_addenda,Tanda tangan mengunci dokumen,DB trigger + application,DRAFT
+57,clinical.clinical_documents,enforce_signed_document_immutability,TRIGGER / APP,signed_at IS NOT NULL => content immutable; change via version/addendum,Preservasi dokumen sah,DB trigger + application,DRAFT
+58,clinical.observations,ck_obs_value,CHECK,at least one valid value_numeric or value_text; UCUM for value_numeric when required,Nilai observasi valid,DB CHECK + profile validator,DRAFT
+59,laboratory.lab_results,verified_result_protection,TRIGGER / APP,verified_at IS NOT NULL => immutable result; corrections in lab_result_versions,Lab verification audit,DB trigger,DRAFT
+60,pharmacy.dispense_items,uq_dispense_stock_movement,UNIQUE,stock_movement_id IS UNIQUE WHERE NOT NULL,Satu event dispensing satu movement,Partial unique index,DRAFT
+61,pharmacy.bcma_scan_events,require_barcode_verification,APP,Medication administration complete only after expected barcode verification,"BCMA patient, drug, dose, route, time",Service transaction + test,DRAFT
+62,inventory.stock_movements,stock_ledger_immutable,TRIGGER / APP,Block UPDATE/DELETE posted movement; reversal inserts new movement,Integrity of immutable ledger,DB trigger,DRAFT
+63,inventory.stock_movements,uq_stock_movement_source,UNIQUE,"tenant_id, reference_kind, reference_id, movement_type WHERE reference_id IS NOT NULL",Idempotent inventory events,Partial unique index; scoped business rule,DRAFT
+64,inventory.stock_lots,ck_expiry_and_received,CHECK,expiry_date IS NULL OR expiry_date >= received_at::date,Date validity of stock lot,DB CHECK,DRAFT
+65,inventory.stock_reservations,ck_reserved_nonnegative,CHECK,quantity_reserved > 0,Reservation positive,DB CHECK,DRAFT
+66,nutrition.meal_trays,uq_tray_per_meal,UNIQUE,"tenant_id, diet_order_id, meal_period, production_batch_id",Cegah produksi tray ganda untuk meal,UNIQUE,DRAFT
+67,billing.charges,uq_charge_source,UNIQUE,"tenant_id, source_kind, source_id WHERE status <> cancelled",Satu charge aktif per sumber,Partial unique / business rule,DRAFT
+68,billing.invoices,ck_invoice_total,CHECK,gross_amount >= 0 AND net_amount >= 0,No negative due to corruption; refund separate,DB CHECK,DRAFT
+69,billing.payment_allocations,payment_allocation_cap,TRIGGER / APP,sum allocations <= successful payment and invoice outstanding,No overallocation,Deferrable validation + transaction,DRAFT
+70,billing.refunds,refund_cap,TRIGGER / APP,sum successful refunds <= successful payment,Refund amount not exceed captured payment,Transaction + lock,DRAFT
+71,finance.journal_lines,ck_debit_credit,CHECK,"debit >= 0 AND credit >= 0 AND exactly one of debit,credit > 0",Valid double entry row,DB CHECK,DRAFT
+72,finance.journals,journal_must_balance,DEFERRABLE TRIGGER,"For posted journal SUM(debit)=SUM(credit) per currency, period must open",Journal balanced at commit,Deferred constraint trigger,DRAFT
+73,finance.journals,posted_journal_immutable,TRIGGER / APP,Post journal cannot mutate; reversal journal required,Auditability,DB trigger,DRAFT
+74,finance.doctor_fee_ledger,uq_doctor_fee,UNIQUE,"tenant_id,charge_id,practitioner_id,role_code",Idempotent doctor fee,UNIQUE,DRAFT
+75,hr.payroll_items,payroll_secrecy,SECURITY,Only payroll role may decrypt; encrypt compensation at app/KMS layer,Protect sensitive salary data,ABAC + encryption,DRAFT
+76,integration.external_resource_links,uq_external_link,UNIQUE,"tenant_id, external_system_id, external_resource_type, external_resource_id",No duplicate external resource ID,UNIQUE,DRAFT
+77,integration.outbox_events,outbox_atomicity,TRANSACTION,Insert event in same DB transaction as business aggregate mutation,No lost events,Service test + transactional outbox,DRAFT
+78,integration.integration_deliveries,uq_delivery_idempotency,UNIQUE,"tenant_id,external_system_id,idempotency_key",Prevent duplicate delivery operation,UNIQUE,DRAFT
+79,integration.delivery_attempts,safe_logging,SECURITY,"Do not persist sensitive auth headers, tokens, full PHI responses",PII-safe logs,DTO masking and retention test,DRAFT
+80,audit.access_logs,immutable_audit,TRIGGER / POLICY,Append-only; segregated access and retention,Access traceability,DB policy + audit service,DRAFT
+81,quality.indicator_runs,indicator_reproducibility,APP,Definition version + source snapshot hash + numerator/denominator lineage required,Trusted KPI computation,Service test,DRAFT
+<PARSED TEXT FOR SHEET: 10 / 18 TABS
+TAB NAME: 09_ENUMS>
+index,09 ENUMS,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6
+0,DRAFT • SIMRS FHIR-First • PostgreSQL source-of-truth • no dedicated FHIR Server,,,,,,
+1,,,,,,,
+2,Enum group,Sequence,Value,Makna / validasi,Kolom yang memakai,Implementasi,Status
+3,tenant_status,1,active,USULAN; cocokkan ke domain state machine / terminologi nasional,identity.tenants.status,varchar + CHECK / lookup table,DRAFT
+4,tenant_status,2,suspended,USULAN; cocokkan ke domain state machine / terminologi nasional,identity.tenants.status,varchar + CHECK / lookup table,DRAFT
+5,tenant_status,3,closed,USULAN; cocokkan ke domain state machine / terminologi nasional,identity.tenants.status,varchar + CHECK / lookup table,DRAFT
+6,user_status,1,invited,USULAN; cocokkan ke domain state machine / terminologi nasional,identity.users.status,varchar + CHECK / lookup table,DRAFT
+7,user_status,2,active,USULAN; cocokkan ke domain state machine / terminologi nasional,identity.users.status,varchar + CHECK / lookup table,DRAFT
+8,user_status,3,locked,USULAN; cocokkan ke domain state machine / terminologi nasional,identity.users.status,varchar + CHECK / lookup table,DRAFT
+9,user_status,4,disabled,USULAN; cocokkan ke domain state machine / terminologi nasional,identity.users.status,varchar + CHECK / lookup table,DRAFT
+10,administrative_sex,1,male,USULAN; cocokkan ke domain state machine / terminologi nasional,"master.practitioners.gender, patient.patients.administrative_sex",varchar + CHECK / lookup table,DRAFT
+11,administrative_sex,2,female,USULAN; cocokkan ke domain state machine / terminologi nasional,"master.practitioners.gender, patient.patients.administrative_sex",varchar + CHECK / lookup table,DRAFT
+12,administrative_sex,3,other,USULAN; cocokkan ke domain state machine / terminologi nasional,"master.practitioners.gender, patient.patients.administrative_sex",varchar + CHECK / lookup table,DRAFT
+13,administrative_sex,4,unknown,USULAN; cocokkan ke domain state machine / terminologi nasional,"master.practitioners.gender, patient.patients.administrative_sex",varchar + CHECK / lookup table,DRAFT
+14,appointment_status,1,proposed,USULAN; cocokkan ke domain state machine / terminologi nasional,scheduling.appointments.status,varchar + CHECK / lookup table,DRAFT
+15,appointment_status,2,pending,USULAN; cocokkan ke domain state machine / terminologi nasional,scheduling.appointments.status,varchar + CHECK / lookup table,DRAFT
+16,appointment_status,3,booked,USULAN; cocokkan ke domain state machine / terminologi nasional,scheduling.appointments.status,varchar + CHECK / lookup table,DRAFT
+17,appointment_status,4,arrived,USULAN; cocokkan ke domain state machine / terminologi nasional,scheduling.appointments.status,varchar + CHECK / lookup table,DRAFT
+18,appointment_status,5,fulfilled,USULAN; cocokkan ke domain state machine / terminologi nasional,scheduling.appointments.status,varchar + CHECK / lookup table,DRAFT
+19,appointment_status,6,cancelled,USULAN; cocokkan ke domain state machine / terminologi nasional,scheduling.appointments.status,varchar + CHECK / lookup table,DRAFT
+20,appointment_status,7,noshow,USULAN; cocokkan ke domain state machine / terminologi nasional,scheduling.appointments.status,varchar + CHECK / lookup table,DRAFT
+21,queue_status,1,waiting,USULAN; cocokkan ke domain state machine / terminologi nasional,scheduling.queue_tickets.status,varchar + CHECK / lookup table,DRAFT
+22,queue_status,2,called,USULAN; cocokkan ke domain state machine / terminologi nasional,scheduling.queue_tickets.status,varchar + CHECK / lookup table,DRAFT
+23,queue_status,3,serving,USULAN; cocokkan ke domain state machine / terminologi nasional,scheduling.queue_tickets.status,varchar + CHECK / lookup table,DRAFT
+24,queue_status,4,done,USULAN; cocokkan ke domain state machine / terminologi nasional,scheduling.queue_tickets.status,varchar + CHECK / lookup table,DRAFT
+25,queue_status,5,skipped,USULAN; cocokkan ke domain state machine / terminologi nasional,scheduling.queue_tickets.status,varchar + CHECK / lookup table,DRAFT
+26,queue_status,6,cancelled,USULAN; cocokkan ke domain state machine / terminologi nasional,scheduling.queue_tickets.status,varchar + CHECK / lookup table,DRAFT
+27,encounter_status,1,planned,USULAN; cocokkan ke domain state machine / terminologi nasional,encounter.encounters.status,varchar + CHECK / lookup table,DRAFT
+28,encounter_status,2,arrived,USULAN; cocokkan ke domain state machine / terminologi nasional,encounter.encounters.status,varchar + CHECK / lookup table,DRAFT
+29,encounter_status,3,triaged,USULAN; cocokkan ke domain state machine / terminologi nasional,encounter.encounters.status,varchar + CHECK / lookup table,DRAFT
+30,encounter_status,4,in-progress,USULAN; cocokkan ke domain state machine / terminologi nasional,encounter.encounters.status,varchar + CHECK / lookup table,DRAFT
+31,encounter_status,5,onleave,USULAN; cocokkan ke domain state machine / terminologi nasional,encounter.encounters.status,varchar + CHECK / lookup table,DRAFT
+32,encounter_status,6,finished,USULAN; cocokkan ke domain state machine / terminologi nasional,encounter.encounters.status,varchar + CHECK / lookup table,DRAFT
+33,encounter_status,7,cancelled,USULAN; cocokkan ke domain state machine / terminologi nasional,encounter.encounters.status,varchar + CHECK / lookup table,DRAFT
+34,encounter_status,8,entered-in-error,USULAN; cocokkan ke domain state machine / terminologi nasional,encounter.encounters.status,varchar + CHECK / lookup table,DRAFT
+35,consent_status,1,draft,USULAN; cocokkan ke domain state machine / terminologi nasional,consent.consent_records.status,varchar + CHECK / lookup table,DRAFT
+36,consent_status,2,active,USULAN; cocokkan ke domain state machine / terminologi nasional,consent.consent_records.status,varchar + CHECK / lookup table,DRAFT
+37,consent_status,3,inactive,USULAN; cocokkan ke domain state machine / terminologi nasional,consent.consent_records.status,varchar + CHECK / lookup table,DRAFT
+38,consent_status,4,rejected,USULAN; cocokkan ke domain state machine / terminologi nasional,consent.consent_records.status,varchar + CHECK / lookup table,DRAFT
+39,consent_status,5,revoked,USULAN; cocokkan ke domain state machine / terminologi nasional,consent.consent_records.status,varchar + CHECK / lookup table,DRAFT
+40,document_status,1,draft,USULAN; cocokkan ke domain state machine / terminologi nasional,"clinical.clinical_documents.status, clinical.clinical_notes.status, radiology.rad_reports.status",varchar + CHECK / lookup table,DRAFT
+41,document_status,2,review,USULAN; cocokkan ke domain state machine / terminologi nasional,"clinical.clinical_documents.status, clinical.clinical_notes.status, radiology.rad_reports.status",varchar + CHECK / lookup table,DRAFT
+42,document_status,3,signed,USULAN; cocokkan ke domain state machine / terminologi nasional,"clinical.clinical_documents.status, clinical.clinical_notes.status, radiology.rad_reports.status",varchar + CHECK / lookup table,DRAFT
+43,document_status,4,amended,USULAN; cocokkan ke domain state machine / terminologi nasional,"clinical.clinical_documents.status, clinical.clinical_notes.status, radiology.rad_reports.status",varchar + CHECK / lookup table,DRAFT
+44,document_status,5,entered-in-error,USULAN; cocokkan ke domain state machine / terminologi nasional,"clinical.clinical_documents.status, clinical.clinical_notes.status, radiology.rad_reports.status",varchar + CHECK / lookup table,DRAFT
+45,order_status,1,draft,USULAN; cocokkan ke domain state machine / terminologi nasional,orders.service_orders.status,varchar + CHECK / lookup table,DRAFT
+46,order_status,2,active,USULAN; cocokkan ke domain state machine / terminologi nasional,orders.service_orders.status,varchar + CHECK / lookup table,DRAFT
+47,order_status,3,on-hold,USULAN; cocokkan ke domain state machine / terminologi nasional,orders.service_orders.status,varchar + CHECK / lookup table,DRAFT
+48,order_status,4,revoked,USULAN; cocokkan ke domain state machine / terminologi nasional,orders.service_orders.status,varchar + CHECK / lookup table,DRAFT
+49,order_status,5,completed,USULAN; cocokkan ke domain state machine / terminologi nasional,orders.service_orders.status,varchar + CHECK / lookup table,DRAFT
+50,order_status,6,entered-in-error,USULAN; cocokkan ke domain state machine / terminologi nasional,orders.service_orders.status,varchar + CHECK / lookup table,DRAFT
+51,prescription_status,1,draft,USULAN; cocokkan ke domain state machine / terminologi nasional,pharmacy.prescriptions.status,varchar + CHECK / lookup table,DRAFT
+52,prescription_status,2,signed,USULAN; cocokkan ke domain state machine / terminologi nasional,pharmacy.prescriptions.status,varchar + CHECK / lookup table,DRAFT
+53,prescription_status,3,verified,USULAN; cocokkan ke domain state machine / terminologi nasional,pharmacy.prescriptions.status,varchar + CHECK / lookup table,DRAFT
+54,prescription_status,4,partial,USULAN; cocokkan ke domain state machine / terminologi nasional,pharmacy.prescriptions.status,varchar + CHECK / lookup table,DRAFT
+55,prescription_status,5,dispensed,USULAN; cocokkan ke domain state machine / terminologi nasional,pharmacy.prescriptions.status,varchar + CHECK / lookup table,DRAFT
+56,prescription_status,6,cancelled,USULAN; cocokkan ke domain state machine / terminologi nasional,pharmacy.prescriptions.status,varchar + CHECK / lookup table,DRAFT
+57,stock_movement_type,1,receipt,USULAN; cocokkan ke domain state machine / terminologi nasional,inventory.stock_movements.movement_type,varchar + CHECK / lookup table,DRAFT
+58,stock_movement_type,2,issue,USULAN; cocokkan ke domain state machine / terminologi nasional,inventory.stock_movements.movement_type,varchar + CHECK / lookup table,DRAFT
+59,stock_movement_type,3,transfer-in,USULAN; cocokkan ke domain state machine / terminologi nasional,inventory.stock_movements.movement_type,varchar + CHECK / lookup table,DRAFT
+60,stock_movement_type,4,transfer-out,USULAN; cocokkan ke domain state machine / terminologi nasional,inventory.stock_movements.movement_type,varchar + CHECK / lookup table,DRAFT
+61,stock_movement_type,5,adjustment,USULAN; cocokkan ke domain state machine / terminologi nasional,inventory.stock_movements.movement_type,varchar + CHECK / lookup table,DRAFT
+62,stock_movement_type,6,return,USULAN; cocokkan ke domain state machine / terminologi nasional,inventory.stock_movements.movement_type,varchar + CHECK / lookup table,DRAFT
+63,stock_movement_type,7,reversal,USULAN; cocokkan ke domain state machine / terminologi nasional,inventory.stock_movements.movement_type,varchar + CHECK / lookup table,DRAFT
+64,outbox_status,1,pending,USULAN; cocokkan ke domain state machine / terminologi nasional,integration.outbox_events.status,varchar + CHECK / lookup table,DRAFT
+65,outbox_status,2,processing,USULAN; cocokkan ke domain state machine / terminologi nasional,integration.outbox_events.status,varchar + CHECK / lookup table,DRAFT
+66,outbox_status,3,delivered,USULAN; cocokkan ke domain state machine / terminologi nasional,integration.outbox_events.status,varchar + CHECK / lookup table,DRAFT
+67,outbox_status,4,retry,USULAN; cocokkan ke domain state machine / terminologi nasional,integration.outbox_events.status,varchar + CHECK / lookup table,DRAFT
+68,outbox_status,5,dead-letter,USULAN; cocokkan ke domain state machine / terminologi nasional,integration.outbox_events.status,varchar + CHECK / lookup table,DRAFT
+69,outbox_status,6,cancelled,USULAN; cocokkan ke domain state machine / terminologi nasional,integration.outbox_events.status,varchar + CHECK / lookup table,DRAFT
+<PARSED TEXT FOR SHEET: 11 / 18 TABS
+TAB NAME: 10_FHIR_MAP>
+index,10 FHIR MAP,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6,Unnamed: 7,Unnamed: 8,Unnamed: 9
+0,DRAFT • SIMRS FHIR-First • PostgreSQL source-of-truth • no dedicated FHIR Server,,,,,,,,,
+1,,,,,,,,,,
+2,Domain,FHIR R4 Resource,FHIR field/path,Tabel sumber,Kolom sumber,Transformasi / rule,Kode / profile,Arah,Prioritas,Catatan
+3,Patient,Patient,id,patient.patients,id,Local ID stable; external ID tracked separately,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+4,Patient,Patient,identifier,patient.patient_identifiers,"identifier_system, identifier_value",Map MRN/NIK/IHS via system URI; mask logging,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+5,Patient,Patient,name,patient.patients,full_name,HumanName construction; preserve verified spelling,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+6,Patient,Patient,birthDate,patient.patients,birth_date,"YYYY-MM-DD, no default guessed date",FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+7,Patient,Patient,gender,patient.patients,administrative_sex,Use FHIR administrative gender enumeration,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+8,Patient,RelatedPerson,patient,patient.related_persons,patient_id,Reference Patient,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+9,Master,Organization,identifier,master.organization_identifiers,"identifier_system, identifier_value",SATUSEHAT org ID mapping,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+10,Master,Organization,name,master.organizations,name,Organizational display,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+11,Master,Location,managingOrganization,master.locations,organization_id,Reference Organization,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+12,Master,Location,partOf,master.locations,parent_location_id,Hierarchy mapping,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+13,Master,Practitioner,identifier,master.practitioner_identifiers,"identifier_system, identifier_value",Practitioner IHS/registration IDs,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+14,Master,Practitioner,name,master.practitioners,full_name,HumanName,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+15,Master,PractitionerRole,practitioner,master.practitioner_assignments,practitioner_id,Reference practitioner,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+16,Master,PractitionerRole,organization,master.practitioner_assignments,organization_id,Reference organization,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+17,Scheduling,Schedule,actor,scheduling.schedules,"practitioner_id, organization_id",Compose actor references,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+18,Scheduling,Slot,start / end,scheduling.slots,"start_at, end_at",ISO-8601 with timezone,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+19,Scheduling,Appointment,participant,scheduling.appointments,"patient_id, practitioner_id",Reference patient/practitioner,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+20,Scheduling,Appointment,status,scheduling.appointments,status,Map local appointment lifecycle,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+21,Encounter,Encounter,subject,encounter.encounters,patient_id,Patient reference,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+22,Encounter,Encounter,class,encounter.encounters,encounter_class,Map R4 ActCode and national profile,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+23,Encounter,Encounter,status,encounter.encounters,status,FHIR encounter status state mapping,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+24,Encounter,Encounter,period,encounter.encounters,"started_at, ended_at",Set period; no fabricated timestamp,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+25,Encounter,Encounter,participant,encounter.encounter_participants,"practitioner_id, participant_role",Period-aware DPJP / clinical participants,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+26,Encounter,Encounter,location,encounter.bed_assignments,bed_id,Map encounter location period,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+27,Consent,Consent,patient,consent.consent_records,patient_id,Subject patient,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+28,Consent,Consent,provision.period,consent.consent_records,"effective_from, effective_to",Consent effective window,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+29,Consent,Consent,sourceAttachment,consent.consent_artifacts,"storage_uri, sha256",Represent permitted artifact; no raw unauthorized attachment,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+30,Clinical,Condition,subject,clinical.diagnoses,patient_id,Patient ref,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+31,Clinical,Condition,encounter,clinical.diagnoses,encounter_id,Encounter ref,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+32,Clinical,Condition,code,clinical.diagnoses,"diagnosis_code_system, diagnosis_code",ICD-10 system code mapping,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+33,Clinical,Condition,verificationStatus,clinical.diagnoses,verification_status,Coded verified status,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+34,Clinical,Observation,code,clinical.observations,"code_system, code",LOINC coding as applicable,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+35,Clinical,Observation,valueQuantity,clinical.observations,"value_numeric, unit_ucum","UCUM quantity, not component by default",FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+36,Clinical,Observation,valueString,clinical.observations,value_text,Use value[x] only matching kind,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+37,Clinical,Observation,effectiveDateTime,clinical.observations,effective_at,Clinical occurrence timestamp,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+38,Clinical,Observation,subject / encounter,clinical.observations,"patient_id, encounter_id",FHIR references,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+39,Clinical,Procedure,code,clinical.procedures,"procedure_code_system, procedure_code",ICD-9-CM/procedure coding per use case,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+40,Clinical,Procedure,performedDateTime,clinical.procedures,performed_at,Clinical procedure time,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+41,Clinical,AllergyIntolerance,code,clinical.allergies,"substance_system, substance_code",Allergy product code when applicable,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+42,Clinical,CarePlan,activity,clinical.care_plan_activities,"service_order_id, activity_code",Intent/order association,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+43,Clinical,CareTeam,participant,clinical.care_team_members,"practitioner_id, responsibility",Practitioner + role + period,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+44,Clinical,Goal,description,clinical.care_goals,description,Narrative goal text,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+45,Clinical,Composition,section,clinical.clinical_notes,"structured_content, body_text",Document template and sections,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+46,Clinical,DocumentReference,content.attachment,clinical.clinical_documents,"body_storage_uri, content_sha256",Document URI + content hash and access control,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+47,Orders,ServiceRequest,subject,orders.service_orders,patient_id,Patient reference,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+48,Orders,ServiceRequest,encounter,orders.service_orders,encounter_id,Encounter reference,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+49,Orders,ServiceRequest,requester,orders.service_orders,requesting_practitioner_id,Practitioner reference,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+50,Orders,ServiceRequest,code,orders.order_items,service_id,Service code binding to catalogue,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+51,Orders,ServiceRequest,status,orders.service_orders,status,FHIR intent/order status mapping,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+52,Laboratory,Specimen,identifier,laboratory.specimens,barcode,Specimen barcode Identifier,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+53,Laboratory,Specimen,type,laboratory.specimens,specimen_type_code,Specimen coding,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+54,Laboratory,Observation,code,laboratory.lab_results,test_id,Resolve test_catalog.loinc_code,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+55,Laboratory,Observation,valueQuantity,laboratory.lab_results,"result_value, unit_ucum",Numeric lab result,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+56,Laboratory,DiagnosticReport,result,laboratory.lab_reports,lab_order_id,References lab_results observations,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+57,Laboratory,DiagnosticReport,conclusion,laboratory.lab_reports,conclusion,Verified lab report conclusion,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+58,Radiology,ImagingStudy,identifier,radiology.imaging_studies,study_instance_uid,"DICOM StudyInstanceUID, not pixel data",FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+59,Radiology,ImagingStudy,series,radiology.imaging_series,series_instance_uid,DICOM series metadata only,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+60,Radiology,DiagnosticReport,conclusion,radiology.rad_reports,conclusion,Verified radiologist conclusion,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+61,Pharmacy,Medication,code,pharmacy.medications,kfa_code,Map to KFA codes using current guide,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+62,Pharmacy,MedicationRequest,medicationReference,pharmacy.prescription_items,medication_id,Reference Medication,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+63,Pharmacy,MedicationRequest,dosageInstruction,pharmacy.prescription_items,"dose_text, route_code, frequency_text",Structured dosage when available,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+64,Pharmacy,MedicationDispense,status,pharmacy.dispenses,status,Map local lifecycle,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+65,Pharmacy,MedicationDispense,quantity,pharmacy.dispense_items,quantity,No inventory balance as a clinical field,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+66,Pharmacy,MedicationAdministration,effectiveDateTime,pharmacy.medication_administrations,administered_at,Actual administration timestamp,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+67,Nutrition,NutritionOrder,dateTime,nutrition.diet_orders,start_date,Diet request effective start,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+68,Nutrition,NutritionOrder,oralDiet,nutrition.diet_orders,"diet_type_id, texture_code",Apply nutrition profiles; kitchen recipe is not FHIR,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+69,Quality,AdverseEvent,date,quality.patient_safety_incidents,incident_at,Incident report; privacy controlled,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+70,Quality,Measure,identifier,quality.quality_indicators,indicator_code,Measure where semantic definition matches,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+71,Quality,MeasureReport,measure / period,quality.indicator_runs,"indicator_id, period_from, period_to",Do not map all operational KPIs as FHIR,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+72,Billing,ChargeItem,code,billing.charges,service_id,Service catalogue ref,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+73,Billing,ChargeItem,quantity,billing.charges,quantity,Charge quantity,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+74,Billing,Invoice,identifier,billing.invoices,invoice_number,Invoice identifier; not GL,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+75,Billing,Invoice,totalNet,billing.invoices,net_amount,Invoice net total,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+76,Billing,Coverage,subscriberId,billing.coverages,member_number,Insurance member ID; sensitive,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+77,Billing,Claim,item,billing.claim_items,"service_code, claimed_amount","Conceptual FHIR representation, not BPJS API replacement",FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+78,Integration,FHIR Bundle,entry,integration.outbox_events,payload,"Construct from domain snapshot, not local FHIR Server",FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+79,Integration,Identifier,external_id mapping,integration.external_resource_links,external_resource_id,Idempotent external reference reconcile,FHIR R4,Outbound,P0,DRAFT: profile SATUSEHAT harus divalidasi
+<PARSED TEXT FOR SHEET: 12 / 18 TABS
+TAB NAME: 11_EVENTS>
+index,11 EVENTS,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5
+0,DRAFT • SIMRS FHIR-First • PostgreSQL source-of-truth • no dedicated FHIR Server,,,,,
+1,,,,,,
+2,Event type,Producer domain,Consumer domain,Source aggregate,Trigger,Idempotency/business rule
+3,patient.created,patient,encounter / integration,patient.patients,Patient registration commit,Idempotency by patient_id
+4,patient.merged,patient,clinical / integration,patient.patient_merges,Merge approved,Repoint references only using controlled workflow
+5,appointment.booked,scheduling,encounter / queue,scheduling.appointments,Booking committed,Booking key unique
+6,queue.called,scheduling,display/kiosk,scheduling.queue_events,Call transition,Ticket and transition sequence
+7,encounter.started,encounter,clinical / billing,encounter.encounters,Encounter in-progress,encounter_id+version
+8,encounter.discharged,encounter,clinical / claims / integration,encounter.discharges,Discharge authorization,encounter_id+discharge version
+9,clinical.note.signed,clinical,integration / audit,clinical.clinical_notes,Signed note immutable,sha256 note fingerprint
+10,clinical.diagnosis.verified,clinical,integration / casemix,clinical.diagnoses,Diagnosis verified,diagnosis_id+version
+11,clinical.observation.final,clinical,integration / analytics,clinical.observations,Observation final,observation_id+version
+12,clinical.procedure.completed,clinical,billing / integration,clinical.procedures,Procedure completed,source event -> unique charge
+13,order.placed,orders,LIS/RIS / pharmacy / billing,orders.service_orders,CPOE commit,order_id+version
+14,order.cancelled,orders,LIS/RIS / billing,orders.order_events,Order cancellation accepted,order_id+event_id
+15,lab.specimen.received,laboratory,LIS,laboratory.specimens,Specimen accession,barcode+event
+16,lab.result.verified,laboratory,clinical / billing / integration,laboratory.lab_results,Verifier signoff,lab_result_id+verification
+17,rad.report.finalized,radiology,clinical / billing / integration,radiology.rad_reports,Radiologist signoff,report_id+version
+18,pharmacy.prescription.signed,pharmacy,dispensing / integration,pharmacy.prescriptions,Prescriber signoff,prescription_id+version
+19,pharmacy.dispensed,pharmacy,inventory / billing / integration,pharmacy.dispenses,Dispense completed,dispense_id+line_id to movement
+20,medication.administered,pharmacy,clinical / billing / integration,pharmacy.medication_administrations,BCMA verified administration,administration_id
+21,inventory.stock.posted,inventory,billing / finance / analytics,inventory.stock_movements,Ledger insertion,stock_movement_id
+22,nutrition.diet.ordered,nutrition,kitchen / integration,nutrition.diet_orders,Diet order active,diet_order_id+version
+23,nutrition.tray.delivered,nutrition,billing / analytics,nutrition.tray_deliveries,Tray received,meal_tray_id+delivery
+24,cssd.cycle.released,operations,operating theater,operations.cssd_cycles,Steril indicators pass,cssd_cycle_id
+25,procurement.grn.posted,procurement,inventory / finance,procurement.goods_receipts,GRN accepted,GRN line unique stock movement
+26,billing.charge.finalized,billing,invoice / doctor-fee,billing.charges,Charge finalized,unique source kind/source id
+27,billing.payment.posted,billing,finance / analytics,billing.payments,Payment captured,payment_number immutable
+28,claim.submitted,billing,payer / integration,billing.claim_submissions,Claim version submitted,claim_id+submission_version
+29,finance.journal.posted,finance,analytics / audit,finance.journals,Double-entry balanced,journal_id+posting
+30,quality.indicator.computed,quality,portal / reporting,quality.indicator_runs,Calculation finished,indicator_id+period+source hash
+31,integration.fhir.export.requested,integration,FHIR delivery worker,integration.outbox_events,Outbox event pending,aggregate+version
+32,integration.delivery.failed,integration,ops alert,integration.integration_deliveries,Retry exhaustion or nonretryable,delivery_id+attempt count
+<PARSED TEXT FOR SHEET: 13 / 18 TABS
+TAB NAME: 12_WORKFLOWS>
+index,12 WORKFLOWS,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6
+0,DRAFT • SIMRS FHIR-First • PostgreSQL source-of-truth • no dedicated FHIR Server,,,,,,
+1,,,,,,,
+2,Workflow,Step,Business action,Table read/write,FHIR semantics,Transaction boundary,Clinical / data invariant
+3,RJ End-to-End,1,Identify/merge-safe,patient.patients + patient.patient_identifiers,Patient,1 transaction,"MRN scope, no duplicate identifiers"
+4,RJ End-to-End,2,Book + checkin,scheduling.appointments + scheduling.queue_tickets,Appointment,1 transaction,Queue unique daily
+5,RJ End-to-End,3,Start encounter,encounter.encounters + encounter.encounter_participants,Encounter,1 transaction,State + participant valid
+6,RJ End-to-End,4,SOAP + diagnosis,clinical.clinical_notes + clinical.diagnoses,Composition + Condition,per signed note transaction,Addendum for signed notes
+7,RJ End-to-End,5,Lab order,orders.service_orders + orders.order_items,ServiceRequest,order + outbox atomic,One canonical order ID
+8,RJ End-to-End,6,Specimen + result,laboratory.specimens + laboratory.lab_results,Specimen + Observation,LIS domain,Verification state and audit
+9,RJ End-to-End,7,Resep + dispensing,pharmacy.prescriptions + pharmacy.dispenses,MedicationRequest + MedicationDispense,Dispense + stock movement atomic,No double stock decrement
+10,RJ End-to-End,8,Charge/invoice,billing.charges + billing.invoices,ChargeItem + Invoice,Financial local ACID,Unique active charge per source
+11,RJ End-to-End,9,SATUSEHAT export,integration.outbox_events + integration.integration_deliveries,FHIR Bundle/resource,async outbox,No local dedicated FHIR Server
+12,IGD,1,Triage and acuity,encounter.emergency_triages + clinical.observations,Encounter + Observation,triage transaction,Severity and clinical timestamps
+13,IGD,2,Emergency orders,orders.service_orders + clinical.procedures,ServiceRequest + Procedure,domain transactions,Order/Procedure separation
+14,IGD,3,Disposition,encounter.discharges + encounter.encounters,Encounter,discharge transaction,Referral/admission link
+15,Rawat Inap,1,Admission + bed,encounter.admissions + encounter.bed_assignments,Encounter + Location,serializable/locked,Prevent overlapping bed assignments
+16,Rawat Inap,2,MAR/BCMA,pharmacy.medication_administrations + pharmacy.bcma_scan_events,MedicationAdministration,clinical administration,Five rights verification
+17,Rawat Inap,3,Transfer/discharge,encounter.bed_movements + encounter.discharges,Encounter,transaction,Patient safety handoff
+18,Radiology,1,Order + schedule,radiology.rad_orders + radiology.modality_worklists,ServiceRequest,RIS transaction,Order-to-accession traceability
+19,Radiology,2,PACS + DICOM UID,radiology.imaging_studies + radiology.imaging_series,ImagingStudy,RIS/PACS ingestion,Pixel data outside PostgreSQL
+20,Radiology,3,Report signing,radiology.rad_reports,DiagnosticReport,report commit,Final report protected
+21,Gizi,1,Assessment/diet order,nutrition.nutrition_assessments + nutrition.diet_orders,NutritionOrder,clinical transaction,Allergy/diet safety
+22,Gizi,2,Recipe/production,nutrition.recipes + nutrition.production_batches + nutrition.production_consumptions,Non-FHIR,kitchen transaction,Ingredient lot movement
+23,Gizi,3,Tray/delivery,nutrition.meal_trays + nutrition.tray_deliveries,Non-FHIR,logistics transaction,Delivered vs received status
+24,Finance,1,Charge event,billing.charges,ChargeItem,charge transaction,Source idempotency
+25,Finance,2,Invoice/payment,billing.invoices + billing.payments,Invoice,payment transaction,No over-allocation/refund
+26,Finance,3,GL posting,finance.journals + finance.journal_lines,Non-FHIR,balanced journal commit,Debits equal credits
+27,CSSD,1,Instrument set + sterilization,operations.cssd_sets + operations.cssd_cycles,Device reference only,CSSD transaction,Release after indicator pass
+28,BPJS Claim,1,Authorization/SEP,billing.coverage_authorizations + billing.bpjs_transactions,Coverage + BPJS API,external integration,No assumption BPJS follows FHIR
+29,BPJS Claim,2,Coding/grouper,billing.casemix_cases + billing.casemix_codings,Claim conceptual,claims transaction,Versioned grouper/coding
+30,BPJS Claim,3,Claim submit,billing.claim_submissions + integration.integration_deliveries,Claim conceptual + native API,async integration,Idempotency and audit
+31,Consent,1,Capture consent,consent.consent_records + consent.consent_artifacts,Consent,consent transaction,Evidence and scope
+32,Consent,2,Disclosure check,consent.disclosure_requests + audit.disclosure_logs,Consent,ABAC/policy validation,Default deny when not authorized
+<PARSED TEXT FOR SHEET: 14 / 18 TABS
+TAB NAME: 13_SECURITY>
+index,13 SECURITY,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4
+0,DRAFT • SIMRS FHIR-First • PostgreSQL source-of-truth • no dedicated FHIR Server,,,,
+1,,,,,
+2,Control,Scope,DB/API approach,Acceptance test,Priority
+3,Multi-RS,all tenant-scoped schemas,RLS + tenant_id NOT NULL + composite FK,Reject cross-tenant FK and missing tenant claims,P0
+4,PHI access,patient/clinical/laboratory/etc,ABAC based on assignment/encounter/purpose,Deny unrelated patient access,P0
+5,Patient dedup,patient.patient_identifiers,Unique active identifier scoped system/issuer,Concurrency dedup tests,P0
+6,Clinical signing,clinical.clinical_notes / clinical.clinical_documents,"Immutable signed fields, addenda, signature hash",Cannot overwrite signed content,P0
+7,Stock ledger,inventory.stock_movements,Append-only + reversal references,Double spend/concurrent issue test,P0
+8,GL integrity,finance.journals / finance.journal_lines,Deferred balance validation and period lock,Reject unbalanced posting,P1
+9,Outbox integrity,integration.outbox_events,Atomic insert+domain update / idempotent consumers,Failure injection retry/duplicate test,P0
+10,Logs and telemetry,integration / audit,"Redaction and access controls, retention","No raw PHI, NIK, auth tokens in errors",P0
+11,Field encryption,"patient contacts, HR and bank accounts","Envelope encryption + KMS, hash searchable identifiers",Ciphertext and key rotation tested,P0
+12,Consent/disclosure,consent + audit,"Consent/role/purpose gating, disclosure record",Privacy negative cases,P0
+13,Emergency break-glass,audit.break_glass_events,"Time-bound override, reason, review",Expired overrides cannot read,P0
+14,Data retention,audit / integration / attachments,Retention schedule per data class,Expiry/hold rules and purge signoff,P1
+15,Disaster recovery,all domains,"Encrypted backup, restore drills and PITR",Recovery objectives approved by hospital,P0
+16,Input validation,API + SQL,"Typed DTO, parameterized queries, safe file upload",SQL injection and malicious file tests,P0
+17,Code system governance,terminology,Versioned coding with canonical URI and mapping,Terminology update/regression test,P0
+18,FHIR profile compliance,integration.mapper,R4 + national use case profile validation,Positive/negative resources and bundles,P0
+19,Database privileges,all schemas,"Least privilege schema roles, no admin DB on runtime",Role permission review,P0
+20,Audit trail,audit.change_logs,"DB or app hooks, actor and correlation ID",Who/what/when traceability,P0
+<PARSED TEXT FOR SHEET: 15 / 18 TABS
+TAB NAME: 14_DECISIONS>
+index,14 DECISIONS,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4
+0,DRAFT • SIMRS FHIR-First • PostgreSQL source-of-truth • no dedicated FHIR Server,,,,
+1,,,,,
+2,Decision,Status,Selected option / concern,Impact / implementation,Review gate or source
+3,FHIR Server,DECIDED,Tidak menggunakan dedicated FHIR Server,FHIR-First mapper / validator / REST client di Go; PostgreSQL canonical,Baseline keputusan pengguna
+4,Core storage,DECIDED,PostgreSQL sebagai source of truth,"Semua transaksi domain relational, FHIR projection only",Baseline master plan
+5,Backend,DECIDED,Go modular monolith,Domain ownership + events/outbox,Baseline master plan
+6,Frontend,DECIDED,React + TypeScript,Reusable clinical/backoffice UI,Baseline master plan
+7,Schema conventions,PROPOSED,23 schema kandidat,"15 baseline + tambahan terminology, scheduling, encounter, consent, operations, procurement, hr, analytics",Perlu review DBA/Tech Lead
+8,Key strategy,PROPOSED,"UUID primary key, tenant_id on tenant-scoped data",Link external IDs separately; no direct use IHS as PK,DBA approval G1
+9,Tenant integrity,PROPOSED,Composite tenant FKs with RLS,"Unique tenant_id,id, enforce no cross tenant references",DBA/security spike G1
+10,FHIR validation,OPEN,Embedded Go validator vs separate validator service,"Must validate StructureDefinition and national profiles, not JSON syntax alone",Spike G1-G2
+11,Go HTTP framework,OPEN,Echo vs Gin,Choose by middleware/auth/OpenAPI/testing ergonomics,G1 technical spike
+12,Event transport,OPEN,PostgreSQL queue/worker vs broker,Start transactional outbox; broker after need proven,G1-G2
+13,PHI encryption,OPEN,"Field-level PII ciphertext, searchable HMAC",Key management/legal/privacy threat model,G1 security review
+14,Medical terminology,OPEN,"Master governance ICD-10, ICD-9-CM, LOINC, UCUM, KFA, SNOMED","Versioned canonical URIs, licensing check",G1 clinical governance
+15,Claim submission,OPEN,BPJS/payer contract per partner,Cannot assume FHIR Claim is BPJS API,G4
+16,Tenancy model,OPEN,Single shared DB multi-RS vs per-tenant isolated DB,"Decide scale, legal boundary, DR, operations",G1
+17,Coded enum,OPEN,varchar + CHECK vs PG ENUM,Prefer extensible lookup+CHECK for external status evolution,G1
+18,Patient de-dup,OPEN,"NIK, IHS, MRN match policies",False positive/negative and merge authority,G0-G1
+19,Document retention,OPEN,"Signed artifact URI, signature standard and retention",Clinical/regulatory validation,G1
+20,Legacy reuse,OPEN,Reuse SIMRS-Sensi FE / business rules,Repo analysis and migration strategy required,G0-G1
+21,Pilot scope,OPEN,One hospital pilot and service line,Clinical safety and signoff criteria,G0
+<PARSED TEXT FOR SHEET: 16 / 18 TABS
+TAB NAME: 15_TRACEABILITY>
+index,15 TRACEABILITY,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4
+0,DRAFT • SIMRS FHIR-First • PostgreSQL source-of-truth • no dedicated FHIR Server,,,,
+1,,,,,
+2,Source type,Document,Section,What supported,Evidence class
+3,DOCX,Rencana_Induk_SIMRS_FHIR_First_Tanpa_FHIR_Server_v1.docx,§3 / Tables 6–11,"68 modul, ruang lingkup, FHIR, prioritas",DIREKTIF SUMBER
+4,DOCX,Rencana_Induk_SIMRS_FHIR_First_Tanpa_FHIR_Server_v1.docx,§6 Domain Ownership,13 bounded contexts dan event contoh,DIREKTIF SUMBER
+5,DOCX,Rencana_Induk_SIMRS_FHIR_First_Tanpa_FHIR_Server_v1.docx,§7 Table 19,15 skema dan daftar tabel kandidat,DIREKTIF SUMBER
+6,DOCX,Rencana_Induk_SIMRS_FHIR_First_Tanpa_FHIR_Server_v1.docx,§7 Table 20,"Field konvensi id, tenant_id, version, audit",DIREKTIF SUMBER
+7,DOCX,Rencana_Induk_SIMRS_FHIR_First_Tanpa_FHIR_Server_v1.docx,§8 Table 23,23 kebutuhan dan kandidat resource FHIR,DIREKTIF SUMBER
+8,DOCX,Rencana_Induk_SIMRS_FHIR_First_Tanpa_FHIR_Server_v1.docx,Lampiran A / Table 42,18 tabel contoh dan business rules awal,DIREKTIF SUMBER
+9,PDF,new simrs.pdf,Halaman 1–2,Pembagian enam developer dan resource inti,REFERENSI SUMBER
+10,DESAIN BARU,Workbook ini,04_TABLES / 05_COLUMNS,"271 tabel, atribut lengkap dan FK detail",USULAN ARSITEK / BUTUH REVIEW
+11,DESAIN BARU,Workbook ini,06_RELATIONS / 07_INDEXES / 08_CONSTRAINTS,"Relasi, indeks dan invariants database",USULAN ARSITEK / BUTUH REVIEW
+12,DESAIN BARU,Workbook ini,10_FHIR_MAPPING,"Pemetaan field FHIR R4, bukan IG final",USULAN ARSITEK / BUTUH VALIDASI SATUSEHAT
+13,DESAIN BARU,Workbook ini,16_DDL_BLUEPRINT,Draft DDL tanpa migrations siap-run,USULAN ARSITEK / BUTUH DBA REVIEW
+<PARSED TEXT FOR SHEET: 17 / 18 TABS
+TAB NAME: 16_DDL_BLUEPRINT>
+index,16 DDL BLUEPRINT,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4
+0,"REFERENCE ONLY • not an executable ordered migration • see RELATIONS, RULES, INDEXES, RLS",,,,
+1,,,,,
+2,DDL ID,Qualified table,CREATE TABLE DRAFT,Notes / missing constraints,Gate
+3,DDL001,identity.tenants,"CREATE TABLE identity.tenants (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  tenant_code varchar(40) NOT NULL,
+  legal_name varchar(250) NOT NULL,
+  status varchar(24) NOT NULL,
+  timezone varchar(60) NOT NULL,
+  default_locale varchar(12),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+4,DDL002,identity.tenant_memberships,"CREATE TABLE identity.tenant_memberships (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  user_id uuid NOT NULL,
+  membership_status varchar(24) NOT NULL,
+  valid_from date,
+  valid_to date,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+5,DDL003,identity.users,"CREATE TABLE identity.users (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  username varchar(100) NOT NULL,
+  email varchar(254),
+  password_hash text,
+  subject_external varchar(200),
+  status varchar(24) NOT NULL,
+  last_login_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+6,DDL004,identity.roles,"CREATE TABLE identity.roles (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  role_code varchar(80) NOT NULL,
+  display_name varchar(180) NOT NULL,
+  scope_kind varchar(20) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+7,DDL005,identity.permissions,"CREATE TABLE identity.permissions (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  permission_key varchar(150) NOT NULL,
+  resource_name varchar(120) NOT NULL,
+  action varchar(50) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+8,DDL006,identity.role_permissions,"CREATE TABLE identity.role_permissions (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  role_id uuid NOT NULL,
+  permission_id uuid NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+9,DDL007,identity.user_roles,"CREATE TABLE identity.user_roles (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  user_id uuid NOT NULL,
+  role_id uuid NOT NULL,
+  organization_id uuid,
+  valid_from timestamptz,
+  valid_to timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+10,DDL008,identity.sessions,"CREATE TABLE identity.sessions (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  user_id uuid NOT NULL,
+  session_token_hash varchar(128) NOT NULL,
+  issued_at timestamptz NOT NULL,
+  expires_at timestamptz NOT NULL,
+  revoked_at timestamptz,
+  ip_hash varchar(128),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+11,DDL009,identity.mfa_factors,"CREATE TABLE identity.mfa_factors (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  user_id uuid NOT NULL,
+  factor_type varchar(24) NOT NULL,
+  secret_ciphertext bytea,
+  credential_ref varchar(250),
+  enabled_at timestamptz,
+  disabled_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+12,DDL010,identity.auth_events,"CREATE TABLE identity.auth_events (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  user_id uuid,
+  event_type varchar(40) NOT NULL,
+  success boolean NOT NULL,
+  occurred_at timestamptz NOT NULL,
+  ip_hash varchar(128),
+  reason_code varchar(50),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+13,DDL011,identity.access_policies,"CREATE TABLE identity.access_policies (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  policy_code varchar(100) NOT NULL,
+  target_type varchar(80) NOT NULL,
+  action varchar(40) NOT NULL,
+  expression_json jsonb NOT NULL,
+  status varchar(20) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+14,DDL012,identity.service_accounts,"CREATE TABLE identity.service_accounts (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  service_code varchar(80) NOT NULL,
+  label varchar(200) NOT NULL,
+  scope_json jsonb,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+15,DDL013,master.organizations,"CREATE TABLE master.organizations (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  parent_organization_id uuid,
+  organization_code varchar(80) NOT NULL,
+  name varchar(250) NOT NULL,
+  organization_type varchar(40) NOT NULL,
+  satusehat_org_id varchar(80),
+  active boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+16,DDL014,master.organization_identifiers,"CREATE TABLE master.organization_identifiers (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  organization_id uuid NOT NULL,
+  identifier_system varchar(200) NOT NULL,
+  identifier_value varchar(200) NOT NULL,
+  valid_from date,
+  valid_to date,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+17,DDL015,master.organization_units,"CREATE TABLE master.organization_units (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  organization_id uuid NOT NULL,
+  parent_unit_id uuid,
+  unit_code varchar(70) NOT NULL,
+  unit_name varchar(200) NOT NULL,
+  unit_kind varchar(40) NOT NULL,
+  active boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+18,DDL016,master.locations,"CREATE TABLE master.locations (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  organization_id uuid NOT NULL,
+  parent_location_id uuid,
+  location_code varchar(90) NOT NULL,
+  name varchar(200) NOT NULL,
+  location_kind varchar(50) NOT NULL,
+  active boolean NOT NULL,
+  satusehat_location_id varchar(100),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+19,DDL017,master.rooms,"CREATE TABLE master.rooms (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  location_id uuid NOT NULL,
+  room_code varchar(60) NOT NULL,
+  room_class varchar(50),
+  gender_policy varchar(24),
+  active boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+20,DDL018,master.beds,"CREATE TABLE master.beds (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  room_id uuid NOT NULL,
+  location_id uuid NOT NULL,
+  bed_code varchar(60) NOT NULL,
+  bed_class varchar(40),
+  capability_json jsonb,
+  active boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+21,DDL019,master.practitioners,"CREATE TABLE master.practitioners (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  full_name varchar(250) NOT NULL,
+  registration_no varchar(80),
+  gender varchar(16),
+  birth_date date,
+  ihs_practitioner_id varchar(90),
+  active boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+22,DDL020,master.practitioner_identifiers,"CREATE TABLE master.practitioner_identifiers (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  practitioner_id uuid NOT NULL,
+  identifier_system varchar(160) NOT NULL,
+  identifier_value varchar(200) NOT NULL,
+  valid_to date,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+23,DDL021,master.practitioner_credentials,"CREATE TABLE master.practitioner_credentials (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  practitioner_id uuid NOT NULL,
+  credential_type varchar(50) NOT NULL,
+  credential_number varchar(120) NOT NULL,
+  valid_from date,
+  valid_to date,
+  issued_by varchar(200),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+24,DDL022,master.practitioner_assignments,"CREATE TABLE master.practitioner_assignments (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  practitioner_id uuid NOT NULL,
+  organization_id uuid NOT NULL,
+  unit_id uuid,
+  specialty_code varchar(80),
+  position_code varchar(80),
+  valid_from date NOT NULL,
+  valid_to date,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+25,DDL023,master.service_catalog,"CREATE TABLE master.service_catalog (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  service_code varchar(80) NOT NULL,
+  service_name varchar(250) NOT NULL,
+  service_type varchar(50) NOT NULL,
+  clinical_code_system varchar(220),
+  clinical_code varchar(90),
+  active boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+26,DDL024,master.tariff_catalog,"CREATE TABLE master.tariff_catalog (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  service_id uuid NOT NULL,
+  payer_id uuid,
+  currency char(3) NOT NULL,
+  amount numeric(18,2) NOT NULL,
+  effective_from date NOT NULL,
+  effective_to date,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+27,DDL025,master.payment_methods,"CREATE TABLE master.payment_methods (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  method_code varchar(60) NOT NULL,
+  method_name varchar(150) NOT NULL,
+  channel varchar(30),
+  active boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+28,DDL026,terminology.code_systems,"CREATE TABLE terminology.code_systems (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  canonical_uri varchar(300) NOT NULL,
+  name varchar(180) NOT NULL,
+  version_label varchar(80),
+  publisher varchar(200),
+  active boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+29,DDL027,terminology.concepts,"CREATE TABLE terminology.concepts (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  code_system_id uuid NOT NULL,
+  code varchar(100) NOT NULL,
+  display varchar(350) NOT NULL,
+  definition text,
+  inactive boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+30,DDL028,terminology.value_sets,"CREATE TABLE terminology.value_sets (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  canonical_uri varchar(300) NOT NULL,
+  name varchar(200) NOT NULL,
+  version_label varchar(80),
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+31,DDL029,terminology.value_set_members,"CREATE TABLE terminology.value_set_members (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  value_set_id uuid NOT NULL,
+  concept_id uuid NOT NULL,
+  valid_from date,
+  valid_to date,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
