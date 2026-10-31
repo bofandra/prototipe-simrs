@@ -1,0 +1,566 @@
+SOURCE: Desain_Database_SIMRS_FHIR_First_Tanpa_FHIR_Server_v1.xlsx
+STATUS: Text extraction only, NOT the original XLSX. Formula/format/validation may be lost.
+PART: 08, Lines: 7001-7562 of 7562
+
+  summary text,
+  reviewer_id uuid,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+238,DDL236,quality.patient_safety_incidents,"CREATE TABLE quality.patient_safety_incidents (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  encounter_id uuid,
+  patient_id uuid,
+  incident_code varchar(80) NOT NULL,
+  severity varchar(24) NOT NULL,
+  incident_at timestamptz NOT NULL,
+  status varchar(24) NOT NULL,
+  reported_by uuid,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+239,DDL237,quality.incident_actions,"CREATE TABLE quality.incident_actions (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  incident_id uuid NOT NULL,
+  action_kind varchar(50) NOT NULL,
+  owner_user_id uuid,
+  due_at timestamptz,
+  action_status varchar(24) NOT NULL,
+  completed_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+240,DDL238,quality.hai_surveillance,"CREATE TABLE quality.hai_surveillance (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  organization_id uuid NOT NULL,
+  surveillance_code varchar(70) NOT NULL,
+  period_from date NOT NULL,
+  period_to date NOT NULL,
+  definition_version varchar(30) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+241,DDL239,quality.hai_cases,"CREATE TABLE quality.hai_cases (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  surveillance_id uuid NOT NULL,
+  encounter_id uuid NOT NULL,
+  patient_id uuid NOT NULL,
+  infection_code varchar(90) NOT NULL,
+  onset_date date,
+  confirmed_status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+242,DDL240,quality.risk_register,"CREATE TABLE quality.risk_register (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  risk_code varchar(90) NOT NULL,
+  risk_category varchar(60) NOT NULL,
+  description text NOT NULL,
+  likelihood int NOT NULL,
+  impact int NOT NULL,
+  owner_user_id uuid,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+243,DDL241,quality.risk_actions,"CREATE TABLE quality.risk_actions (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  risk_id uuid NOT NULL,
+  action_text text NOT NULL,
+  owner_user_id uuid,
+  due_at date,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+244,DDL242,quality.quality_indicators,"CREATE TABLE quality.quality_indicators (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  indicator_code varchar(100) NOT NULL,
+  indicator_name varchar(250) NOT NULL,
+  numerator_definition text NOT NULL,
+  denominator_definition text NOT NULL,
+  sql_definition_version varchar(40),
+  frequency varchar(30) NOT NULL,
+  active boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+245,DDL243,quality.indicator_runs,"CREATE TABLE quality.indicator_runs (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  indicator_id uuid NOT NULL,
+  period_from date NOT NULL,
+  period_to date NOT NULL,
+  executed_at timestamptz NOT NULL,
+  source_snapshot_hash char(64),
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+246,DDL244,quality.indicator_values,"CREATE TABLE quality.indicator_values (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  indicator_run_id uuid NOT NULL,
+  organization_id uuid NOT NULL,
+  numerator numeric(20,6),
+  denominator numeric(20,6),
+  value numeric(20,6),
+  completeness_status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+247,DDL245,quality.quality_audits,"CREATE TABLE quality.quality_audits (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  audit_code varchar(80) NOT NULL,
+  audit_scope varchar(50) NOT NULL,
+  planned_at date,
+  performed_at date,
+  lead_auditor_id uuid,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+248,DDL246,quality.audit_findings,"CREATE TABLE quality.audit_findings (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  quality_audit_id uuid NOT NULL,
+  finding_code varchar(60) NOT NULL,
+  severity varchar(30) NOT NULL,
+  recommendation text NOT NULL,
+  owner_user_id uuid,
+  due_at date,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+249,DDL247,quality.rl_reporting_periods,"CREATE TABLE quality.rl_reporting_periods (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  organization_id uuid NOT NULL,
+  report_type varchar(40) NOT NULL,
+  report_period varchar(30) NOT NULL,
+  source_version varchar(40),
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+250,DDL248,quality.rl_report_submissions,"CREATE TABLE quality.rl_report_submissions (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  period_id uuid NOT NULL,
+  submission_version int NOT NULL,
+  generated_at timestamptz,
+  file_storage_uri text,
+  validation_status varchar(24),
+  submitted_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+251,DDL249,quality.data_quality_issues,"CREATE TABLE quality.data_quality_issues (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  rule_code varchar(100) NOT NULL,
+  record_table varchar(120) NOT NULL,
+  record_id uuid,
+  severity varchar(24) NOT NULL,
+  detected_at timestamptz NOT NULL,
+  resolution_status varchar(24) NOT NULL,
+  assigned_to uuid,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+252,DDL250,quality.management_approvals,"CREATE TABLE quality.management_approvals (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  approval_type varchar(70) NOT NULL,
+  source_kind varchar(70) NOT NULL,
+  source_id uuid NOT NULL,
+  requested_by uuid NOT NULL,
+  approved_by uuid,
+  decision varchar(24) NOT NULL,
+  decided_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+253,DDL251,integration.external_systems,"CREATE TABLE integration.external_systems (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  system_code varchar(80) NOT NULL,
+  system_name varchar(150) NOT NULL,
+  system_type varchar(40) NOT NULL,
+  environment varchar(25) NOT NULL,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+254,DDL252,integration.external_endpoints,"CREATE TABLE integration.external_endpoints (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  external_system_id uuid NOT NULL,
+  endpoint_code varchar(90) NOT NULL,
+  base_url text NOT NULL,
+  auth_type varchar(40),
+  timeout_ms int,
+  active boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+255,DDL253,integration.integration_credentials,"CREATE TABLE integration.integration_credentials (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  external_system_id uuid NOT NULL,
+  organization_id uuid,
+  credential_ref text NOT NULL,
+  credential_version varchar(40),
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+256,DDL254,integration.external_resource_links,"CREATE TABLE integration.external_resource_links (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  external_system_id uuid NOT NULL,
+  local_entity_type varchar(70) NOT NULL,
+  local_entity_id uuid NOT NULL,
+  external_resource_type varchar(70) NOT NULL,
+  external_resource_id varchar(180) NOT NULL,
+  payload_checksum char(64),
+  last_synced_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+257,DDL255,integration.outbox_events,"CREATE TABLE integration.outbox_events (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  event_type varchar(140) NOT NULL,
+  aggregate_type varchar(80) NOT NULL,
+  aggregate_id uuid NOT NULL,
+  event_version int NOT NULL,
+  payload jsonb NOT NULL,
+  occurred_at timestamptz NOT NULL,
+  available_at timestamptz NOT NULL,
+  attempt_count int NOT NULL,
+  status varchar(25) NOT NULL,
+  correlation_id uuid,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+258,DDL256,integration.integration_deliveries,"CREATE TABLE integration.integration_deliveries (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  outbox_event_id uuid NOT NULL,
+  external_system_id uuid NOT NULL,
+  endpoint_id uuid,
+  idempotency_key varchar(200) NOT NULL,
+  request_sha256 char(64),
+  final_status varchar(30) NOT NULL,
+  last_http_status int,
+  delivered_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+259,DDL257,integration.delivery_attempts,"CREATE TABLE integration.delivery_attempts (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  integration_delivery_id uuid NOT NULL,
+  attempt_number int NOT NULL,
+  attempted_at timestamptz NOT NULL,
+  duration_ms int,
+  http_status int,
+  retry_class varchar(50),
+  error_code varchar(80),
+  response_meta_json jsonb,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+260,DDL258,integration.inbox_messages,"CREATE TABLE integration.inbox_messages (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  external_system_id uuid NOT NULL,
+  external_message_id varchar(180) NOT NULL,
+  received_at timestamptz NOT NULL,
+  message_sha256 char(64) NOT NULL,
+  process_status varchar(25) NOT NULL,
+  processed_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+261,DDL259,integration.mapping_rules,"CREATE TABLE integration.mapping_rules (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  mapping_code varchar(100) NOT NULL,
+  source_entity_type varchar(100) NOT NULL,
+  target_resource_type varchar(80) NOT NULL,
+  target_profile_url text,
+  rule_version varchar(45) NOT NULL,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+262,DDL260,integration.integration_jobs,"CREATE TABLE integration.integration_jobs (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  external_system_id uuid NOT NULL,
+  job_type varchar(70) NOT NULL,
+  schedule_cron varchar(120),
+  last_run_at timestamptz,
+  next_run_at timestamptz,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+263,DDL261,integration.webhook_subscriptions,"CREATE TABLE integration.webhook_subscriptions (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  external_system_id uuid NOT NULL,
+  event_pattern varchar(100) NOT NULL,
+  target_url text NOT NULL,
+  secret_ref text,
+  active boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+264,DDL262,audit.access_logs,"CREATE TABLE audit.access_logs (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  actor_user_id uuid,
+  patient_id uuid,
+  encounter_id uuid,
+  resource_type varchar(80) NOT NULL,
+  action varchar(60) NOT NULL,
+  decision varchar(24) NOT NULL,
+  purpose_code varchar(70),
+  occurred_at timestamptz NOT NULL,
+  trace_id varchar(120),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+265,DDL263,audit.change_logs,"CREATE TABLE audit.change_logs (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  actor_user_id uuid,
+  table_name varchar(140) NOT NULL,
+  record_id uuid NOT NULL,
+  change_action varchar(30) NOT NULL,
+  changed_fields_json jsonb,
+  occurred_at timestamptz NOT NULL,
+  correlation_id uuid,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+266,DDL264,audit.disclosure_logs,"CREATE TABLE audit.disclosure_logs (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  patient_id uuid NOT NULL,
+  consent_id uuid,
+  destination_code varchar(100) NOT NULL,
+  purpose_code varchar(80) NOT NULL,
+  data_scope_hash char(64) NOT NULL,
+  occurred_at timestamptz NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+267,DDL265,audit.break_glass_events,"CREATE TABLE audit.break_glass_events (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  actor_user_id uuid NOT NULL,
+  patient_id uuid NOT NULL,
+  reason_text text NOT NULL,
+  requested_at timestamptz NOT NULL,
+  expires_at timestamptz NOT NULL,
+  reviewed_by uuid,
+  reviewed_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+268,DDL266,audit.export_logs,"CREATE TABLE audit.export_logs (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  actor_user_id uuid,
+  export_type varchar(50) NOT NULL,
+  data_scope_hash char(64) NOT NULL,
+  record_count int,
+  exported_at timestamptz NOT NULL,
+  destination_ref varchar(120),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+269,DDL267,analytics.report_definitions,"CREATE TABLE analytics.report_definitions (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  report_code varchar(80) NOT NULL,
+  report_name varchar(180) NOT NULL,
+  source_domain varchar(70) NOT NULL,
+  query_version varchar(50) NOT NULL,
+  visibility_scope varchar(40) NOT NULL,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+270,DDL268,analytics.report_runs,"CREATE TABLE analytics.report_runs (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  report_definition_id uuid NOT NULL,
+  requested_by uuid,
+  period_start date,
+  period_end date,
+  run_at timestamptz NOT NULL,
+  result_uri text,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+271,DDL269,analytics.aggregate_snapshots,"CREATE TABLE analytics.aggregate_snapshots (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  organization_id uuid NOT NULL,
+  metric_code varchar(90) NOT NULL,
+  period_date date NOT NULL,
+  dimension_json jsonb,
+  metric_value numeric(22,6),
+  lineage_version varchar(50) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+272,DDL270,analytics.deid_datasets,"CREATE TABLE analytics.deid_datasets (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  dataset_code varchar(100) NOT NULL,
+  dataset_name varchar(200) NOT NULL,
+  deid_policy_version varchar(40) NOT NULL,
+  generated_at timestamptz NOT NULL,
+  retention_until date,
+  storage_uri text,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+273,DDL271,analytics.model_registry,"CREATE TABLE analytics.model_registry (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  model_code varchar(100) NOT NULL,
+  model_version varchar(70) NOT NULL,
+  purpose_code varchar(60) NOT NULL,
+  artifact_uri text,
+  validation_status varchar(30) NOT NULL,
+  approved_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+<PARSED TEXT FOR SHEET: 18 / 18 TABS
+TAB NAME: 17_IMPL_CHECKLIST>
+index,17 IMPL CHECKLIST,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4
+0,DRAFT • SIMRS FHIR-First • PostgreSQL source-of-truth • no dedicated FHIR Server,,,,
+1,,,,,
+2,Gate,Topic,Acceptance requirements,Owner candidate,Evidence
+3,G1,Architecture review,"Owner per schema, tenant schema, RLS, sensitivity",Architect / DBA,Review before initial migration
+4,G1,Primary/foreign keys,Composite tenant-aware FK + explicit delete policy,DBA,Reject invalid cross tenant refs
+5,G1,Identifier policy,Internal UUID vs MRN/IHS/SEP/Claim number,Clinical + Integration,Separate external_resource_links
+6,G1,Database migrations,"Versioned SQL, reversible or forward-only migrations",DBA / DevOps,CI migration from empty DB and upgrade
+7,G1,Terminology,"Canonical URI, versioned code mappings and value sets",Terminology steward,Update lifecycle and old record validity
+8,G1,RLS test,SQL-based tenant isolation with multiple roles,Security,No cross tenant leakage under direct SQL
+9,G2,Clinical vertical slice,Patient -> Encounter -> Order -> Lab -> Dispense -> Charge -> FHIR,Clinical leads,ACID + rollback + failure injection
+10,G2,Load/concurrency,"Race on bed, slot, stock, patient identity, charge",QA / DBA,Serializable transaction/locks and idempotency tests
+11,G2,Signed record,Immutable signed docs with addenda,Clinical + Legal,Signed overwrite impossible
+12,G2,FHIR integration,"Profile validation, reference dependency, ID mapping",Integration,Positive/negative payload+retry tests
+13,G4,Inventory reconciliation,"Physical lot vs stock ledger, expiration, rejects",Supply Chain,Zero unexplained ledger drift
+14,G4,Billing reconciliation,"One charge per source, payment allocation caps",Finance,Reconciliation report + automated checks
+15,G5,GL close,"Journal balanced, locked periods, reversal policy",Finance/DBA,Cannot post unbalanced journal
+16,G6,Analytics lineage,Official indicator SQL + numerator denominator source,Quality/Data,Reproduce dashboard metric from records
+17,G6,DR drill,"Backup, PITR, encrypted snapshots and restore",Infra/Security,Document RPO/RTO approval
