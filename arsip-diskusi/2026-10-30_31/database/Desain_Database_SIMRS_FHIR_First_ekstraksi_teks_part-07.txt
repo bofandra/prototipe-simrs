@@ -1,0 +1,1004 @@
+SOURCE: Desain_Database_SIMRS_FHIR_First_Tanpa_FHIR_Server_v1.xlsx
+STATUS: Text extraction only, NOT the original XLSX. Formula/format/validation may be lost.
+PART: 07, Lines: 6001-7000 of 7562
+
+  tenant_id uuid NOT NULL,
+  set_code varchar(100) NOT NULL,
+  set_name varchar(180) NOT NULL,
+  set_type varchar(50) NOT NULL,
+  active boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+169,DDL167,operations.cssd_set_items,"CREATE TABLE operations.cssd_set_items (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  cssd_set_id uuid NOT NULL,
+  instrument_id uuid NOT NULL,
+  expected_quantity int NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+170,DDL168,operations.cssd_cycles,"CREATE TABLE operations.cssd_cycles (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  cycle_number varchar(100) NOT NULL,
+  sterilizer_asset_id uuid,
+  started_at timestamptz NOT NULL,
+  finished_at timestamptz,
+  biological_indicator varchar(40),
+  chemical_indicator varchar(40),
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+171,DDL169,operations.cssd_cycle_items,"CREATE TABLE operations.cssd_cycle_items (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  cssd_cycle_id uuid NOT NULL,
+  cssd_set_id uuid NOT NULL,
+  tracking_code varchar(100) NOT NULL,
+  passed boolean,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+172,DDL170,operations.cssd_distributions,"CREATE TABLE operations.cssd_distributions (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  cssd_set_id uuid NOT NULL,
+  target_unit_id uuid NOT NULL,
+  delivered_at timestamptz NOT NULL,
+  received_by uuid,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+173,DDL171,operations.linen_items,"CREATE TABLE operations.linen_items (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  linen_code varchar(80) NOT NULL,
+  linen_name varchar(180) NOT NULL,
+  unit_code varchar(30) NOT NULL,
+  active boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+174,DDL172,operations.linen_batches,"CREATE TABLE operations.linen_batches (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  origin_location_id uuid,
+  batch_number varchar(100) NOT NULL,
+  linen_state varchar(30) NOT NULL,
+  collected_at timestamptz,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+175,DDL173,operations.laundry_cycles,"CREATE TABLE operations.laundry_cycles (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  linen_batch_id uuid NOT NULL,
+  machine_asset_id uuid,
+  started_at timestamptz NOT NULL,
+  ended_at timestamptz,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+176,DDL174,operations.linen_movements,"CREATE TABLE operations.linen_movements (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  linen_item_id uuid NOT NULL,
+  from_location_id uuid,
+  to_location_id uuid,
+  quantity numeric(18,3) NOT NULL,
+  movement_at timestamptz NOT NULL,
+  reference_code varchar(100),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+177,DDL175,operations.transport_requests,"CREATE TABLE operations.transport_requests (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  patient_id uuid,
+  encounter_id uuid,
+  request_type varchar(40) NOT NULL,
+  pickup_location_id uuid,
+  destination text,
+  required_at timestamptz,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+178,DDL176,operations.vehicles,"CREATE TABLE operations.vehicles (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  vehicle_code varchar(60) NOT NULL,
+  registration_plate varchar(30) NOT NULL,
+  vehicle_type varchar(40) NOT NULL,
+  active boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+179,DDL177,operations.transport_assignments,"CREATE TABLE operations.transport_assignments (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  transport_request_id uuid NOT NULL,
+  vehicle_id uuid NOT NULL,
+  assigned_employee_id uuid,
+  departed_at timestamptz,
+  arrived_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+180,DDL178,operations.housekeeping_tasks,"CREATE TABLE operations.housekeeping_tasks (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  location_id uuid NOT NULL,
+  task_type varchar(40) NOT NULL,
+  due_at timestamptz,
+  assigned_employee_id uuid,
+  status varchar(24) NOT NULL,
+  completion_note text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+181,DDL179,operations.nonmedical_transactions,"CREATE TABLE operations.nonmedical_transactions (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  business_unit_id uuid,
+  transaction_type varchar(50) NOT NULL,
+  reference_number varchar(100),
+  transaction_at timestamptz NOT NULL,
+  amount numeric(18,2) NOT NULL,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+182,DDL180,operations.assets,"CREATE TABLE operations.assets (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  asset_code varchar(100) NOT NULL,
+  asset_name varchar(220) NOT NULL,
+  asset_class varchar(40) NOT NULL,
+  location_id uuid,
+  acquisition_date date,
+  acquisition_cost numeric(18,2),
+  lifecycle_status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+183,DDL181,operations.asset_maintenances,"CREATE TABLE operations.asset_maintenances (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  asset_id uuid NOT NULL,
+  maintenance_type varchar(50) NOT NULL,
+  scheduled_at timestamptz,
+  performed_at timestamptz,
+  vendor_id uuid,
+  cost numeric(18,2),
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+184,DDL182,operations.facility_work_orders,"CREATE TABLE operations.facility_work_orders (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  location_id uuid,
+  work_order_no varchar(100) NOT NULL,
+  issue_type varchar(70) NOT NULL,
+  description text NOT NULL,
+  assigned_employee_id uuid,
+  due_at timestamptz,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+185,DDL183,billing.payers,"CREATE TABLE billing.payers (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  payer_code varchar(80) NOT NULL,
+  payer_name varchar(200) NOT NULL,
+  payer_type varchar(30) NOT NULL,
+  active boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+186,DDL184,billing.payer_contracts,"CREATE TABLE billing.payer_contracts (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  payer_id uuid NOT NULL,
+  contract_number varchar(100) NOT NULL,
+  effective_from date NOT NULL,
+  effective_to date,
+  terms_json jsonb,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+187,DDL185,billing.coverages,"CREATE TABLE billing.coverages (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  patient_id uuid NOT NULL,
+  payer_id uuid NOT NULL,
+  member_number varchar(150) NOT NULL,
+  policy_number varchar(150),
+  valid_from date,
+  valid_to date,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+188,DDL186,billing.coverage_authorizations,"CREATE TABLE billing.coverage_authorizations (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  coverage_id uuid NOT NULL,
+  encounter_id uuid,
+  authorization_number varchar(140) NOT NULL,
+  authorization_type varchar(50) NOT NULL,
+  authorized_at timestamptz,
+  valid_until timestamptz,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+189,DDL187,billing.charge_rules,"CREATE TABLE billing.charge_rules (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  service_id uuid NOT NULL,
+  tariff_id uuid,
+  charge_trigger varchar(60) NOT NULL,
+  rule_version varchar(35) NOT NULL,
+  effective_from date NOT NULL,
+  effective_to date,
+  active boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+190,DDL188,billing.charges,"CREATE TABLE billing.charges (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  encounter_id uuid NOT NULL,
+  patient_id uuid NOT NULL,
+  service_id uuid,
+  charge_rule_id uuid,
+  source_kind varchar(60) NOT NULL,
+  source_id uuid NOT NULL,
+  quantity numeric(18,3) NOT NULL,
+  unit_price numeric(18,2) NOT NULL,
+  gross_amount numeric(18,2) NOT NULL,
+  status varchar(24) NOT NULL,
+  posted_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+191,DDL189,billing.charge_adjustments,"CREATE TABLE billing.charge_adjustments (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  charge_id uuid NOT NULL,
+  adjustment_type varchar(50) NOT NULL,
+  adjustment_amount numeric(18,2) NOT NULL,
+  reason_code varchar(70) NOT NULL,
+  approved_by uuid,
+  applied_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+192,DDL190,billing.service_packages,"CREATE TABLE billing.service_packages (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  package_code varchar(70) NOT NULL,
+  package_name varchar(180) NOT NULL,
+  package_price numeric(18,2),
+  active boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+193,DDL191,billing.service_package_items,"CREATE TABLE billing.service_package_items (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  package_id uuid NOT NULL,
+  service_id uuid NOT NULL,
+  quantity numeric(18,3) NOT NULL,
+  included boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+194,DDL192,billing.invoices,"CREATE TABLE billing.invoices (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  invoice_number varchar(100) NOT NULL,
+  encounter_id uuid,
+  patient_id uuid NOT NULL,
+  payer_id uuid,
+  invoice_date date NOT NULL,
+  due_date date,
+  currency char(3) NOT NULL,
+  gross_amount numeric(18,2) NOT NULL,
+  net_amount numeric(18,2) NOT NULL,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+195,DDL193,billing.invoice_lines,"CREATE TABLE billing.invoice_lines (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  invoice_id uuid NOT NULL,
+  charge_id uuid,
+  description varchar(250) NOT NULL,
+  quantity numeric(18,3) NOT NULL,
+  unit_price numeric(18,2) NOT NULL,
+  total_amount numeric(18,2) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+196,DDL194,billing.payments,"CREATE TABLE billing.payments (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  payment_number varchar(100) NOT NULL,
+  patient_id uuid,
+  payer_id uuid,
+  payment_method_id uuid NOT NULL,
+  currency char(3) NOT NULL,
+  amount numeric(18,2) NOT NULL,
+  paid_at timestamptz NOT NULL,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+197,DDL195,billing.payment_allocations,"CREATE TABLE billing.payment_allocations (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  payment_id uuid NOT NULL,
+  invoice_id uuid NOT NULL,
+  amount numeric(18,2) NOT NULL,
+  allocated_at timestamptz NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+198,DDL196,billing.refunds,"CREATE TABLE billing.refunds (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  payment_id uuid NOT NULL,
+  amount numeric(18,2) NOT NULL,
+  reason text NOT NULL,
+  approved_by uuid,
+  refunded_at timestamptz,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+199,DDL197,billing.deposits,"CREATE TABLE billing.deposits (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  patient_id uuid NOT NULL,
+  encounter_id uuid,
+  payment_id uuid NOT NULL,
+  available_amount numeric(18,2) NOT NULL,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+200,DDL198,billing.claims,"CREATE TABLE billing.claims (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  patient_id uuid NOT NULL,
+  encounter_id uuid NOT NULL,
+  coverage_id uuid,
+  claim_number varchar(100) NOT NULL,
+  claim_amount numeric(18,2) NOT NULL,
+  claim_type varchar(50) NOT NULL,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+201,DDL199,billing.claim_items,"CREATE TABLE billing.claim_items (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  claim_id uuid NOT NULL,
+  charge_id uuid,
+  service_code varchar(90) NOT NULL,
+  quantity numeric(18,3) NOT NULL,
+  claimed_amount numeric(18,2) NOT NULL,
+  approved_amount numeric(18,2),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+202,DDL200,billing.claim_documents,"CREATE TABLE billing.claim_documents (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  claim_id uuid NOT NULL,
+  document_id uuid,
+  document_kind varchar(60) NOT NULL,
+  storage_uri text,
+  sha256 char(64),
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+203,DDL201,billing.claim_submissions,"CREATE TABLE billing.claim_submissions (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  claim_id uuid NOT NULL,
+  destination_system_id uuid,
+  submission_number varchar(120),
+  request_hash char(64) NOT NULL,
+  submitted_at timestamptz,
+  response_code varchar(60),
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+204,DDL202,billing.casemix_cases,"CREATE TABLE billing.casemix_cases (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  encounter_id uuid NOT NULL,
+  case_number varchar(100) NOT NULL,
+  grouping_version varchar(60),
+  group_code varchar(80),
+  tariff_amount numeric(18,2),
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+205,DDL203,billing.casemix_codings,"CREATE TABLE billing.casemix_codings (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  casemix_case_id uuid NOT NULL,
+  coding_system varchar(100) NOT NULL,
+  diagnosis_or_procedure_code varchar(100) NOT NULL,
+  sequence int NOT NULL,
+  coder_user_id uuid,
+  verified_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+206,DDL204,billing.bpjs_transactions,"CREATE TABLE billing.bpjs_transactions (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  encounter_id uuid,
+  coverage_id uuid,
+  bpjs_operation varchar(70) NOT NULL,
+  external_reference varchar(140),
+  transaction_at timestamptz NOT NULL,
+  request_hash char(64),
+  response_status varchar(40),
+  retryable boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+207,DDL205,finance.chart_of_accounts,"CREATE TABLE finance.chart_of_accounts (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  account_code varchar(80) NOT NULL,
+  account_name varchar(200) NOT NULL,
+  parent_account_id uuid,
+  account_type varchar(40) NOT NULL,
+  normal_balance varchar(10) NOT NULL,
+  active boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+208,DDL206,finance.accounting_periods,"CREATE TABLE finance.accounting_periods (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  organization_id uuid NOT NULL,
+  period_code varchar(30) NOT NULL,
+  start_date date NOT NULL,
+  end_date date NOT NULL,
+  status varchar(24) NOT NULL,
+  closed_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+209,DDL207,finance.journals,"CREATE TABLE finance.journals (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  journal_number varchar(100) NOT NULL,
+  accounting_period_id uuid NOT NULL,
+  journal_date date NOT NULL,
+  source_kind varchar(60),
+  source_id uuid,
+  description text,
+  status varchar(24) NOT NULL,
+  posted_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+210,DDL208,finance.journal_lines,"CREATE TABLE finance.journal_lines (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  journal_id uuid NOT NULL,
+  account_id uuid NOT NULL,
+  cost_center_id uuid,
+  debit numeric(18,2) NOT NULL,
+  credit numeric(18,2) NOT NULL,
+  memo text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+211,DDL209,finance.ap_bills,"CREATE TABLE finance.ap_bills (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  supplier_invoice_id uuid,
+  supplier_id uuid NOT NULL,
+  invoice_date date NOT NULL,
+  due_date date NOT NULL,
+  amount_due numeric(18,2) NOT NULL,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+212,DDL210,finance.ap_payments,"CREATE TABLE finance.ap_payments (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  ap_bill_id uuid NOT NULL,
+  bank_account_id uuid,
+  paid_amount numeric(18,2) NOT NULL,
+  paid_at timestamptz NOT NULL,
+  journal_id uuid,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+213,DDL211,finance.ar_balances,"CREATE TABLE finance.ar_balances (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  invoice_id uuid NOT NULL,
+  balance_as_of date NOT NULL,
+  outstanding_amount numeric(18,2) NOT NULL,
+  aging_bucket varchar(30),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+214,DDL212,finance.bank_accounts,"CREATE TABLE finance.bank_accounts (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  organization_id uuid NOT NULL,
+  account_name varchar(150) NOT NULL,
+  bank_name varchar(150),
+  account_number_ciphertext bytea,
+  currency char(3) NOT NULL,
+  active boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+215,DDL213,finance.bank_transactions,"CREATE TABLE finance.bank_transactions (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  bank_account_id uuid NOT NULL,
+  transaction_date date NOT NULL,
+  amount numeric(18,2) NOT NULL,
+  external_reference varchar(150),
+  reconciliation_status varchar(24) NOT NULL,
+  journal_id uuid,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+216,DDL214,finance.budgets,"CREATE TABLE finance.budgets (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  organization_id uuid NOT NULL,
+  fiscal_year int NOT NULL,
+  budget_version varchar(40) NOT NULL,
+  status varchar(24) NOT NULL,
+  approved_by uuid,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+217,DDL215,finance.budget_lines,"CREATE TABLE finance.budget_lines (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  budget_id uuid NOT NULL,
+  account_id uuid NOT NULL,
+  cost_center_id uuid,
+  period_month int NOT NULL,
+  budget_amount numeric(18,2) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+218,DDL216,finance.cost_centers,"CREATE TABLE finance.cost_centers (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  center_code varchar(80) NOT NULL,
+  center_name varchar(180) NOT NULL,
+  organization_unit_id uuid,
+  active boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+219,DDL217,finance.cost_allocations,"CREATE TABLE finance.cost_allocations (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  accounting_period_id uuid NOT NULL,
+  source_cost_center_id uuid NOT NULL,
+  target_cost_center_id uuid NOT NULL,
+  allocation_percent numeric(9,6) NOT NULL,
+  allocated_amount numeric(18,2) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+220,DDL218,finance.doctor_fee_rules,"CREATE TABLE finance.doctor_fee_rules (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  service_id uuid NOT NULL,
+  practitioner_role varchar(60) NOT NULL,
+  calc_method varchar(30) NOT NULL,
+  fee_rate numeric(12,6),
+  fixed_amount numeric(18,2),
+  valid_from date NOT NULL,
+  valid_to date,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+221,DDL219,finance.doctor_fee_ledger,"CREATE TABLE finance.doctor_fee_ledger (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  charge_id uuid NOT NULL,
+  practitioner_id uuid NOT NULL,
+  fee_rule_id uuid NOT NULL,
+  role_code varchar(60) NOT NULL,
+  fee_amount numeric(18,2) NOT NULL,
+  posted_at timestamptz NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+222,DDL220,finance.fixed_asset_depreciations,"CREATE TABLE finance.fixed_asset_depreciations (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  asset_id uuid NOT NULL,
+  accounting_period_id uuid NOT NULL,
+  depreciation_amount numeric(18,2) NOT NULL,
+  journal_id uuid,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+223,DDL221,hr.employees,"CREATE TABLE hr.employees (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  employee_number varchar(80) NOT NULL,
+  full_name varchar(250) NOT NULL,
+  practitioner_id uuid,
+  hired_date date NOT NULL,
+  employment_type varchar(40) NOT NULL,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+224,DDL222,hr.employment_contracts,"CREATE TABLE hr.employment_contracts (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  employee_id uuid NOT NULL,
+  contract_number varchar(100) NOT NULL,
+  start_date date NOT NULL,
+  end_date date,
+  base_salary_ciphertext bytea,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+225,DDL223,hr.shifts,"CREATE TABLE hr.shifts (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  shift_code varchar(50) NOT NULL,
+  shift_name varchar(100) NOT NULL,
+  local_start_time time NOT NULL,
+  local_end_time time NOT NULL,
+  active boolean NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+226,DDL224,hr.shift_assignments,"CREATE TABLE hr.shift_assignments (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  employee_id uuid NOT NULL,
+  shift_id uuid NOT NULL,
+  shift_date date NOT NULL,
+  unit_id uuid,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+227,DDL225,hr.attendance,"CREATE TABLE hr.attendance (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  employee_id uuid NOT NULL,
+  shift_assignment_id uuid,
+  check_in_at timestamptz,
+  check_out_at timestamptz,
+  verification_status varchar(24) NOT NULL,
+  source varchar(40),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+228,DDL226,hr.leave_requests,"CREATE TABLE hr.leave_requests (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  employee_id uuid NOT NULL,
+  leave_type varchar(50) NOT NULL,
+  start_date date NOT NULL,
+  end_date date NOT NULL,
+  status varchar(24) NOT NULL,
+  approved_by uuid,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+229,DDL227,hr.payroll_runs,"CREATE TABLE hr.payroll_runs (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  organization_id uuid NOT NULL,
+  payroll_period varchar(30) NOT NULL,
+  status varchar(24) NOT NULL,
+  approved_by uuid,
+  posted_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+230,DDL228,hr.payroll_items,"CREATE TABLE hr.payroll_items (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  payroll_run_id uuid NOT NULL,
+  employee_id uuid NOT NULL,
+  component_code varchar(60) NOT NULL,
+  amount_ciphertext bytea,
+  amount_hash varchar(128),
+  item_type varchar(20) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+231,DDL229,hr.job_openings,"CREATE TABLE hr.job_openings (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  organization_id uuid NOT NULL,
+  job_code varchar(80) NOT NULL,
+  title varchar(180) NOT NULL,
+  headcount int NOT NULL,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+232,DDL230,hr.applications,"CREATE TABLE hr.applications (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  job_opening_id uuid NOT NULL,
+  applicant_reference varchar(90) NOT NULL,
+  contact_ciphertext bytea,
+  application_at timestamptz NOT NULL,
+  stage varchar(50) NOT NULL,
+  status varchar(24) NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+233,DDL231,hr.trainings,"CREATE TABLE hr.trainings (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  course_code varchar(80) NOT NULL,
+  course_title varchar(200) NOT NULL,
+  provider_name varchar(180),
+  started_at timestamptz,
+  ended_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+234,DDL232,hr.employee_trainings,"CREATE TABLE hr.employee_trainings (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  training_id uuid NOT NULL,
+  employee_id uuid NOT NULL,
+  result_status varchar(24) NOT NULL,
+  certificate_ref text,
+  completed_at timestamptz,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+235,DDL233,hr.competencies,"CREATE TABLE hr.competencies (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  competency_code varchar(100) NOT NULL,
+  competency_name varchar(200) NOT NULL,
+  skill_level_scale varchar(40),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+236,DDL234,hr.employee_competencies,"CREATE TABLE hr.employee_competencies (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  employee_id uuid NOT NULL,
+  competency_id uuid NOT NULL,
+  assessed_level varchar(40),
+  assessed_at date,
+  assessed_by uuid,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  created_by uuid,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  updated_by uuid,
+  version integer NOT NULL DEFAULT 1
+);","DRAFT ONLY — tambahkan FK, CHECK/UNIQUE/EXCLUDE, RLS policies, partition dan index sesuai sheets 06-08",Architecture G1 / DBA review
+237,DDL235,hr.performance_reviews,"CREATE TABLE hr.performance_reviews (
+  id uuid PRIMARY KEY NOT NULL DEFAULT gen_random_uuid(),
+  tenant_id uuid NOT NULL,
+  employee_id uuid NOT NULL,
+  review_period varchar(30) NOT NULL,
+  score numeric(7,3),
