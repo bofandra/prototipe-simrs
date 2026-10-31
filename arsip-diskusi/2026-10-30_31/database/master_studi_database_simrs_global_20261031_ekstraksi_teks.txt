@@ -1,0 +1,1120 @@
+SUMBER: master_studi_database_simrs_global_20261031.xlsx
+CATATAN: Ekstraksi teks dari workbook XLSX asli; RUMUS, tipe sel, validasi, format, grafik, dan relasi antar sheet mungkin tidak terjaga.
+
+<PARSED TEXT FOR SHEET: 1 / 13 TABS
+TAB NAME: 00_Ringkasan>
+index,MASTER STUDI SIMRS GLOBAL,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6
+0,Studi struktur database EHR/HIS global → reference data architecture SIMRS baru | 31 Oktober 2026,,,,,,
+1,,,,,,,
+2,VENDOR DIBANDINGKAN,,ENTITAS PUBLIK,,TABEL USULAN SIMRS,,RELASI TARGET
+3,7,,36,,92,,132
+4,,,,,,,
+5,,,,,,,
+6,BATAS BUKTI — JANGAN SALAH MENAFSIRKAN DOKUMENTASI VENDOR,,,,,,
+7,Epic: EHI Export (bukan skema transaksi Chronicles). Oracle: Millennium ODS (bukan database transaksi lengkap). OpenMRS: model versi publik.,,,,,,
+8,"MEDITECH: metadata Data Repository historis. TrakCare: hanya arsitektur/domain publik. openEHR: model informasi, bukan SQL fisik.",,,,,,
+9,Tabel 05–10 merupakan rancangan USULAN SIMRS; bukan struktur fisik vendor dan belum dinyatakan siap produksi.,,,,,,
+10,,,,,,,
+11,Distribusi tabel usulan per domain dan prioritas,,,,,,PRINSIP ARSITEKTUR YANG DIREKOMENDASIKAN
+12,Domain,Total,P0,P1,P2/P3,,"1. Operational PostgreSQL: identitas, encounter, order, billing, ERP"
+13,CSSD,3,0,0,3,,2. openEHR CDR: clinical Composition (uji PoC dulu)
+14,Clinical CDR Link,5,5,0,0,,"3. Identitas EHR/Composition disimpan sebagai link, bukan SQL JOIN CDR"
+15,Clinical Read Model,4,0,4,0,,4. FHIR R4: adapter eksternal untuk SATUSEHAT (tanpa FHIR Server)
+16,Finance & ERP,3,0,0,3,,"5. Read model klinis: derived, rebuildable, version-aware"
+17,HR & Workforce,3,0,0,3,,6. Outbox + retry + idempotency + reconciliation
+18,Interop & Governance,7,6,1,0,,"7. Consent, RBAC, audit; batasi akses ke proyeksi PHI"
+19,Inventory & Purchasing,7,0,4,3,,"8. Jangan campurkan diagnosis klinis, proses klaim & billing"
+20,Laboratory,3,0,3,0,,9. Gunakan PK/FK logis; audit kadang tidak sama dgn FK fisik
+21,Master Data,7,7,0,0,,10. Lakukan benchmark PoC sebelum migrasi total
+22,Nutrition,3,0,0,3,,
+23,Orders & Catalog,4,4,0,0,,
+24,Patient Flow,9,6,3,0,,Panduan membaca workbook
+25,Patient Identity,4,3,1,0,,01–04: penelitian data vendor / bukti publik
+26,Pharmacy,6,5,1,0,,05–07: rancangan 92 tabel SIMRS + 490 field + relasi
+27,Radiology,3,0,3,0,,08: peta konsep ke HL7 FHIR dan openEHR
+28,Reporting & Analytics,3,0,0,3,,09–10: keputusan arsitektur dan tahapan
+29,Revenue Cycle,10,8,2,0,,"11: sumber resmi, tautan, dan batasan"
+30,Surgery & Anesthesia,3,0,0,3,,
+31,User & Access,5,5,0,0,,
+<PARSED TEXT FOR SHEET: 2 / 13 TABS
+TAB NAME: 01_VendorMatrix>
+index,Profil sistem & keterbukaan model,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6,Unnamed: 7,Unnamed: 8,Unnamed: 9
+0,Studi desk research • 31 Oktober 2026 • 7 baris • Status bukti dibedakan dari rancangan usulan,,,,,,,,,
+1,,,,,,,,,,
+2,Sistem,Lisensi/model,Fondasi data,Bukti publik,Cakupan,openEHR,FHIR,Kekuatan bukti,Source IDs,Batasan
+3,Epic,Proprietary,"Chronicles (transaksional), Clarity/Caboodle (reporting)",Epic EHI Export,"Tabel ekspor EHI: pasien, encounter, orders, result, notes, hospital account",Tidak ada bukti sebagai basis data utama,FHIR API tersedia,Tinggi untuk ekspor; rendah untuk fisik transaksi,S01,Jangan menyamakan EHI Export dengan seluruh Chronicles
+4,Oracle Health Millennium,Proprietary,Millennium/ODS,Millennium ODS dictionary,"PERSON, ENCOUNTER, ORDERS, CLINICAL_EVENT, DIAGNOSIS",Tidak terdokumentasi sebagai fondasi,FHIR R4 API tersedia,Tinggi untuk ODS; terbatas untuk transaksi,S12,ODS adalah data feed/read model
+5,OpenMRS,Open-source,Database relasional + observasi fleksibel,Data Model & ERD v1.9,"person, patient, visit, encounter, obs, concept, orders",Bukan fondasi,Ada modul FHIR,Tinggi untuk model referensi versi publik,"S13, S14",Versi referensi 1.9 perlu ditinjau ulang untuk versi mutakhir
+6,MEDITECH,Proprietary,Data Repository SQL reporting,Dokumentasi Data Repository,Metadata SysDrTables/SysDrColumns,Tidak terdokumentasi sebagai fondasi,FHIR API tersedia,Sedang untuk reporting; rendah untuk transaksi,S16,Referensi metadata publik tahun 2013; jangan asumsikan skema Expanse mutakhir
+7,InterSystems TrakCare,Proprietary,InterSystems IRIS for Health,Dokumentasi arsitektur produk,Model terintegrasi klinis + administrasi + revenue,Tidak terdokumentasi sebagai fondasi,FHIR / IRIS integration,Rendah untuk tabel fisik,S17,Tabel internal tidak dipublikasikan; hanya domain konseptual
+8,DIPS Arena,Proprietary openEHR implementation,openEHR server DIPS,Standar openEHR/produk,"EHR, Composition, archetype (model logis)","Ya, openEHR",Integrasi ditentukan implementasi,"Tinggi untuk standar, bukan SQL internal","S18, S20",Tidak identik dengan EHRbase; jangan anggap SQL schema sama
+9,EHRbase,Open-source CDR,PostgreSQL + openEHR REST/AQL,openEHR APIs dan EHRbase docs,"EHR, Composition, Entry, Contribution (model logis)","Ya, sebagai openEHR CDR",Butuh FHIR adapter untuk SATUSEHAT,Tinggi untuk API/model; fisik internal version-dependent,"S18, S19, S20",Tidak mengikat SIMRS ke tabel PostgreSQL internal
+<PARSED TEXT FOR SHEET: 3 / 13 TABS
+TAB NAME: 02_SourceTables>
+index,Katalog entitas vendor terverifikasi + batasan,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6,Unnamed: 7,Unnamed: 8
+0,Studi desk research • 31 Oktober 2026 • 36 baris • Status bukti dibedakan dari rancangan usulan,,,,,,,,
+1,,,,,,,,,
+2,Vendor,Domain,Tabel/Objek,PK / identitas,Fungsi,Lapisan,Status bukti,Source ID,URL sumber
+3,Epic,Identitas,PATIENT,PAT_ID,Pasien dan demografi,EHI Export,Terverifikasi,S02,https://open.epic.com/EHITables/GetTable/PATIENT.htm
+4,Epic,ADT,PAT_ENC,PAT_ENC_CSN_ID,Pasien-encounter,EHI Export,Terverifikasi,S03,https://open.epic.com/EHITables/GetTable/PAT_ENC.htm
+5,Epic,CPOE/Lab/Rad,ORDER_PROC,ORDER_PROC_ID,Order prosedur/pemeriksaan,EHI Export,Terverifikasi,S04,https://open.epic.com/EHITables/GetTable/ORDER_PROC.htm
+6,Epic,Lab/Rad,ORDER_RESULTS,ORDER_PROC_ID + ORD_DATE_REAL + LINE,Komponen hasil per order,EHI Export,Terverifikasi,S05,https://open.epic.com/EHITables/GetTable/ORDER_RESULTS.htm
+7,Epic,Farmasi,ORDER_MED,ORDER_MED_ID,Order medikasi,EHI Export,Terverifikasi,S06,https://open.epic.com/EHITables/GetTable/ORDER_MED.htm
+8,Epic,RME,HNO_INFO,NOTE_ID,Metadata clinical note,EHI Export,Terverifikasi,S07,https://open.epic.com/EHITables/GetTable/HNO_INFO.htm
+9,Epic,Revenue,HSP_ACCOUNT,HSP_ACCOUNT_ID,Hospital account,EHI Export,Terverifikasi,S08,https://open.epic.com/EHITables/GetTable/HSP_ACCOUNT.htm
+10,Epic,Diagnosis,ENC_DX_ASSOC_DATA,PAT_ENC_CSN_ID + LINE,Data terkait diagnosis encounter,EHI Export,Terverifikasi,S09,https://open.epic.com/EHITables/GetTable/ENC_DX_ASSOC_DATA.htm
+11,Epic,Dokumen,PAT_ENC_DOCS,PAT_ENC_CSN_ID + LINE,Dokumen terlampir pada encounter,EHI Export,Terverifikasi,S10,https://open.epic.com/EHITables/GetTable/PAT_ENC_DOCS.htm
+12,Epic,Farmasi,ORDER_MEDINFO,ORDER_MED_ID,Detail tambahan order obat,EHI Export,Terverifikasi,S11,https://open.epic.com/EHITables/GetTable/ORDER_MEDINFO.htm
+13,Oracle Health,Identitas,PERSON,PERSON_ID,Identitas orang,Millennium ODS,Terverifikasi,S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+14,Oracle Health,ADT,ENCOUNTER,ENCNTR_ID,Kunjungan/episode pelayanan,Millennium ODS,Terverifikasi,S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+15,Oracle Health,CPOE,ORDERS,ORDER_ID,Order lintas pelayanan,Millennium ODS,Terverifikasi,S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+16,Oracle Health,CPOE,ORDER_ACTION,ORDER_ID + ACTION_SEQUENCE (logis),Jejak aksi order; PK fisik perlu cek ulang,Millennium ODS,Terverifikasi parsial,S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+17,Oracle Health,Klinis,CLINICAL_EVENT,CLINICAL_EVENT_ID,Kejadian klinis/hasil,Millennium ODS,Terverifikasi,S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+18,Oracle Health,Diagnosis,DIAGNOSIS,DIAGNOSIS_ID,Diagnosis pasien,Millennium ODS,Terverifikasi,S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+19,Oracle Health,Terminologi,CMT_CONCEPT,CONCEPT_CKI (identifier),Katalog konsep/terminologi,Millennium ODS,Terverifikasi parsial,S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+20,OpenMRS,Identitas,person,person_id,Orang/demografi,Relasional,Terverifikasi (v1.9),S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+21,OpenMRS,Identitas,patient,patient_id,Peran pasien,Relasional,Terverifikasi (v1.9),S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+22,OpenMRS,Identitas,patient_identifier,patient_identifier_id,Nomor RM/identifier eksternal,Relasional,Terverifikasi (v1.9),S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+23,OpenMRS,Pelayanan,visit,visit_id,Kumpulan encounter selama kunjungan,Relasional,Terverifikasi (v1.9),S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+24,OpenMRS,Pelayanan,encounter,encounter_id,Interaksi pelayanan dalam visit,Relasional,Terverifikasi (v1.9),S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+25,OpenMRS,Klinis,obs,obs_id,Pengukuran/observasi EAV,Relasional,Terverifikasi (v1.9),S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+26,OpenMRS,Terminologi,concept,concept_id,Dictionary klinis,Relasional,Terverifikasi (v1.9),S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+27,OpenMRS,Terminologi,concept_name,concept_name_id,Nama/terjemahan konsep,Relasional,Terverifikasi (v1.9),S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+28,OpenMRS,CPOE,orders,order_id,Perintah klinis,Relasional,Terverifikasi (v1.9),S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+29,MEDITECH,Metadata,SysDrTables,TableID (kolom metadata),Daftar tabel Data Repository SQL,Data Repository,Terverifikasi; sumber historis,S16,https://home.meditech.com/en/d/clientservicesccimages/otherfiles/2013marchnewsletterdatamapping.pdf
+30,MEDITECH,Metadata,SysDrColumns,Tidak dinyatakan pada sumber ringkas,Daftar kolom Data Repository SQL,Data Repository,Terverifikasi; sumber historis,S16,https://home.meditech.com/en/d/clientservicesccimages/otherfiles/2013marchnewsletterdatamapping.pdf
+31,TrakCare,Arsitektur,Patient identity & administration,—,Domain data pasien dan administrasi,Konsep/domain,Hanya domain; bukan tabel SQL,S17,https://www.intersystems.com/id/produk/trakcare/
+32,TrakCare,Arsitektur,Clinical record & revenue cycle,—,Domain klinis dan operasional,Konsep/domain,Hanya domain; bukan tabel SQL,S17,https://www.intersystems.com/id/produk/trakcare/
+33,openEHR,Logis,EHR,ehr_id,Rekam kesehatan longitudinal,Reference Model,"Standar logis, bukan tabel SQL",S20,https://specifications.openehr.org/releases/SM/latest/openehr_platform.html
+34,openEHR,Logis,EHR_STATUS,UID terkelola versi,Status dan subjek EHR,Reference Model,"Standar logis, bukan tabel SQL",S20,https://specifications.openehr.org/releases/SM/latest/openehr_platform.html
+35,openEHR,Logis,COMPOSITION,uid (version UID),Dokumen/catatan klinis,Reference Model,"Standar logis, bukan tabel SQL",S18,https://specifications.openehr.org/releases/ITS-REST/development/ehr.html
+36,openEHR,Logis,VERSIONED_COMPOSITION,versioned_object_uid,Riwayat versi Composition,Reference Model,"Standar logis, bukan tabel SQL",S18,https://specifications.openehr.org/releases/ITS-REST/development/ehr.html
+37,openEHR,Logis,OBSERVATION / EVALUATION / INSTRUCTION / ACTION,archetype_node_id (struktur),Jenis entry klinis,Reference Model,"Standar logis, bukan tabel SQL",S19,https://docs.ehrbase.org/docs/EHRbase/Explore/AQL/Introduction
+38,openEHR,Logis,CONTRIBUTION,uid,Komit/audit versi klinis,Reference Model,"Standar logis, bukan tabel SQL",S20,https://specifications.openehr.org/releases/SM/latest/openehr_platform.html
+<PARSED TEXT FOR SHEET: 4 / 13 TABS
+TAB NAME: 03_SourceFields>
+index,"Field penting dari dokumentasi publik (sampel, bukan semua kolom)",Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6,Unnamed: 7,Unnamed: 8,Unnamed: 9
+0,Studi desk research • 31 Oktober 2026 • 147 baris • Status bukti dibedakan dari rancangan usulan,,,,,,,,,
+1,,,,,,,,,,
+2,Vendor,Tabel,Field / Atribut,Peran,Domain,Lapisan,Level bukti,Catatan,Source ID,URL sumber
+3,Epic,PATIENT,PAT_ID,PK component,Identitas,EHI Export,Terverifikasi,Bagian dari PK (sesuai indeks),S02,https://open.epic.com/EHITables/GetTable/PATIENT.htm
+4,Epic,PATIENT,PAT_NAME,Data field,Identitas,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S02,https://open.epic.com/EHITables/GetTable/PATIENT.htm
+5,Epic,PATIENT,CITY,Data field,Identitas,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S02,https://open.epic.com/EHITables/GetTable/PATIENT.htm
+6,Epic,PAT_ENC,PAT_ENC_CSN_ID,PK component,ADT,EHI Export,Terverifikasi,Bagian dari PK (sesuai indeks),S03,https://open.epic.com/EHITables/GetTable/PAT_ENC.htm
+7,Epic,PAT_ENC,PAT_ID,Reference,ADT,EHI Export,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S03,https://open.epic.com/EHITables/GetTable/PAT_ENC.htm
+8,Epic,PAT_ENC,CONTACT_DATE,Data field,ADT,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S03,https://open.epic.com/EHITables/GetTable/PAT_ENC.htm
+9,Epic,PAT_ENC,HSP_ACCOUNT_ID,Reference,ADT,EHI Export,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S03,https://open.epic.com/EHITables/GetTable/PAT_ENC.htm
+10,Epic,PAT_ENC,ENC_CLOSED_YN,Data field,ADT,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S03,https://open.epic.com/EHITables/GetTable/PAT_ENC.htm
+11,Epic,PAT_ENC,ENC_CLOSE_DATE,Data field,ADT,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S03,https://open.epic.com/EHITables/GetTable/PAT_ENC.htm
+12,Epic,ORDER_PROC,ORDER_PROC_ID,PK component,CPOE/Lab/Rad,EHI Export,Terverifikasi,Bagian dari PK (sesuai indeks),S04,https://open.epic.com/EHITables/GetTable/ORDER_PROC.htm
+13,Epic,ORDER_PROC,PAT_ID,Reference,CPOE/Lab/Rad,EHI Export,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S04,https://open.epic.com/EHITables/GetTable/ORDER_PROC.htm
+14,Epic,ORDER_PROC,PAT_ENC_CSN_ID,Reference,CPOE/Lab/Rad,EHI Export,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S04,https://open.epic.com/EHITables/GetTable/ORDER_PROC.htm
+15,Epic,ORDER_PROC,ORDERING_DATE,Data field,CPOE/Lab/Rad,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S04,https://open.epic.com/EHITables/GetTable/ORDER_PROC.htm
+16,Epic,ORDER_PROC,ORDER_STATUS_C_NAME,Data field,CPOE/Lab/Rad,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S04,https://open.epic.com/EHITables/GetTable/ORDER_PROC.htm
+17,Epic,ORDER_PROC,RESULT_TIME,Data field,CPOE/Lab/Rad,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S04,https://open.epic.com/EHITables/GetTable/ORDER_PROC.htm
+18,Epic,ORDER_RESULTS,ORDER_PROC_ID,PK component,Lab/Rad,EHI Export,Terverifikasi,Bagian dari PK (sesuai indeks),S05,https://open.epic.com/EHITables/GetTable/ORDER_RESULTS.htm
+19,Epic,ORDER_RESULTS,ORD_DATE_REAL,PK component,Lab/Rad,EHI Export,Terverifikasi,Bagian dari PK (sesuai indeks),S05,https://open.epic.com/EHITables/GetTable/ORDER_RESULTS.htm
+20,Epic,ORDER_RESULTS,LINE,PK component,Lab/Rad,EHI Export,Terverifikasi,Bagian dari PK (sesuai indeks),S05,https://open.epic.com/EHITables/GetTable/ORDER_RESULTS.htm
+21,Epic,ORDER_RESULTS,COMPONENT_ID,Data field,Lab/Rad,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S05,https://open.epic.com/EHITables/GetTable/ORDER_RESULTS.htm
+22,Epic,ORDER_RESULTS,PAT_ENC_CSN_ID,Reference,Lab/Rad,EHI Export,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S05,https://open.epic.com/EHITables/GetTable/ORDER_RESULTS.htm
+23,Epic,ORDER_RESULTS,ORD_VALUE,Data field,Lab/Rad,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S05,https://open.epic.com/EHITables/GetTable/ORDER_RESULTS.htm
+24,Epic,ORDER_RESULTS,ORD_NUM_VALUE,Data field,Lab/Rad,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S05,https://open.epic.com/EHITables/GetTable/ORDER_RESULTS.htm
+25,Epic,ORDER_RESULTS,RESULT_DATE,Data field,Lab/Rad,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S05,https://open.epic.com/EHITables/GetTable/ORDER_RESULTS.htm
+26,Epic,ORDER_MED,ORDER_MED_ID,PK component,Farmasi,EHI Export,Terverifikasi,Bagian dari PK (sesuai indeks),S06,https://open.epic.com/EHITables/GetTable/ORDER_MED.htm
+27,Epic,ORDER_MED,PAT_ID,Reference,Farmasi,EHI Export,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S06,https://open.epic.com/EHITables/GetTable/ORDER_MED.htm
+28,Epic,ORDER_MED,PAT_ENC_CSN_ID,Reference,Farmasi,EHI Export,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S06,https://open.epic.com/EHITables/GetTable/ORDER_MED.htm
+29,Epic,ORDER_MED,ORDERING_DATE,Data field,Farmasi,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S06,https://open.epic.com/EHITables/GetTable/ORDER_MED.htm
+30,Epic,ORDER_MED,START_DATE,Data field,Farmasi,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S06,https://open.epic.com/EHITables/GetTable/ORDER_MED.htm
+31,Epic,ORDER_MED,END_DATE,Data field,Farmasi,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S06,https://open.epic.com/EHITables/GetTable/ORDER_MED.htm
+32,Epic,ORDER_MED,ORDER_STATUS_C_NAME,Data field,Farmasi,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S06,https://open.epic.com/EHITables/GetTable/ORDER_MED.htm
+33,Epic,HNO_INFO,NOTE_ID,PK component,RME,EHI Export,Terverifikasi,Bagian dari PK (sesuai indeks),S07,https://open.epic.com/EHITables/GetTable/HNO_INFO.htm
+34,Epic,HNO_INFO,PAT_ENC_CSN_ID,Reference,RME,EHI Export,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S07,https://open.epic.com/EHITables/GetTable/HNO_INFO.htm
+35,Epic,HNO_INFO,ENTRY_USER_ID,Data field,RME,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S07,https://open.epic.com/EHITables/GetTable/HNO_INFO.htm
+36,Epic,HNO_INFO,NOTE_DESC,Data field,RME,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S07,https://open.epic.com/EHITables/GetTable/HNO_INFO.htm
+37,Epic,HNO_INFO,IP_NOTE_TYPE_C_NAME,Data field,RME,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S07,https://open.epic.com/EHITables/GetTable/HNO_INFO.htm
+38,Epic,HNO_INFO,SIGNED_NOTE_ID,Data field,RME,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S07,https://open.epic.com/EHITables/GetTable/HNO_INFO.htm
+39,Epic,HSP_ACCOUNT,HSP_ACCOUNT_ID,PK component,Revenue,EHI Export,Terverifikasi,Bagian dari PK (sesuai indeks),S08,https://open.epic.com/EHITables/GetTable/HSP_ACCOUNT.htm
+40,Epic,HSP_ACCOUNT,HSP_ACCOUNT_NAME,Data field,Revenue,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S08,https://open.epic.com/EHITables/GetTable/HSP_ACCOUNT.htm
+41,Epic,HSP_ACCOUNT,ACCT_CLASS_HA_C_NAME,Data field,Revenue,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S08,https://open.epic.com/EHITables/GetTable/HSP_ACCOUNT.htm
+42,Epic,HSP_ACCOUNT,ACCT_FIN_CLASS_C_NAME,Data field,Revenue,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S08,https://open.epic.com/EHITables/GetTable/HSP_ACCOUNT.htm
+43,Epic,ENC_DX_ASSOC_DATA,PAT_ENC_CSN_ID,PK component,Diagnosis,EHI Export,Terverifikasi,Bagian dari PK (sesuai indeks),S09,https://open.epic.com/EHITables/GetTable/ENC_DX_ASSOC_DATA.htm
+44,Epic,ENC_DX_ASSOC_DATA,LINE,PK component,Diagnosis,EHI Export,Terverifikasi,Bagian dari PK (sesuai indeks),S09,https://open.epic.com/EHITables/GetTable/ENC_DX_ASSOC_DATA.htm
+45,Epic,ENC_DX_ASSOC_DATA,PAT_ID,Reference,Diagnosis,EHI Export,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S09,https://open.epic.com/EHITables/GetTable/ENC_DX_ASSOC_DATA.htm
+46,Epic,ENC_DX_ASSOC_DATA,CONTACT_DATE,Data field,Diagnosis,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S09,https://open.epic.com/EHITables/GetTable/ENC_DX_ASSOC_DATA.htm
+47,Epic,PAT_ENC_DOCS,PAT_ENC_CSN_ID,PK component,Dokumen,EHI Export,Terverifikasi,Bagian dari PK (sesuai indeks),S10,https://open.epic.com/EHITables/GetTable/PAT_ENC_DOCS.htm
+48,Epic,PAT_ENC_DOCS,LINE,PK component,Dokumen,EHI Export,Terverifikasi,Bagian dari PK (sesuai indeks),S10,https://open.epic.com/EHITables/GetTable/PAT_ENC_DOCS.htm
+49,Epic,PAT_ENC_DOCS,PAT_ID,Reference,Dokumen,EHI Export,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S10,https://open.epic.com/EHITables/GetTable/PAT_ENC_DOCS.htm
+50,Epic,PAT_ENC_DOCS,DOC_INFO_ID,Data field,Dokumen,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S10,https://open.epic.com/EHITables/GetTable/PAT_ENC_DOCS.htm
+51,Epic,ORDER_MEDINFO,ORDER_MED_ID,PK component,Farmasi,EHI Export,Terverifikasi,Bagian dari PK (sesuai indeks),S11,https://open.epic.com/EHITables/GetTable/ORDER_MEDINFO.htm
+52,Epic,ORDER_MEDINFO,LAST_ADMIN_INST,Data field,Farmasi,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S11,https://open.epic.com/EHITables/GetTable/ORDER_MEDINFO.htm
+53,Epic,ORDER_MEDINFO,NUMBER_OF_DOSES,Data field,Farmasi,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S11,https://open.epic.com/EHITables/GetTable/ORDER_MEDINFO.htm
+54,Epic,ORDER_MEDINFO,DOSES_REMAINING,Data field,Farmasi,EHI Export,Terverifikasi,"Field terpilih, bukan daftar lengkap",S11,https://open.epic.com/EHITables/GetTable/ORDER_MEDINFO.htm
+55,Oracle Health,PERSON,PERSON_ID,PK component,Identitas,Millennium ODS,Terverifikasi,Bagian dari PK (sesuai indeks),S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+56,Oracle Health,PERSON,NAME_FIRST,Data field,Identitas,Millennium ODS,Terverifikasi,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+57,Oracle Health,PERSON,NAME_LAST,Data field,Identitas,Millennium ODS,Terverifikasi,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+58,Oracle Health,PERSON,SEX_CD,Data field,Identitas,Millennium ODS,Terverifikasi,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+59,Oracle Health,PERSON,BIRTH_DT_TM,Data field,Identitas,Millennium ODS,Terverifikasi,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+60,Oracle Health,PERSON,UPDT_DT_TM,Data field,Identitas,Millennium ODS,Terverifikasi,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+61,Oracle Health,ENCOUNTER,ENCNTR_ID,PK component,ADT,Millennium ODS,Terverifikasi,Bagian dari PK (sesuai indeks),S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+62,Oracle Health,ENCOUNTER,PERSON_ID,Reference,ADT,Millennium ODS,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+63,Oracle Health,ENCOUNTER,ENCNTR_TYPE_CD,Data field,ADT,Millennium ODS,Terverifikasi,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+64,Oracle Health,ENCOUNTER,ENCNTR_STATUS_CD,Data field,ADT,Millennium ODS,Terverifikasi,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+65,Oracle Health,ENCOUNTER,REG_DT_TM,Data field,ADT,Millennium ODS,Terverifikasi,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+66,Oracle Health,ENCOUNTER,DISCH_DT_TM,Data field,ADT,Millennium ODS,Terverifikasi,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+67,Oracle Health,ORDERS,ORDER_ID,PK component,CPOE,Millennium ODS,Terverifikasi,Bagian dari PK (sesuai indeks),S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+68,Oracle Health,ORDERS,PERSON_ID,Reference,CPOE,Millennium ODS,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+69,Oracle Health,ORDERS,ENCNTR_ID,Reference,CPOE,Millennium ODS,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+70,Oracle Health,ORDERS,CATALOG_CD,Data field,CPOE,Millennium ODS,Terverifikasi,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+71,Oracle Health,ORDERS,ORDER_STATUS_CD,Data field,CPOE,Millennium ODS,Terverifikasi,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+72,Oracle Health,ORDERS,ORIG_ORDER_DT_TM,Data field,CPOE,Millennium ODS,Terverifikasi,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+73,Oracle Health,ORDER_ACTION,ORDER_ID,Reference,CPOE,Millennium ODS,Terverifikasi parsial,Kolom referensi; constraint SQL tidak dipastikan,S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+74,Oracle Health,ORDER_ACTION,ACTION_SEQUENCE,Data field,CPOE,Millennium ODS,Terverifikasi parsial,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+75,Oracle Health,ORDER_ACTION,CURRENT_START_DT_TM,Data field,CPOE,Millennium ODS,Terverifikasi parsial,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+76,Oracle Health,CLINICAL_EVENT,CLINICAL_EVENT_ID,PK component,Klinis,Millennium ODS,Terverifikasi,Bagian dari PK (sesuai indeks),S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+77,Oracle Health,CLINICAL_EVENT,PERSON_ID,Reference,Klinis,Millennium ODS,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+78,Oracle Health,CLINICAL_EVENT,ENCNTR_ID,Reference,Klinis,Millennium ODS,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+79,Oracle Health,CLINICAL_EVENT,ORDER_ID,Reference,Klinis,Millennium ODS,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+80,Oracle Health,CLINICAL_EVENT,EVENT_CD,Data field,Klinis,Millennium ODS,Terverifikasi,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+81,Oracle Health,CLINICAL_EVENT,RESULT_VAL,Data field,Klinis,Millennium ODS,Terverifikasi,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+82,Oracle Health,CLINICAL_EVENT,EVENT_END_DT_TM,Data field,Klinis,Millennium ODS,Terverifikasi,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+83,Oracle Health,DIAGNOSIS,DIAGNOSIS_ID,PK component,Diagnosis,Millennium ODS,Terverifikasi,Bagian dari PK (sesuai indeks),S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+84,Oracle Health,DIAGNOSIS,PERSON_ID,Reference,Diagnosis,Millennium ODS,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+85,Oracle Health,DIAGNOSIS,ENCNTR_ID,Reference,Diagnosis,Millennium ODS,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+86,Oracle Health,DIAGNOSIS,NOMENCLATURE_ID,Data field,Diagnosis,Millennium ODS,Terverifikasi,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+87,Oracle Health,DIAGNOSIS,DIAG_DT_TM,Data field,Diagnosis,Millennium ODS,Terverifikasi,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+88,Oracle Health,DIAGNOSIS,DIAGNOSIS_DISPLAY,Data field,Diagnosis,Millennium ODS,Terverifikasi,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+89,Oracle Health,CMT_CONCEPT,CONCEPT_CKI,Data field,Terminologi,Millennium ODS,Terverifikasi parsial,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+90,Oracle Health,CMT_CONCEPT,CONCEPT_IDENTIFIER,Data field,Terminologi,Millennium ODS,Terverifikasi parsial,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+91,Oracle Health,CMT_CONCEPT,CONCEPT_NAME,Data field,Terminologi,Millennium ODS,Terverifikasi parsial,"Field terpilih, bukan daftar lengkap",S12,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+92,OpenMRS,person,person_id,PK component,Identitas,Relasional,Terverifikasi,Bagian dari PK (sesuai indeks),S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+93,OpenMRS,person,gender,Data field,Identitas,Relasional,Terverifikasi,"Field terpilih, bukan daftar lengkap",S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+94,OpenMRS,person,birthdate,Data field,Identitas,Relasional,Terverifikasi,"Field terpilih, bukan daftar lengkap",S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+95,OpenMRS,person,uuid,Data field,Identitas,Relasional,Terverifikasi,"Field terpilih, bukan daftar lengkap",S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+96,OpenMRS,patient,patient_id,PK component,Identitas,Relasional,Terverifikasi,Bagian dari PK (sesuai indeks),S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+97,OpenMRS,patient_identifier,patient_identifier_id,PK component,Identitas,Relasional,Terverifikasi,Bagian dari PK (sesuai indeks),S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+98,OpenMRS,patient_identifier,patient_id,Reference,Identitas,Relasional,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+99,OpenMRS,patient_identifier,identifier,Data field,Identitas,Relasional,Terverifikasi,"Field terpilih, bukan daftar lengkap",S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+100,OpenMRS,patient_identifier,identifier_type,Data field,Identitas,Relasional,Terverifikasi,"Field terpilih, bukan daftar lengkap",S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+101,OpenMRS,visit,visit_id,PK component,Pelayanan,Relasional,Terverifikasi,Bagian dari PK (sesuai indeks),S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+102,OpenMRS,visit,patient_id,Reference,Pelayanan,Relasional,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+103,OpenMRS,visit,start_datetime,Data field,Pelayanan,Relasional,Terverifikasi,"Field terpilih, bukan daftar lengkap",S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+104,OpenMRS,visit,stop_datetime,Data field,Pelayanan,Relasional,Terverifikasi,"Field terpilih, bukan daftar lengkap",S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+105,OpenMRS,encounter,encounter_id,PK component,Pelayanan,Relasional,Terverifikasi,Bagian dari PK (sesuai indeks),S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+106,OpenMRS,encounter,patient_id,Reference,Pelayanan,Relasional,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+107,OpenMRS,encounter,visit_id,Reference,Pelayanan,Relasional,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+108,OpenMRS,encounter,encounter_datetime,Data field,Pelayanan,Relasional,Terverifikasi,"Field terpilih, bukan daftar lengkap",S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+109,OpenMRS,encounter,encounter_type,Data field,Pelayanan,Relasional,Terverifikasi,"Field terpilih, bukan daftar lengkap",S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+110,OpenMRS,obs,obs_id,PK component,Klinis,Relasional,Terverifikasi,Bagian dari PK (sesuai indeks),S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+111,OpenMRS,obs,person_id,Reference,Klinis,Relasional,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+112,OpenMRS,obs,concept_id,Reference,Klinis,Relasional,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+113,OpenMRS,obs,encounter_id,Reference,Klinis,Relasional,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+114,OpenMRS,obs,order_id,Reference,Klinis,Relasional,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+115,OpenMRS,obs,obs_group_id,Reference,Klinis,Relasional,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+116,OpenMRS,obs,value_numeric,Data field,Klinis,Relasional,Terverifikasi,"Field terpilih, bukan daftar lengkap",S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+117,OpenMRS,obs,value_coded,Data field,Klinis,Relasional,Terverifikasi,"Field terpilih, bukan daftar lengkap",S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+118,OpenMRS,obs,value_text,Data field,Klinis,Relasional,Terverifikasi,"Field terpilih, bukan daftar lengkap",S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+119,OpenMRS,obs,obs_datetime,Data field,Klinis,Relasional,Terverifikasi,"Field terpilih, bukan daftar lengkap",S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+120,OpenMRS,concept,concept_id,PK component,Terminologi,Relasional,Terverifikasi,Bagian dari PK (sesuai indeks),S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+121,OpenMRS,concept,datatype_id,Data field,Terminologi,Relasional,Terverifikasi,"Field terpilih, bukan daftar lengkap",S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+122,OpenMRS,concept,class_id,Data field,Terminologi,Relasional,Terverifikasi,"Field terpilih, bukan daftar lengkap",S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+123,OpenMRS,concept_name,concept_name_id,PK component,Terminologi,Relasional,Terverifikasi,Bagian dari PK (sesuai indeks),S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+124,OpenMRS,concept_name,concept_id,Reference,Terminologi,Relasional,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+125,OpenMRS,concept_name,name,Data field,Terminologi,Relasional,Terverifikasi,"Field terpilih, bukan daftar lengkap",S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+126,OpenMRS,concept_name,locale,Data field,Terminologi,Relasional,Terverifikasi,"Field terpilih, bukan daftar lengkap",S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+127,OpenMRS,orders,order_id,PK component,CPOE,Relasional,Terverifikasi,Bagian dari PK (sesuai indeks),S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+128,OpenMRS,orders,patient_id,Reference,CPOE,Relasional,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+129,OpenMRS,orders,encounter_id,Reference,CPOE,Relasional,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+130,OpenMRS,orders,concept_id,Reference,CPOE,Relasional,Terverifikasi,Kolom referensi; constraint SQL tidak dipastikan,S14,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+131,MEDITECH,SysDrTables,TableID,Data field,Metadata,Data Repository,Terverifikasi; sumber historis,Atribut metadata dari dokumentasi MEDITECH historis; periksa sumber untuk ejaan/versi,S16,https://home.meditech.com/en/d/clientservicesccimages/otherfiles/2013marchnewsletterdatamapping.pdf
+132,MEDITECH,SysDrTables,Application,Data field,Metadata,Data Repository,Terverifikasi; sumber historis,Atribut metadata dari dokumentasi MEDITECH historis; periksa sumber untuk ejaan/versi,S16,https://home.meditech.com/en/d/clientservicesccimages/otherfiles/2013marchnewsletterdatamapping.pdf
+133,MEDITECH,SysDrTables,Keylevel,Data field,Metadata,Data Repository,Terverifikasi; sumber historis,Atribut metadata dari dokumentasi MEDITECH historis; periksa sumber untuk ejaan/versi,S16,https://home.meditech.com/en/d/clientservicesccimages/otherfiles/2013marchnewsletterdatamapping.pdf
+134,MEDITECH,SysDrTables,Name,Data field,Metadata,Data Repository,Terverifikasi; sumber historis,Atribut metadata dari dokumentasi MEDITECH historis; periksa sumber untuk ejaan/versi,S16,https://home.meditech.com/en/d/clientservicesccimages/otherfiles/2013marchnewsletterdatamapping.pdf
+135,MEDITECH,SysDrColumns,TableID,Data field,Metadata,Data Repository,Terverifikasi; sumber historis,Atribut metadata dari dokumentasi MEDITECH historis; periksa sumber untuk ejaan/versi,S16,https://home.meditech.com/en/d/clientservicesccimages/otherfiles/2013marchnewsletterdatamapping.pdf
+136,MEDITECH,SysDrColumns,ColumnName,Data field,Metadata,Data Repository,Terverifikasi; sumber historis,Atribut metadata dari dokumentasi MEDITECH historis; periksa sumber untuk ejaan/versi,S16,https://home.meditech.com/en/d/clientservicesccimages/otherfiles/2013marchnewsletterdatamapping.pdf
+137,openEHR,EHR,ehr_id,PK component,Logis,Reference Model,"Standar logis, bukan tabel SQL","Atribut model logis openEHR, bukan kolom fisik SQL",S20,https://specifications.openehr.org/releases/SM/latest/openehr_platform.html
+138,openEHR,EHR_STATUS,subject,Data field,Logis,Reference Model,"Standar logis, bukan tabel SQL","Atribut model logis openEHR, bukan kolom fisik SQL",S20,https://specifications.openehr.org/releases/SM/latest/openehr_platform.html
+139,openEHR,EHR_STATUS,is_queryable,Data field,Logis,Reference Model,"Standar logis, bukan tabel SQL","Atribut model logis openEHR, bukan kolom fisik SQL",S20,https://specifications.openehr.org/releases/SM/latest/openehr_platform.html
+140,openEHR,EHR_STATUS,is_modifiable,Data field,Logis,Reference Model,"Standar logis, bukan tabel SQL","Atribut model logis openEHR, bukan kolom fisik SQL",S20,https://specifications.openehr.org/releases/SM/latest/openehr_platform.html
+141,openEHR,COMPOSITION,uid,PK component,Logis,Reference Model,"Standar logis, bukan tabel SQL","Atribut model logis openEHR, bukan kolom fisik SQL",S18,https://specifications.openehr.org/releases/ITS-REST/development/ehr.html
+142,openEHR,COMPOSITION,archetype_details,Data field,Logis,Reference Model,"Standar logis, bukan tabel SQL","Atribut model logis openEHR, bukan kolom fisik SQL",S18,https://specifications.openehr.org/releases/ITS-REST/development/ehr.html
+143,openEHR,COMPOSITION,context,Data field,Logis,Reference Model,"Standar logis, bukan tabel SQL","Atribut model logis openEHR, bukan kolom fisik SQL",S18,https://specifications.openehr.org/releases/ITS-REST/development/ehr.html
+144,openEHR,COMPOSITION,content,Data field,Logis,Reference Model,"Standar logis, bukan tabel SQL","Atribut model logis openEHR, bukan kolom fisik SQL",S18,https://specifications.openehr.org/releases/ITS-REST/development/ehr.html
+145,openEHR,VERSIONED_COMPOSITION,versioned_object_uid,PK component,Logis,Reference Model,"Standar logis, bukan tabel SQL","Atribut model logis openEHR, bukan kolom fisik SQL",S18,https://specifications.openehr.org/releases/ITS-REST/development/ehr.html
+146,openEHR,OBSERVATION / EVALUATION / INSTRUCTION / ACTION,archetype_node_id,Data field,Logis,Reference Model,"Standar logis, bukan tabel SQL","Atribut model logis openEHR, bukan kolom fisik SQL",S19,https://docs.ehrbase.org/docs/EHRbase/Explore/AQL/Introduction
+147,openEHR,OBSERVATION / EVALUATION / INSTRUCTION / ACTION,name,Data field,Logis,Reference Model,"Standar logis, bukan tabel SQL","Atribut model logis openEHR, bukan kolom fisik SQL",S19,https://docs.ehrbase.org/docs/EHRbase/Explore/AQL/Introduction
+148,openEHR,CONTRIBUTION,uid,PK component,Logis,Reference Model,"Standar logis, bukan tabel SQL","Atribut model logis openEHR, bukan kolom fisik SQL",S20,https://specifications.openehr.org/releases/SM/latest/openehr_platform.html
+149,openEHR,CONTRIBUTION,versions,Data field,Logis,Reference Model,"Standar logis, bukan tabel SQL","Atribut model logis openEHR, bukan kolom fisik SQL",S20,https://specifications.openehr.org/releases/SM/latest/openehr_platform.html
+<PARSED TEXT FOR SHEET: 5 / 13 TABS
+TAB NAME: 04_SourceRelations>
+index,Relasi logis yang bisa ditelusuri dalam sumber vendor,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6
+0,Studi desk research • 31 Oktober 2026 • 21 baris • Status bukti dibedakan dari rancangan usulan,,,,,,
+1,,,,,,,
+2,Vendor,Parent,Child,Kardinalitas indikatif,Catatan interpretasi,Level bukti,Sumber
+3,Epic,PATIENT.PAT_ID,PAT_ENC.PAT_ID,1 → N,"Identifier/reference dalam EHI Export, bukan deklarasi FK DB",Terverifikasi logis,https://open.epic.com/EHITables/GetTable/PATIENT.htm; https://open.epic.com/EHITables/GetTable/PAT_ENC.htm
+4,Epic,PAT_ENC.PAT_ENC_CSN_ID,ORDER_PROC.PAT_ENC_CSN_ID,1 → N,Order pemeriksaan terhubung encounter,Terverifikasi logis,https://open.epic.com/EHITables/GetTable/PAT_ENC.htm; https://open.epic.com/EHITables/GetTable/ORDER_PROC.htm
+5,Epic,ORDER_PROC.ORDER_PROC_ID,ORDER_RESULTS.ORDER_PROC_ID,1 → N,Komponen hasil; ORDER_RESULTS PK komposit,Terverifikasi logis,https://open.epic.com/EHITables/GetTable/ORDER_PROC.htm; https://open.epic.com/EHITables/GetTable/ORDER_RESULTS.htm
+6,Epic,PAT_ENC.PAT_ENC_CSN_ID,ORDER_MED.PAT_ENC_CSN_ID,1 → N,Order obat terhubung encounter,Terverifikasi logis,https://open.epic.com/EHITables/GetTable/PAT_ENC.htm; https://open.epic.com/EHITables/GetTable/ORDER_MED.htm
+7,Epic,ORDER_MED.ORDER_MED_ID,ORDER_MEDINFO.ORDER_MED_ID,1 → 0..1,Tabel detail tambahan order med,Terverifikasi logis; kardinalitas perlu validasi pada dataset,https://open.epic.com/EHITables/GetTable/ORDER_MED.htm; https://open.epic.com/EHITables/GetTable/ORDER_MEDINFO.htm
+8,Epic,PAT_ENC.PAT_ENC_CSN_ID,HNO_INFO.PAT_ENC_CSN_ID,1 → N,Catatan terkait kontak,Terverifikasi logis,https://open.epic.com/EHITables/GetTable/PAT_ENC.htm; https://open.epic.com/EHITables/GetTable/HNO_INFO.htm
+9,Epic,HSP_ACCOUNT.HSP_ACCOUNT_ID,PAT_ENC.HSP_ACCOUNT_ID,1 → N,Satu hospital account dapat merangkum encounter,Terverifikasi logis,https://open.epic.com/EHITables/GetTable/PAT_ENC.htm; https://open.epic.com/EHITables/GetTable/HSP_ACCOUNT.htm
+10,Epic,PAT_ENC.PAT_ENC_CSN_ID,ENC_DX_ASSOC_DATA.PAT_ENC_CSN_ID,1 → N,Data visit diagnosis,Terverifikasi logis,https://open.epic.com/EHITables/GetTable/PAT_ENC.htm; https://open.epic.com/EHITables/GetTable/ENC_DX_ASSOC_DATA.htm
+11,Oracle Health,PERSON.PERSON_ID,ENCOUNTER.PERSON_ID,1 → N,"Berdasar kolom identitas ODS, tidak menjamin FK fisik",Terverifikasi logis,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+12,Oracle Health,ENCOUNTER.ENCNTR_ID,ORDERS.ENCNTR_ID,1 → N (umumnya),Order masa depan bisa tidak memiliki ENCNTR_ID,Terverifikasi logis,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+13,Oracle Health,ENCOUNTER.ENCNTR_ID,CLINICAL_EVENT.ENCNTR_ID,1 → N,Data klinis terasosiasi encounter,Terverifikasi logis,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+14,Oracle Health,ORDERS.ORDER_ID,CLINICAL_EVENT.ORDER_ID,1 → N atau kosong,Ada event tanpa order (mis. entri langsung),Terverifikasi logis,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+15,Oracle Health,ENCOUNTER.ENCNTR_ID,DIAGNOSIS.ENCNTR_ID,1 → N,Diagnosis dikaitkan encounter,Terverifikasi logis,https://docs.healtheintent.com/feed_types/millennium-ods/v1/
+16,OpenMRS,person.person_id,patient.patient_id,1 → 0..1,Peran patient adalah perluasan person,Terverifikasi model v1.9,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+17,OpenMRS,patient.patient_id,visit.patient_id,1 → N,Visit per pasien,Terverifikasi model v1.9,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+18,OpenMRS,visit.visit_id,encounter.visit_id,1 → N,Interaksi pelayanan dalam visit,Terverifikasi model v1.9,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+19,OpenMRS,encounter.encounter_id,obs.encounter_id,1 → N (opsional),Obs dapat berasosiasi encounter,Terverifikasi model v1.9,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+20,OpenMRS,concept.concept_id,obs.concept_id,1 → N,Konsep menentukan makna observasi,Terverifikasi model v1.9,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+21,OpenMRS,obs.obs_id,obs.obs_group_id,1 → N,Self-reference grup observasi,Terverifikasi model v1.9,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html
+22,openEHR,EHR.ehr_id,COMPOSITION via EHR,1 → N,"Relasi model informasi/APIs, bukan SQL table FK",Standar logis,https://specifications.openehr.org/releases/ITS-REST/development/ehr.html; https://specifications.openehr.org/releases/SM/latest/openehr_platform.html
+23,openEHR,VERSIONED_COMPOSITION,COMPOSITION versions,1 → N version,Riwayat versi di CDR,Standar logis,https://specifications.openehr.org/releases/ITS-REST/development/ehr.html; https://specifications.openehr.org/releases/SM/latest/openehr_platform.html
+<PARSED TEXT FOR SHEET: 6 / 13 TABS
+TAB NAME: 05_TargetTables>
+index,"Master rancangan tabel SIMRS baru — USULAN, bukan salinan vendor",Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6,Unnamed: 7,Unnamed: 8,Unnamed: 9
+0,Studi desk research • 31 Oktober 2026 • 92 baris • Status bukti dibedakan dari rancangan usulan,,,,,,,,,
+1,,,,,,,,,,
+2,Domain,Nama tabel,Pemilik data,Field utama (desain awal),FHIR terkait,openEHR terkait,Prioritas,Referensi pola,Catatan desain,Status
+3,Master Data,organizations,SIMRS,"id:uuid,code:varchar,name:varchar,type:varchar,active:boolean",Organization,external reference only,P0,Epic/OpenMRS,Pemilik layanan atau penyelenggara fasyankes,USULAN - butuh review
+4,Master Data,facilities,SIMRS,"id:uuid,organization_id:uuid,code:varchar,name:varchar,type:varchar",Organization/Location,external reference only,P0,TrakCare/OpenMRS,Satu organisasi dapat memiliki banyak fasilitas,USULAN - butuh review
+5,Master Data,service_units,SIMRS,"id:uuid,facility_id:uuid,code:varchar,name:varchar,specialty_code:varchar",HealthcareService/Location,external reference only,P0,Epic/TrakCare,Unit klinik/poli/penunjang,USULAN - butuh review
+6,Master Data,locations,SIMRS,"id:uuid,facility_id:uuid,parent_location_id:uuid,code:varchar,name:varchar,location_type:varchar",Location,external reference only,P0,OpenMRS/TrakCare,Hierarki lokasi fisik,USULAN - butuh review
+7,Master Data,beds,SIMRS,"id:uuid,location_id:uuid,bed_number:varchar,status:varchar,class_code:varchar",Location,none,P0,TrakCare,Master bed dan status operasional,USULAN - butuh review
+8,Master Data,practitioners,SIMRS,"id:uuid,person_external_id:varchar,full_name:varchar,license_number:varchar",Practitioner,party/performer reference,P0,Epic/OpenMRS,Master tenaga kesehatan,USULAN - butuh review
+9,Master Data,practitioner_roles,SIMRS,"id:uuid,practitioner_id:uuid,organization_id:uuid,service_unit_id:uuid,role_code:varchar",PractitionerRole,party/performer reference,P0,OpenMRS/TrakCare,Relasi nakes dengan faskes/unit,USULAN - butuh review
+10,Patient Identity,patients,SIMRS,"id:uuid,medical_record_number:varchar,full_name:varchar,birth_date:date,gender_code:varchar,active:boolean",Patient,EHR subject mapped via ehr_id,P0,Epic/Cerner/OpenMRS,Master identitas pasien; bukan isi rekam medis,USULAN - butuh review
+11,Patient Identity,patient_identifiers,SIMRS,"id:uuid,patient_id:uuid,system_uri:varchar,value:varchar,identifier_type:varchar",Patient.identifier,EHR subject reference,P0,OpenMRS,"NIK, MRN, IHS, identifier nasional; unik per system",USULAN - butuh review
+12,Patient Identity,patient_contacts,SIMRS,"id:uuid,patient_id:uuid,contact_type:varchar,phone:varchar,email:varchar",Patient.telecom/Contact,none,P1,OpenMRS,PII; masking dan akses terkontrol,USULAN - butuh review
+13,Patient Identity,patient_ehr_links,SIMRS,"id:uuid,patient_id:uuid,ehr_id:uuid,cdr_endpoint_id:uuid,link_status:varchar",Patient mapping,EHR.ehr_id,P0,openEHR,1 pasien ↔ 1 EHR per konteks CDR; enforce uniqueness sesuai deployment,USULAN - butuh review
+14,User & Access,users,SIMRS,"id:uuid,username:varchar,practitioner_id:uuid,active:boolean",none,none,P0,TrakCare/OpenMRS,Akun aplikasi dan identitas keamanan,USULAN - butuh review
+15,User & Access,roles,SIMRS,"id:uuid,code:varchar,name:varchar",none,none,P0,TrakCare,RBAC,USULAN - butuh review
+16,User & Access,permissions,SIMRS,"id:uuid,resource:varchar,action:varchar",none,none,P0,TrakCare,Policy action granular,USULAN - butuh review
+17,User & Access,user_roles,SIMRS,"id:uuid,user_id:uuid,role_id:uuid,facility_id:uuid",none,none,P0,TrakCare,Role dibatasi konteks fasilitas,USULAN - butuh review
+18,User & Access,access_audit_logs,SIMRS,"id:uuid,user_id:uuid,patient_id:uuid,resource_type:varchar,resource_id:varchar,action:varchar,occurred_at:timestamptz",AuditEvent (if needed),none,P0,openEHR,Immutable audit event di aplikasi; terpisah dari versioning CDR,USULAN - butuh review
+19,Patient Flow,appointments,SIMRS,"id:uuid,patient_id:uuid,service_unit_id:uuid,practitioner_id:uuid,scheduled_at:timestamptz,status:varchar",Appointment,none,P0,Epic/TrakCare,Penjadwalan,USULAN - butuh review
+20,Patient Flow,queues,SIMRS,"id:uuid,appointment_id:uuid,patient_id:uuid,service_unit_id:uuid,queue_number:varchar,queue_status:varchar",Appointment (partial),none,P0,TrakCare,Antrean layanan,USULAN - butuh review
+21,Patient Flow,visits,SIMRS,"id:uuid,patient_id:uuid,visit_number:varchar,started_at:timestamptz,ended_at:timestamptz",Encounter (episode mapping varies),EHR longitudinal,P0,OpenMRS,Kumpulan encounter satu episode/pengobatan,USULAN - butuh review
+22,Patient Flow,encounters,SIMRS,"id:uuid,visit_id:uuid,patient_id:uuid,service_unit_id:uuid,practitioner_id:uuid,encounter_type:varchar,status:varchar,started_at:timestamptz,ended_at:timestamptz",Encounter,COMPOSITION.context linked,P0,Epic/Cerner/OpenMRS,Jangkar kunjungan seluruh modul klinis,USULAN - butuh review
+23,Patient Flow,encounter_care_teams,SIMRS,"id:uuid,encounter_id:uuid,practitioner_role_id:uuid,team_role:varchar,started_at:timestamptz",CareTeam/Encounter.participant,COMPOSITION.other_participations,P1,Epic/OpenMRS,Care team lintas disiplin,USULAN - butuh review
+24,Patient Flow,admissions,SIMRS,"id:uuid,encounter_id:uuid,admitted_at:timestamptz,discharged_at:timestamptz,status:varchar",Encounter.hospitalization (R4),COMPOSITION.context,P0,Epic/Cerner,Data administratif rawat inap,USULAN - butuh review
+25,Patient Flow,bed_assignments,SIMRS,"id:uuid,admission_id:uuid,bed_id:uuid,assigned_at:timestamptz,released_at:timestamptz",Encounter.location,none,P0,TrakCare,Histori penempatan,USULAN - butuh review
+26,Patient Flow,encounter_transfers,SIMRS,"id:uuid,encounter_id:uuid,from_unit_id:uuid,to_unit_id:uuid,transferred_at:timestamptz",Encounter.location (R4),context reference,P1,TrakCare,ADT transfer,USULAN - butuh review
+27,Patient Flow,discharge_summaries,SIMRS,"id:uuid,encounter_id:uuid,clinical_record_link_id:uuid,approved_at:timestamptz,status:varchar",Composition/DocumentReference (as needed),COMPOSITION,P1,Epic/openEHR,Metadata approval; isi resume kanonis di CDR,USULAN - butuh review
+28,Orders & Catalog,service_catalog,SIMRS,"id:uuid,code:varchar,service_name:varchar,service_type:varchar,unit_id:uuid",ActivityDefinition (optional),none,P0,Epic/Cerner,Katalog order dan tindakan,USULAN - butuh review
+29,Orders & Catalog,service_orders,SIMRS,"id:uuid,encounter_id:uuid,ordered_by_id:uuid,order_type:varchar,ordered_at:timestamptz,status:varchar",ServiceRequest,INSTRUCTION mapping if clinical,P0,Epic/Cerner,Order operasional kanonis untuk workflow,USULAN - butuh review
+30,Orders & Catalog,service_order_items,SIMRS,"id:uuid,service_order_id:uuid,service_catalog_id:uuid,quantity:decimal,priority:varchar,status:varchar",ServiceRequest (may be 1 per item),INSTRUCTION,P0,Epic/Cerner,Detail tindakan/tes pada order,USULAN - butuh review
+31,Orders & Catalog,order_status_events,SIMRS,"id:uuid,service_order_id:uuid,status:varchar,actor_id:uuid,occurred_at:timestamptz",Task (optional),ACTION if clinical,P0,Cerner,Jejak perubahan status order,USULAN - butuh review
+32,Laboratory,specimens,SIMRS,"id:uuid,service_order_item_id:uuid,specimen_number:varchar,specimen_type:varchar,collected_at:timestamptz,status:varchar",Specimen,OBSERVATION context,P1,Epic/Cerner,Tracking spesimen,USULAN - butuh review
+33,Laboratory,lab_analytes,SIMRS,"id:uuid,code:varchar,name:varchar,loinc_code:varchar,unit_ucum:varchar",Observation.code,archetype terminology,P1,Epic/OpenMRS,Master analit,USULAN - butuh review
+34,Laboratory,lab_result_links,SIMRS,"id:uuid,service_order_item_id:uuid,clinical_record_link_id:uuid,verified_at:timestamptz,status:varchar",DiagnosticReport/Observation reference,COMPOSITION + OBSERVATION,P1,Epic/Cerner/openEHR,"Hasil klinis kanonis CDR, bukan data duplikat",USULAN - butuh review
+35,Radiology,imaging_orders,SIMRS,"id:uuid,service_order_item_id:uuid,modality:varchar,body_site_code:varchar,order_status:varchar",ServiceRequest,INSTRUCTION,P1,Epic/Cerner,Workflow radiologi,USULAN - butuh review
+36,Radiology,imaging_studies,SIMRS,"id:uuid,imaging_order_id:uuid,study_instance_uid:varchar,performed_at:timestamptz,pacs_uri:varchar",ImagingStudy,external reference,P1,Epic/Cerner,"DICOM metadata/referensi, bukan piksel DICOM",USULAN - butuh review
+37,Radiology,radiology_report_links,SIMRS,"id:uuid,imaging_study_id:uuid,clinical_record_link_id:uuid,finalized_at:timestamptz",DiagnosticReport,COMPOSITION + EVALUATION,P1,Epic/openEHR,Laporan radiologi klinis di CDR,USULAN - butuh review
+38,Pharmacy,medicines,SIMRS,"id:uuid,code:varchar,display_name:varchar,dosage_form:varchar,strength:varchar,kfa_code:varchar",Medication,terminology mapping,P0,Epic/Cerner,Master obat/formularium,USULAN - butuh review
+39,Pharmacy,medication_orders,SIMRS,"id:uuid,encounter_id:uuid,prescriber_id:uuid,status:varchar,ordered_at:timestamptz",MedicationRequest,INSTRUCTION,P0,Epic/Cerner/openEHR,Order resep operasional; instruksi klinis kanonis dibakukan,USULAN - butuh review
+40,Pharmacy,medication_order_items,SIMRS,"id:uuid,medication_order_id:uuid,medicine_id:uuid,dose_text:varchar,frequency:varchar,duration_days:integer,quantity:decimal",MedicationRequest,INSTRUCTION,P0,Epic/Cerner,Item resep,USULAN - butuh review
+41,Pharmacy,dispensations,SIMRS,"id:uuid,medication_order_id:uuid,dispensed_by_id:uuid,dispensed_at:timestamptz,status:varchar",MedicationDispense,ACTION,P0,TrakCare/Epic,Workflow dispensing dan pengeluaran stok,USULAN - butuh review
+42,Pharmacy,dispensation_items,SIMRS,"id:uuid,dispensation_id:uuid,medicine_id:uuid,batch_number:varchar,quantity:decimal",MedicationDispense,ACTION,P0,TrakCare,Detail item dikeluarkan,USULAN - butuh review
+43,Pharmacy,medication_administrations,SIMRS,"id:uuid,encounter_id:uuid,medication_order_item_id:uuid,administered_at:timestamptz,dose_given:decimal,status:varchar",MedicationAdministration,ACTION,P1,Epic/Cerner,MAR; tentukan tanggung jawab audit klinis dengan CDR,USULAN - butuh review
+44,Clinical CDR Link,cdr_endpoints,SIMRS,"id:uuid,name:varchar,base_url:varchar,tenant_key:varchar,status:varchar",none,EHRbase endpoint,P0,openEHR,Registrasi CDR; rahasiakan kredensial di secret manager,USULAN - butuh review
+45,Clinical CDR Link,clinical_templates,SIMRS,"id:uuid,template_id:varchar,template_version:varchar,module:varchar,active:boolean",Questionnaire (optional),Template ID,P0,openEHR,Registry template dan deployment,USULAN - butuh review
+46,Clinical CDR Link,clinical_record_links,SIMRS,"id:uuid,patient_id:uuid,encounter_id:uuid,ehr_id:uuid,composition_uid:varchar,version_uid:varchar,template_id:varchar,record_type:varchar,sync_status:varchar",Composition/DiagnosticReport/Observation mapping,COMPOSITION / VERSIONED_COMPOSITION,P0,openEHR,Pointer lintas DB; tidak memodifikasi internal CDR,USULAN - butuh review
+47,Clinical CDR Link,clinical_record_signatures,SIMRS,"id:uuid,clinical_record_link_id:uuid,signed_by_id:uuid,signed_at:timestamptz,signature_status:varchar",Provenance (optional),composition lifecycle/audit,P0,openEHR,Workflow tanda tangan dan pengesahan,USULAN - butuh review
+48,Clinical CDR Link,clinical_document_access,SIMRS,"id:uuid,patient_id:uuid,facility_id:uuid,practitioner_id:uuid,policy_type:varchar,valid_until:timestamptz",Consent,EHR_ACCESS not replacement,P0,openEHR,Kebijakan/consent akses tingkat aplikasi,USULAN - butuh review
+49,Clinical Read Model,clinical_observation_index,Derived read model,"id:uuid,patient_id:uuid,encounter_id:uuid,clinical_record_link_id:uuid,concept_system:varchar,concept_code:varchar,value_numeric:decimal,unit_ucum:varchar,recorded_at:timestamptz",Observation,OBSERVATION projection,P1,Epic Clarity/OpenMRS,Proyeksi dapat dibangun ulang; version-aware; akses PHI,USULAN - butuh review
+50,Clinical Read Model,clinical_condition_index,Derived read model,"id:uuid,patient_id:uuid,encounter_id:uuid,clinical_record_link_id:uuid,code_system:varchar,code:varchar,clinical_status:varchar",Condition,EVALUATION projection,P1,Cerner/OpenMRS,Diagnosis terindeks; bukan sumber kebenaran,USULAN - butuh review
+51,Clinical Read Model,clinical_medication_index,Derived read model,"id:uuid,patient_id:uuid,encounter_id:uuid,clinical_record_link_id:uuid,medicine_code:varchar,start_at:timestamptz,end_at:timestamptz",MedicationRequest,INSTRUCTION projection,P1,Epic/openEHR,Proyeksi klinis obat untuk query dan analitik,USULAN - butuh review
+52,Clinical Read Model,clinical_index_versions,Derived read model,"id:uuid,clinical_record_link_id:uuid,version_uid:varchar,projection_name:varchar,processed_at:timestamptz",none,COMPOSITION.version,P1,Epic/openEHR,Idempotensi proyeksi & koreksi revisi,USULAN - butuh review
+53,Surgery & Anesthesia,operation_cases,SIMRS,"id:uuid,encounter_id:uuid,service_order_id:uuid,operation_room_id:uuid,scheduled_at:timestamptz,status:varchar",Procedure/ServiceRequest,INSTRUCTION / ACTION,P2,Epic/TrakCare,Operasi terjadwal dan pelaksanaan,USULAN - butuh review
+54,Surgery & Anesthesia,operation_rooms,SIMRS,"id:uuid,location_id:uuid,room_number:varchar,status:varchar",Location,none,P2,TrakCare,Kamar operasi,USULAN - butuh review
+55,Surgery & Anesthesia,anesthesia_cases,SIMRS,"id:uuid,operation_case_id:uuid,clinical_record_link_id:uuid,anesthesia_type:varchar,status:varchar",Procedure,COMPOSITION,P2,Epic/openEHR,Catatan klinis anestesi tetap di CDR,USULAN - butuh review
+56,Nutrition,nutrition_orders,SIMRS,"id:uuid,encounter_id:uuid,clinical_record_link_id:uuid,diet_code:varchar,start_date:date,status:varchar",NutritionOrder,INSTRUCTION,P2,TrakCare/openEHR,Instruksi diet klinis dipisahkan proses dapur,USULAN - butuh review
+57,Nutrition,diet_production_batches,SIMRS,"id:uuid,production_date:date,kitchen_unit_id:uuid,batch_status:varchar,total_portions:integer",none,none,P2,TrakCare,Produksi makanan,USULAN - butuh review
+58,Nutrition,diet_distributions,SIMRS,"id:uuid,nutrition_order_id:uuid,diet_production_batch_id:uuid,delivered_at:timestamptz,status:varchar",none,none,P2,TrakCare,Distribusi makanan ke pasien,USULAN - butuh review
+59,CSSD,cssd_instruments,SIMRS,"id:uuid,item_code:varchar,name:varchar,serial_number:varchar,status:varchar",Device (optional),none,P2,TrakCare,Master instrumen,USULAN - butuh review
+60,CSSD,cssd_cycles,SIMRS,"id:uuid,sterilizer_id:uuid,started_at:timestamptz,ended_at:timestamptz,cycle_status:varchar",none,none,P2,TrakCare,Jejak sterilisasi,USULAN - butuh review
+61,CSSD,cssd_cycle_items,SIMRS,"id:uuid,cssd_cycle_id:uuid,cssd_instrument_id:uuid,result_status:varchar",none,none,P2,TrakCare,Detail alat per siklus,USULAN - butuh review
+62,Revenue Cycle,payers,SIMRS,"id:uuid,code:varchar,name:varchar,payer_type:varchar",Organization/Coverage.payor,none,P0,Epic/TrakCare,"BPJS, pribadi, swasta",USULAN - butuh review
+63,Revenue Cycle,coverages,SIMRS,"id:uuid,patient_id:uuid,payer_id:uuid,member_number:varchar,valid_from:date,valid_until:date",Coverage,none,P0,Epic/TrakCare,Penjamin yang terdaftar,USULAN - butuh review
+64,Revenue Cycle,tariffs,SIMRS,"id:uuid,service_catalog_id:uuid,payer_id:uuid,amount:decimal,currency:varchar,valid_from:date",ChargeItemDefinition (optional),none,P0,Epic,Tarif per penjamin,USULAN - butuh review
+65,Revenue Cycle,billing_accounts,SIMRS,"id:uuid,patient_id:uuid,encounter_id:uuid,payer_id:uuid,status:varchar",Account,none,P0,Epic,Rekening keuangan episode,USULAN - butuh review
+66,Revenue Cycle,charge_items,SIMRS,"id:uuid,billing_account_id:uuid,service_order_item_id:uuid,tariff_id:uuid,amount:decimal,charge_status:varchar",ChargeItem,none,P0,Epic,Peristiwa biaya berdasarkan layanan,USULAN - butuh review
+67,Revenue Cycle,invoices,SIMRS,"id:uuid,billing_account_id:uuid,invoice_number:varchar,total_amount:decimal,status:varchar",Invoice,none,P0,Epic,Invoice utama,USULAN - butuh review
+68,Revenue Cycle,invoice_items,SIMRS,"id:uuid,invoice_id:uuid,charge_item_id:uuid,quantity:decimal,amount:decimal",Invoice.lineItem,none,P0,Epic,Perincian invoice,USULAN - butuh review
+69,Revenue Cycle,payments,SIMRS,"id:uuid,invoice_id:uuid,received_at:timestamptz,amount:decimal,payment_method:varchar",PaymentReconciliation (optional),none,P0,Epic,Penerimaan pembayaran,USULAN - butuh review
+70,Revenue Cycle,claims,SIMRS,"id:uuid,billing_account_id:uuid,payer_id:uuid,claim_number:varchar,claim_status:varchar,submitted_at:timestamptz",Claim,none,P1,Epic,Proses klaim BPJS/asuransi,USULAN - butuh review
+71,Revenue Cycle,claim_documents,SIMRS,"id:uuid,claim_id:uuid,clinical_record_link_id:uuid,document_uri:varchar,document_type:varchar",DocumentReference,COMPOSITION reference,P1,Epic,Berkas klaim jangan menduplikasi isi RME permanen,USULAN - butuh review
+72,Inventory & Purchasing,items,SIMRS,"id:uuid,sku:varchar,item_name:varchar,item_category:varchar,unit_of_measure:varchar",none,none,P1,TrakCare,General master item termasuk alat dan BHP,USULAN - butuh review
+73,Inventory & Purchasing,warehouses,SIMRS,"id:uuid,facility_id:uuid,code:varchar,name:varchar",Location (optional),none,P1,TrakCare,Gudang,USULAN - butuh review
+74,Inventory & Purchasing,stocks,SIMRS,"id:uuid,item_id:uuid,warehouse_id:uuid,lot_number:varchar,quantity_on_hand:decimal",none,none,P1,TrakCare,Saldo material per lokasi & batch,USULAN - butuh review
+75,Inventory & Purchasing,stock_movements,SIMRS,"id:uuid,item_id:uuid,warehouse_id:uuid,quantity_delta:decimal,movement_type:varchar,reference_type:varchar,reference_id:uuid",SupplyDelivery (optional),none,P1,TrakCare,Ledger mutasi stok; tidak edit saldo tanpa jejak,USULAN - butuh review
+76,Inventory & Purchasing,vendors,SIMRS,"id:uuid,code:varchar,name:varchar,npwp:varchar",Organization,none,P2,TrakCare,Pemasok,USULAN - butuh review
+77,Inventory & Purchasing,purchase_orders,SIMRS,"id:uuid,vendor_id:uuid,facility_id:uuid,order_number:varchar,status:varchar,ordered_at:timestamptz",SupplyRequest (optional),none,P2,TrakCare,Pembelian,USULAN - butuh review
+78,Inventory & Purchasing,purchase_order_items,SIMRS,"id:uuid,purchase_order_id:uuid,item_id:uuid,quantity:decimal,unit_price:decimal",none,none,P2,TrakCare,Rincian PO,USULAN - butuh review
+79,Finance & ERP,gl_accounts,SIMRS,"id:uuid,account_code:varchar,account_name:varchar,account_type:varchar",none,none,P2,Epic/TrakCare,Chart of accounts,USULAN - butuh review
+80,Finance & ERP,journal_entries,SIMRS,"id:uuid,reference_type:varchar,reference_id:uuid,posted_at:timestamptz,status:varchar",none,none,P2,Epic/TrakCare,Jurnal,USULAN - butuh review
+81,Finance & ERP,journal_lines,SIMRS,"id:uuid,journal_entry_id:uuid,gl_account_id:uuid,debit:decimal,credit:decimal",none,none,P2,Epic/TrakCare,Debet kredit seimbang,USULAN - butuh review
+82,HR & Workforce,employees,SIMRS,"id:uuid,practitioner_id:uuid,employee_number:varchar,employment_status:varchar",PractitionerRole (partial),none,P2,TrakCare,SDM klinis dan non-klinis,USULAN - butuh review
+83,HR & Workforce,work_shifts,SIMRS,"id:uuid,employee_id:uuid,service_unit_id:uuid,starts_at:timestamptz,ends_at:timestamptz",Schedule (optional),none,P2,TrakCare,Penjadwalan SDM,USULAN - butuh review
+84,HR & Workforce,recruitment_candidates,SIMRS,"id:uuid,full_name:varchar,position_code:varchar,application_status:varchar",none,none,P3,TrakCare,Rekrutmen,USULAN - butuh review
+85,Interop & Governance,integration_jobs,SIMRS,"id:uuid,source_system:varchar,target_system:varchar,job_type:varchar,status:varchar,attempt_count:integer",none,none,P0,Epic/TrakCare,Monitoring integrasi,USULAN - butuh review
+86,Interop & Governance,interop_outbox,SIMRS,"id:uuid,aggregate_type:varchar,aggregate_id:uuid,event_type:varchar,payload_ref:varchar,status:varchar,created_at:timestamptz",FHIR Adapter,Composition commit event,P0,Epic/openEHR,Transactional outbox; durable event and retry,USULAN - butuh review
+87,Interop & Governance,fhir_resource_links,SIMRS,"id:uuid,local_resource_type:varchar,local_resource_id:uuid,fhir_type:varchar,fhir_id:varchar,version_id:varchar,endpoint_id:uuid",FHIR resource id,Composition mapping,P0,Epic/Cerner,Hubungkan resource FHIR eksternal ke data lokal,USULAN - butuh review
+88,Interop & Governance,external_identifiers,SIMRS,"id:uuid,entity_type:varchar,entity_id:uuid,system_uri:varchar,external_id:varchar",identifier,external IDs,P0,Epic/Cerner,Identifier lintas sistem termasuk IHS/SEP,USULAN - butuh review
+89,Interop & Governance,sync_failures,SIMRS,"id:uuid,integration_job_id:uuid,error_code:varchar,error_detail:varchar,retry_after:timestamptz",OperationOutcome (optional),error handling,P0,openEHR,Jangan simpan payload PHI mentah di log,USULAN - butuh review
+90,Interop & Governance,consent_records,SIMRS,"id:uuid,patient_id:uuid,policy_code:varchar,valid_from:timestamptz,valid_until:timestamptz,status:varchar",Consent,EHR_ACCESS complement,P0,openEHR,Kebijakan consent terpusat,USULAN - butuh review
+91,Interop & Governance,data_provenance,SIMRS,"id:uuid,entity_type:varchar,entity_id:uuid,source_system:varchar,source_ref:varchar,recorded_at:timestamptz",Provenance,AUDIT_DETAILS complement,P1,openEHR,Silsilah data clinical-to-FHIR,USULAN - butuh review
+92,Reporting & Analytics,report_definitions,Reporting DB,"id:uuid,report_code:varchar,name:varchar,sql_template_ref:varchar,owner_unit_id:uuid",Measure/Report (optional),AQL or read model,P2,Epic Caboodle,Metadata laporan dinamis/RL,USULAN - butuh review
+93,Reporting & Analytics,report_runs,Reporting DB,"id:uuid,report_definition_id:uuid,generated_at:timestamptz,job_status:varchar,result_uri:varchar",none,none,P2,Epic Caboodle,Eksekusi laporan terkontrol,USULAN - butuh review
+94,Reporting & Analytics,reporting_facts,Reporting DB,"id:uuid,facility_id:uuid,period_start:date,metric_code:varchar,metric_value:decimal",MeasureReport (optional),projection only,P2,Epic Caboodle,"Agregat, bukan database transaksi",USULAN - butuh review
+<PARSED TEXT FOR SHEET: 7 / 13 TABS
+TAB NAME: 06_TargetFields>
+index,Kamus field teknis awal (generatif dari usulan tabel),Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6,Unnamed: 7,Unnamed: 8
+0,Studi desk research • 31 Oktober 2026 • 490 baris • Status bukti dibedakan dari rancangan usulan,,,,,,,,
+1,,,,,,,,,
+2,Domain,Tabel,Field,SQL data type (usulan),Role,Referensi tabel SQL,Owner,Prioritas,Keterangan
+3,Master Data,organizations,id,uuid,PK,,SIMRS,P0,Pemilik layanan atau penyelenggara fasyankes
+4,Master Data,organizations,code,varchar,Attribute,,SIMRS,P0,
+5,Master Data,organizations,name,varchar,Attribute,,SIMRS,P0,
+6,Master Data,organizations,type,varchar,Attribute,,SIMRS,P0,
+7,Master Data,organizations,active,boolean,Attribute,,SIMRS,P0,
+8,Master Data,facilities,id,uuid,PK,,SIMRS,P0,Satu organisasi dapat memiliki banyak fasilitas
+9,Master Data,facilities,organization_id,uuid,FK,organizations,SIMRS,P0,FK internal ke organizations
+10,Master Data,facilities,code,varchar,Attribute,,SIMRS,P0,
+11,Master Data,facilities,name,varchar,Attribute,,SIMRS,P0,
+12,Master Data,facilities,type,varchar,Attribute,,SIMRS,P0,
+13,Master Data,service_units,id,uuid,PK,,SIMRS,P0,Unit klinik/poli/penunjang
+14,Master Data,service_units,facility_id,uuid,FK,facilities,SIMRS,P0,FK internal ke facilities
+15,Master Data,service_units,code,varchar,Attribute,,SIMRS,P0,
+16,Master Data,service_units,name,varchar,Attribute,,SIMRS,P0,
+17,Master Data,service_units,specialty_code,varchar,Attribute,,SIMRS,P0,
+18,Master Data,locations,id,uuid,PK,,SIMRS,P0,Hierarki lokasi fisik
+19,Master Data,locations,facility_id,uuid,FK,facilities,SIMRS,P0,FK internal ke facilities
+20,Master Data,locations,parent_location_id,uuid,FK,locations,SIMRS,P0,FK internal ke locations
+21,Master Data,locations,code,varchar,Attribute,,SIMRS,P0,
+22,Master Data,locations,name,varchar,Attribute,,SIMRS,P0,
+23,Master Data,locations,location_type,varchar,Attribute,,SIMRS,P0,
+24,Master Data,beds,id,uuid,PK,,SIMRS,P0,Master bed dan status operasional
+25,Master Data,beds,location_id,uuid,FK,locations,SIMRS,P0,FK internal ke locations
+26,Master Data,beds,bed_number,varchar,Attribute,,SIMRS,P0,
+27,Master Data,beds,status,varchar,Attribute,,SIMRS,P0,
+28,Master Data,beds,class_code,varchar,Attribute,,SIMRS,P0,
+29,Master Data,practitioners,id,uuid,PK,,SIMRS,P0,Master tenaga kesehatan
+30,Master Data,practitioners,person_external_id,varchar,Attribute,,SIMRS,P0,
+31,Master Data,practitioners,full_name,varchar,Attribute,,SIMRS,P0,
+32,Master Data,practitioners,license_number,varchar,Attribute,,SIMRS,P0,
+33,Master Data,practitioner_roles,id,uuid,PK,,SIMRS,P0,Relasi nakes dengan faskes/unit
+34,Master Data,practitioner_roles,practitioner_id,uuid,FK,practitioners,SIMRS,P0,FK internal ke practitioners
+35,Master Data,practitioner_roles,organization_id,uuid,FK,organizations,SIMRS,P0,FK internal ke organizations
+36,Master Data,practitioner_roles,service_unit_id,uuid,FK,service_units,SIMRS,P0,FK internal ke service_units
+37,Master Data,practitioner_roles,role_code,varchar,Attribute,,SIMRS,P0,
+38,Patient Identity,patients,id,uuid,PK,,SIMRS,P0,Master identitas pasien; bukan isi rekam medis
+39,Patient Identity,patients,medical_record_number,varchar,Attribute,,SIMRS,P0,
+40,Patient Identity,patients,full_name,varchar,Attribute,,SIMRS,P0,
+41,Patient Identity,patients,birth_date,date,Attribute,,SIMRS,P0,
+42,Patient Identity,patients,gender_code,varchar,Attribute,,SIMRS,P0,
+43,Patient Identity,patients,active,boolean,Attribute,,SIMRS,P0,
+44,Patient Identity,patient_identifiers,id,uuid,PK,,SIMRS,P0,"NIK, MRN, IHS, identifier nasional; unik per system"
+45,Patient Identity,patient_identifiers,patient_id,uuid,FK,patients,SIMRS,P0,FK internal ke patients
+46,Patient Identity,patient_identifiers,system_uri,varchar,Attribute,,SIMRS,P0,
+47,Patient Identity,patient_identifiers,value,varchar,Attribute,,SIMRS,P0,
+48,Patient Identity,patient_identifiers,identifier_type,varchar,Attribute,,SIMRS,P0,
+49,Patient Identity,patient_contacts,id,uuid,PK,,SIMRS,P1,PII; masking dan akses terkontrol
+50,Patient Identity,patient_contacts,patient_id,uuid,FK,patients,SIMRS,P1,FK internal ke patients
+51,Patient Identity,patient_contacts,contact_type,varchar,Attribute,,SIMRS,P1,
+52,Patient Identity,patient_contacts,phone,varchar,Attribute,,SIMRS,P1,
+53,Patient Identity,patient_contacts,email,varchar,Attribute,,SIMRS,P1,
+54,Patient Identity,patient_ehr_links,id,uuid,PK,,SIMRS,P0,1 pasien ↔ 1 EHR per konteks CDR; enforce uniqueness sesuai deployment
+55,Patient Identity,patient_ehr_links,patient_id,uuid,FK,patients,SIMRS,P0,FK internal ke patients
+56,Patient Identity,patient_ehr_links,ehr_id,uuid,External ID,,SIMRS,P0,UUID EHRbase; bukan FK SQL lintas database
+57,Patient Identity,patient_ehr_links,cdr_endpoint_id,uuid,FK,cdr_endpoints,SIMRS,P0,FK internal ke cdr_endpoints
+58,Patient Identity,patient_ehr_links,link_status,varchar,Attribute,,SIMRS,P0,
+59,User & Access,users,id,uuid,PK,,SIMRS,P0,Akun aplikasi dan identitas keamanan
+60,User & Access,users,username,varchar,Attribute,,SIMRS,P0,
+61,User & Access,users,practitioner_id,uuid,FK,practitioners,SIMRS,P0,FK internal ke practitioners
+62,User & Access,users,active,boolean,Attribute,,SIMRS,P0,
+63,User & Access,roles,id,uuid,PK,,SIMRS,P0,RBAC
+64,User & Access,roles,code,varchar,Attribute,,SIMRS,P0,
+65,User & Access,roles,name,varchar,Attribute,,SIMRS,P0,
+66,User & Access,permissions,id,uuid,PK,,SIMRS,P0,Policy action granular
+67,User & Access,permissions,resource,varchar,Attribute,,SIMRS,P0,
+68,User & Access,permissions,action,varchar,Attribute,,SIMRS,P0,
+69,User & Access,user_roles,id,uuid,PK,,SIMRS,P0,Role dibatasi konteks fasilitas
+70,User & Access,user_roles,user_id,uuid,FK,users,SIMRS,P0,FK internal ke users
+71,User & Access,user_roles,role_id,uuid,FK,roles,SIMRS,P0,FK internal ke roles
+72,User & Access,user_roles,facility_id,uuid,FK,facilities,SIMRS,P0,FK internal ke facilities
+73,User & Access,access_audit_logs,id,uuid,PK,,SIMRS,P0,Immutable audit event di aplikasi; terpisah dari versioning CDR
+74,User & Access,access_audit_logs,user_id,uuid,FK,users,SIMRS,P0,FK internal ke users
+75,User & Access,access_audit_logs,patient_id,uuid,FK,patients,SIMRS,P0,FK internal ke patients
+76,User & Access,access_audit_logs,resource_type,varchar,Attribute,,SIMRS,P0,
+77,User & Access,access_audit_logs,resource_id,varchar,Polymorphic ref,,SIMRS,P0,Perlu validasi referential integrity di aplikasi
+78,User & Access,access_audit_logs,action,varchar,Attribute,,SIMRS,P0,
+79,User & Access,access_audit_logs,occurred_at,timestamptz,Attribute,,SIMRS,P0,
+80,Patient Flow,appointments,id,uuid,PK,,SIMRS,P0,Penjadwalan
+81,Patient Flow,appointments,patient_id,uuid,FK,patients,SIMRS,P0,FK internal ke patients
+82,Patient Flow,appointments,service_unit_id,uuid,FK,service_units,SIMRS,P0,FK internal ke service_units
+83,Patient Flow,appointments,practitioner_id,uuid,FK,practitioners,SIMRS,P0,FK internal ke practitioners
+84,Patient Flow,appointments,scheduled_at,timestamptz,Attribute,,SIMRS,P0,
+85,Patient Flow,appointments,status,varchar,Attribute,,SIMRS,P0,
+86,Patient Flow,queues,id,uuid,PK,,SIMRS,P0,Antrean layanan
+87,Patient Flow,queues,appointment_id,uuid,FK,appointments,SIMRS,P0,FK internal ke appointments
+88,Patient Flow,queues,patient_id,uuid,FK,patients,SIMRS,P0,FK internal ke patients
+89,Patient Flow,queues,service_unit_id,uuid,FK,service_units,SIMRS,P0,FK internal ke service_units
+90,Patient Flow,queues,queue_number,varchar,Attribute,,SIMRS,P0,
+91,Patient Flow,queues,queue_status,varchar,Attribute,,SIMRS,P0,
+92,Patient Flow,visits,id,uuid,PK,,SIMRS,P0,Kumpulan encounter satu episode/pengobatan
+93,Patient Flow,visits,patient_id,uuid,FK,patients,SIMRS,P0,FK internal ke patients
+94,Patient Flow,visits,visit_number,varchar,Attribute,,SIMRS,P0,
+95,Patient Flow,visits,started_at,timestamptz,Attribute,,SIMRS,P0,
+96,Patient Flow,visits,ended_at,timestamptz,Attribute,,SIMRS,P0,
+97,Patient Flow,encounters,id,uuid,PK,,SIMRS,P0,Jangkar kunjungan seluruh modul klinis
+98,Patient Flow,encounters,visit_id,uuid,FK,visits,SIMRS,P0,FK internal ke visits
+99,Patient Flow,encounters,patient_id,uuid,FK,patients,SIMRS,P0,FK internal ke patients
+100,Patient Flow,encounters,service_unit_id,uuid,FK,service_units,SIMRS,P0,FK internal ke service_units
+101,Patient Flow,encounters,practitioner_id,uuid,FK,practitioners,SIMRS,P0,FK internal ke practitioners
+102,Patient Flow,encounters,encounter_type,varchar,Attribute,,SIMRS,P0,
+103,Patient Flow,encounters,status,varchar,Attribute,,SIMRS,P0,
+104,Patient Flow,encounters,started_at,timestamptz,Attribute,,SIMRS,P0,
+105,Patient Flow,encounters,ended_at,timestamptz,Attribute,,SIMRS,P0,
+106,Patient Flow,encounter_care_teams,id,uuid,PK,,SIMRS,P1,Care team lintas disiplin
+107,Patient Flow,encounter_care_teams,encounter_id,uuid,FK,encounters,SIMRS,P1,FK internal ke encounters
+108,Patient Flow,encounter_care_teams,practitioner_role_id,uuid,FK,practitioner_roles,SIMRS,P1,FK internal ke practitioner_roles
+109,Patient Flow,encounter_care_teams,team_role,varchar,Attribute,,SIMRS,P1,
+110,Patient Flow,encounter_care_teams,started_at,timestamptz,Attribute,,SIMRS,P1,
+111,Patient Flow,admissions,id,uuid,PK,,SIMRS,P0,Data administratif rawat inap
+112,Patient Flow,admissions,encounter_id,uuid,FK,encounters,SIMRS,P0,FK internal ke encounters
+113,Patient Flow,admissions,admitted_at,timestamptz,Attribute,,SIMRS,P0,
+114,Patient Flow,admissions,discharged_at,timestamptz,Attribute,,SIMRS,P0,
+115,Patient Flow,admissions,status,varchar,Attribute,,SIMRS,P0,
+116,Patient Flow,bed_assignments,id,uuid,PK,,SIMRS,P0,Histori penempatan
+117,Patient Flow,bed_assignments,admission_id,uuid,FK,admissions,SIMRS,P0,FK internal ke admissions
+118,Patient Flow,bed_assignments,bed_id,uuid,FK,beds,SIMRS,P0,FK internal ke beds
+119,Patient Flow,bed_assignments,assigned_at,timestamptz,Attribute,,SIMRS,P0,
+120,Patient Flow,bed_assignments,released_at,timestamptz,Attribute,,SIMRS,P0,
+121,Patient Flow,encounter_transfers,id,uuid,PK,,SIMRS,P1,ADT transfer
+122,Patient Flow,encounter_transfers,encounter_id,uuid,FK,encounters,SIMRS,P1,FK internal ke encounters
+123,Patient Flow,encounter_transfers,from_unit_id,uuid,FK,service_units,SIMRS,P1,FK internal ke service_units
+124,Patient Flow,encounter_transfers,to_unit_id,uuid,FK,service_units,SIMRS,P1,FK internal ke service_units
+125,Patient Flow,encounter_transfers,transferred_at,timestamptz,Attribute,,SIMRS,P1,
+126,Patient Flow,discharge_summaries,id,uuid,PK,,SIMRS,P1,Metadata approval; isi resume kanonis di CDR
+127,Patient Flow,discharge_summaries,encounter_id,uuid,FK,encounters,SIMRS,P1,FK internal ke encounters
+128,Patient Flow,discharge_summaries,clinical_record_link_id,uuid,FK,clinical_record_links,SIMRS,P1,FK internal ke clinical_record_links
+129,Patient Flow,discharge_summaries,approved_at,timestamptz,Attribute,,SIMRS,P1,
+130,Patient Flow,discharge_summaries,status,varchar,Attribute,,SIMRS,P1,
+131,Orders & Catalog,service_catalog,id,uuid,PK,,SIMRS,P0,Katalog order dan tindakan
+132,Orders & Catalog,service_catalog,code,varchar,Attribute,,SIMRS,P0,
+133,Orders & Catalog,service_catalog,service_name,varchar,Attribute,,SIMRS,P0,
+134,Orders & Catalog,service_catalog,service_type,varchar,Attribute,,SIMRS,P0,
+135,Orders & Catalog,service_catalog,unit_id,uuid,FK,service_units,SIMRS,P0,FK internal ke service_units
+136,Orders & Catalog,service_orders,id,uuid,PK,,SIMRS,P0,Order operasional kanonis untuk workflow
+137,Orders & Catalog,service_orders,encounter_id,uuid,FK,encounters,SIMRS,P0,FK internal ke encounters
+138,Orders & Catalog,service_orders,ordered_by_id,uuid,FK,practitioners,SIMRS,P0,FK internal ke practitioners
+139,Orders & Catalog,service_orders,order_type,varchar,Attribute,,SIMRS,P0,
+140,Orders & Catalog,service_orders,ordered_at,timestamptz,Attribute,,SIMRS,P0,
+141,Orders & Catalog,service_orders,status,varchar,Attribute,,SIMRS,P0,
+142,Orders & Catalog,service_order_items,id,uuid,PK,,SIMRS,P0,Detail tindakan/tes pada order
+143,Orders & Catalog,service_order_items,service_order_id,uuid,FK,service_orders,SIMRS,P0,FK internal ke service_orders
+144,Orders & Catalog,service_order_items,service_catalog_id,uuid,FK,service_catalog,SIMRS,P0,FK internal ke service_catalog
+145,Orders & Catalog,service_order_items,quantity,decimal,Attribute,,SIMRS,P0,
+146,Orders & Catalog,service_order_items,priority,varchar,Attribute,,SIMRS,P0,
+147,Orders & Catalog,service_order_items,status,varchar,Attribute,,SIMRS,P0,
+148,Orders & Catalog,order_status_events,id,uuid,PK,,SIMRS,P0,Jejak perubahan status order
+149,Orders & Catalog,order_status_events,service_order_id,uuid,FK,service_orders,SIMRS,P0,FK internal ke service_orders
+150,Orders & Catalog,order_status_events,status,varchar,Attribute,,SIMRS,P0,
+151,Orders & Catalog,order_status_events,actor_id,uuid,FK,users,SIMRS,P0,FK internal ke users
+152,Orders & Catalog,order_status_events,occurred_at,timestamptz,Attribute,,SIMRS,P0,
+153,Laboratory,specimens,id,uuid,PK,,SIMRS,P1,Tracking spesimen
+154,Laboratory,specimens,service_order_item_id,uuid,FK,service_order_items,SIMRS,P1,FK internal ke service_order_items
+155,Laboratory,specimens,specimen_number,varchar,Attribute,,SIMRS,P1,
+156,Laboratory,specimens,specimen_type,varchar,Attribute,,SIMRS,P1,
+157,Laboratory,specimens,collected_at,timestamptz,Attribute,,SIMRS,P1,
+158,Laboratory,specimens,status,varchar,Attribute,,SIMRS,P1,
+159,Laboratory,lab_analytes,id,uuid,PK,,SIMRS,P1,Master analit
+160,Laboratory,lab_analytes,code,varchar,Attribute,,SIMRS,P1,
+161,Laboratory,lab_analytes,name,varchar,Attribute,,SIMRS,P1,
+162,Laboratory,lab_analytes,loinc_code,varchar,Attribute,,SIMRS,P1,
+163,Laboratory,lab_analytes,unit_ucum,varchar,Attribute,,SIMRS,P1,
+164,Laboratory,lab_result_links,id,uuid,PK,,SIMRS,P1,"Hasil klinis kanonis CDR, bukan data duplikat"
+165,Laboratory,lab_result_links,service_order_item_id,uuid,FK,service_order_items,SIMRS,P1,FK internal ke service_order_items
+166,Laboratory,lab_result_links,clinical_record_link_id,uuid,FK,clinical_record_links,SIMRS,P1,FK internal ke clinical_record_links
+167,Laboratory,lab_result_links,verified_at,timestamptz,Attribute,,SIMRS,P1,
+168,Laboratory,lab_result_links,status,varchar,Attribute,,SIMRS,P1,
+169,Radiology,imaging_orders,id,uuid,PK,,SIMRS,P1,Workflow radiologi
+170,Radiology,imaging_orders,service_order_item_id,uuid,FK,service_order_items,SIMRS,P1,FK internal ke service_order_items
+171,Radiology,imaging_orders,modality,varchar,Attribute,,SIMRS,P1,
+172,Radiology,imaging_orders,body_site_code,varchar,Attribute,,SIMRS,P1,
+173,Radiology,imaging_orders,order_status,varchar,Attribute,,SIMRS,P1,
+174,Radiology,imaging_studies,id,uuid,PK,,SIMRS,P1,"DICOM metadata/referensi, bukan piksel DICOM"
+175,Radiology,imaging_studies,imaging_order_id,uuid,FK,imaging_orders,SIMRS,P1,FK internal ke imaging_orders
+176,Radiology,imaging_studies,study_instance_uid,varchar,Attribute,,SIMRS,P1,
+177,Radiology,imaging_studies,performed_at,timestamptz,Attribute,,SIMRS,P1,
+178,Radiology,imaging_studies,pacs_uri,varchar,Attribute,,SIMRS,P1,
+179,Radiology,radiology_report_links,id,uuid,PK,,SIMRS,P1,Laporan radiologi klinis di CDR
+180,Radiology,radiology_report_links,imaging_study_id,uuid,FK,imaging_studies,SIMRS,P1,FK internal ke imaging_studies
+181,Radiology,radiology_report_links,clinical_record_link_id,uuid,FK,clinical_record_links,SIMRS,P1,FK internal ke clinical_record_links
+182,Radiology,radiology_report_links,finalized_at,timestamptz,Attribute,,SIMRS,P1,
+183,Pharmacy,medicines,id,uuid,PK,,SIMRS,P0,Master obat/formularium
+184,Pharmacy,medicines,code,varchar,Attribute,,SIMRS,P0,
+185,Pharmacy,medicines,display_name,varchar,Attribute,,SIMRS,P0,
+186,Pharmacy,medicines,dosage_form,varchar,Attribute,,SIMRS,P0,
+187,Pharmacy,medicines,strength,varchar,Attribute,,SIMRS,P0,
+188,Pharmacy,medicines,kfa_code,varchar,Attribute,,SIMRS,P0,
+189,Pharmacy,medication_orders,id,uuid,PK,,SIMRS,P0,Order resep operasional; instruksi klinis kanonis dibakukan
+190,Pharmacy,medication_orders,encounter_id,uuid,FK,encounters,SIMRS,P0,FK internal ke encounters
+191,Pharmacy,medication_orders,prescriber_id,uuid,FK,practitioners,SIMRS,P0,FK internal ke practitioners
+192,Pharmacy,medication_orders,status,varchar,Attribute,,SIMRS,P0,
+193,Pharmacy,medication_orders,ordered_at,timestamptz,Attribute,,SIMRS,P0,
+194,Pharmacy,medication_order_items,id,uuid,PK,,SIMRS,P0,Item resep
+195,Pharmacy,medication_order_items,medication_order_id,uuid,FK,medication_orders,SIMRS,P0,FK internal ke medication_orders
+196,Pharmacy,medication_order_items,medicine_id,uuid,FK,medicines,SIMRS,P0,FK internal ke medicines
+197,Pharmacy,medication_order_items,dose_text,varchar,Attribute,,SIMRS,P0,
+198,Pharmacy,medication_order_items,frequency,varchar,Attribute,,SIMRS,P0,
+199,Pharmacy,medication_order_items,duration_days,integer,Attribute,,SIMRS,P0,
+200,Pharmacy,medication_order_items,quantity,decimal,Attribute,,SIMRS,P0,
+201,Pharmacy,dispensations,id,uuid,PK,,SIMRS,P0,Workflow dispensing dan pengeluaran stok
+202,Pharmacy,dispensations,medication_order_id,uuid,FK,medication_orders,SIMRS,P0,FK internal ke medication_orders
+203,Pharmacy,dispensations,dispensed_by_id,uuid,FK,practitioners,SIMRS,P0,FK internal ke practitioners
+204,Pharmacy,dispensations,dispensed_at,timestamptz,Attribute,,SIMRS,P0,
+205,Pharmacy,dispensations,status,varchar,Attribute,,SIMRS,P0,
+206,Pharmacy,dispensation_items,id,uuid,PK,,SIMRS,P0,Detail item dikeluarkan
+207,Pharmacy,dispensation_items,dispensation_id,uuid,FK,dispensations,SIMRS,P0,FK internal ke dispensations
+208,Pharmacy,dispensation_items,medicine_id,uuid,FK,medicines,SIMRS,P0,FK internal ke medicines
+209,Pharmacy,dispensation_items,batch_number,varchar,Attribute,,SIMRS,P0,
+210,Pharmacy,dispensation_items,quantity,decimal,Attribute,,SIMRS,P0,
+211,Pharmacy,medication_administrations,id,uuid,PK,,SIMRS,P1,MAR; tentukan tanggung jawab audit klinis dengan CDR
+212,Pharmacy,medication_administrations,encounter_id,uuid,FK,encounters,SIMRS,P1,FK internal ke encounters
+213,Pharmacy,medication_administrations,medication_order_item_id,uuid,FK,medication_order_items,SIMRS,P1,FK internal ke medication_order_items
+214,Pharmacy,medication_administrations,administered_at,timestamptz,Attribute,,SIMRS,P1,
+215,Pharmacy,medication_administrations,dose_given,decimal,Attribute,,SIMRS,P1,
+216,Pharmacy,medication_administrations,status,varchar,Attribute,,SIMRS,P1,
+217,Clinical CDR Link,cdr_endpoints,id,uuid,PK,,SIMRS,P0,Registrasi CDR; rahasiakan kredensial di secret manager
+218,Clinical CDR Link,cdr_endpoints,name,varchar,Attribute,,SIMRS,P0,
+219,Clinical CDR Link,cdr_endpoints,base_url,varchar,Attribute,,SIMRS,P0,
+220,Clinical CDR Link,cdr_endpoints,tenant_key,varchar,Attribute,,SIMRS,P0,
+221,Clinical CDR Link,cdr_endpoints,status,varchar,Attribute,,SIMRS,P0,
+222,Clinical CDR Link,clinical_templates,id,uuid,PK,,SIMRS,P0,Registry template dan deployment
+223,Clinical CDR Link,clinical_templates,template_id,varchar,Attribute,,SIMRS,P0,
+224,Clinical CDR Link,clinical_templates,template_version,varchar,Attribute,,SIMRS,P0,
+225,Clinical CDR Link,clinical_templates,module,varchar,Attribute,,SIMRS,P0,
+226,Clinical CDR Link,clinical_templates,active,boolean,Attribute,,SIMRS,P0,
+227,Clinical CDR Link,clinical_record_links,id,uuid,PK,,SIMRS,P0,Pointer lintas DB; tidak memodifikasi internal CDR
+228,Clinical CDR Link,clinical_record_links,patient_id,uuid,FK,patients,SIMRS,P0,FK internal ke patients
+229,Clinical CDR Link,clinical_record_links,encounter_id,uuid,FK,encounters,SIMRS,P0,FK internal ke encounters
+230,Clinical CDR Link,clinical_record_links,ehr_id,uuid,External ID,,SIMRS,P0,UUID EHRbase; bukan FK SQL lintas database
+231,Clinical CDR Link,clinical_record_links,composition_uid,varchar,External ID,,SIMRS,P0,Identifier openEHR; bukan FK internal CDR
+232,Clinical CDR Link,clinical_record_links,version_uid,varchar,External ID,,SIMRS,P0,Identifier openEHR; bukan FK internal CDR
+233,Clinical CDR Link,clinical_record_links,template_id,varchar,Attribute,,SIMRS,P0,
+234,Clinical CDR Link,clinical_record_links,record_type,varchar,Attribute,,SIMRS,P0,
+235,Clinical CDR Link,clinical_record_links,sync_status,varchar,Attribute,,SIMRS,P0,
+236,Clinical CDR Link,clinical_record_signatures,id,uuid,PK,,SIMRS,P0,Workflow tanda tangan dan pengesahan
+237,Clinical CDR Link,clinical_record_signatures,clinical_record_link_id,uuid,FK,clinical_record_links,SIMRS,P0,FK internal ke clinical_record_links
+238,Clinical CDR Link,clinical_record_signatures,signed_by_id,uuid,FK,practitioners,SIMRS,P0,FK internal ke practitioners
+239,Clinical CDR Link,clinical_record_signatures,signed_at,timestamptz,Attribute,,SIMRS,P0,
+240,Clinical CDR Link,clinical_record_signatures,signature_status,varchar,Attribute,,SIMRS,P0,
+241,Clinical CDR Link,clinical_document_access,id,uuid,PK,,SIMRS,P0,Kebijakan/consent akses tingkat aplikasi
+242,Clinical CDR Link,clinical_document_access,patient_id,uuid,FK,patients,SIMRS,P0,FK internal ke patients
+243,Clinical CDR Link,clinical_document_access,facility_id,uuid,FK,facilities,SIMRS,P0,FK internal ke facilities
+244,Clinical CDR Link,clinical_document_access,practitioner_id,uuid,FK,practitioners,SIMRS,P0,FK internal ke practitioners
+245,Clinical CDR Link,clinical_document_access,policy_type,varchar,Attribute,,SIMRS,P0,
+246,Clinical CDR Link,clinical_document_access,valid_until,timestamptz,Attribute,,SIMRS,P0,
+247,Clinical Read Model,clinical_observation_index,id,uuid,PK,,Derived read model,P1,Proyeksi dapat dibangun ulang; version-aware; akses PHI
+248,Clinical Read Model,clinical_observation_index,patient_id,uuid,FK,patients,Derived read model,P1,FK internal ke patients
+249,Clinical Read Model,clinical_observation_index,encounter_id,uuid,FK,encounters,Derived read model,P1,FK internal ke encounters
+250,Clinical Read Model,clinical_observation_index,clinical_record_link_id,uuid,FK,clinical_record_links,Derived read model,P1,FK internal ke clinical_record_links
+251,Clinical Read Model,clinical_observation_index,concept_system,varchar,Attribute,,Derived read model,P1,
+252,Clinical Read Model,clinical_observation_index,concept_code,varchar,Attribute,,Derived read model,P1,
+253,Clinical Read Model,clinical_observation_index,value_numeric,decimal,Attribute,,Derived read model,P1,
+254,Clinical Read Model,clinical_observation_index,unit_ucum,varchar,Attribute,,Derived read model,P1,
+255,Clinical Read Model,clinical_observation_index,recorded_at,timestamptz,Attribute,,Derived read model,P1,
+256,Clinical Read Model,clinical_condition_index,id,uuid,PK,,Derived read model,P1,Diagnosis terindeks; bukan sumber kebenaran
+257,Clinical Read Model,clinical_condition_index,patient_id,uuid,FK,patients,Derived read model,P1,FK internal ke patients
+258,Clinical Read Model,clinical_condition_index,encounter_id,uuid,FK,encounters,Derived read model,P1,FK internal ke encounters
+259,Clinical Read Model,clinical_condition_index,clinical_record_link_id,uuid,FK,clinical_record_links,Derived read model,P1,FK internal ke clinical_record_links
+260,Clinical Read Model,clinical_condition_index,code_system,varchar,Attribute,,Derived read model,P1,
+261,Clinical Read Model,clinical_condition_index,code,varchar,Attribute,,Derived read model,P1,
+262,Clinical Read Model,clinical_condition_index,clinical_status,varchar,Attribute,,Derived read model,P1,
+263,Clinical Read Model,clinical_medication_index,id,uuid,PK,,Derived read model,P1,Proyeksi klinis obat untuk query dan analitik
+264,Clinical Read Model,clinical_medication_index,patient_id,uuid,FK,patients,Derived read model,P1,FK internal ke patients
+265,Clinical Read Model,clinical_medication_index,encounter_id,uuid,FK,encounters,Derived read model,P1,FK internal ke encounters
+266,Clinical Read Model,clinical_medication_index,clinical_record_link_id,uuid,FK,clinical_record_links,Derived read model,P1,FK internal ke clinical_record_links
+267,Clinical Read Model,clinical_medication_index,medicine_code,varchar,Attribute,,Derived read model,P1,
+268,Clinical Read Model,clinical_medication_index,start_at,timestamptz,Attribute,,Derived read model,P1,
+269,Clinical Read Model,clinical_medication_index,end_at,timestamptz,Attribute,,Derived read model,P1,
+270,Clinical Read Model,clinical_index_versions,id,uuid,PK,,Derived read model,P1,Idempotensi proyeksi & koreksi revisi
+271,Clinical Read Model,clinical_index_versions,clinical_record_link_id,uuid,FK,clinical_record_links,Derived read model,P1,FK internal ke clinical_record_links
+272,Clinical Read Model,clinical_index_versions,version_uid,varchar,External ID,,Derived read model,P1,Identifier openEHR; bukan FK internal CDR
+273,Clinical Read Model,clinical_index_versions,projection_name,varchar,Attribute,,Derived read model,P1,
+274,Clinical Read Model,clinical_index_versions,processed_at,timestamptz,Attribute,,Derived read model,P1,
+275,Surgery & Anesthesia,operation_cases,id,uuid,PK,,SIMRS,P2,Operasi terjadwal dan pelaksanaan
+276,Surgery & Anesthesia,operation_cases,encounter_id,uuid,FK,encounters,SIMRS,P2,FK internal ke encounters
+277,Surgery & Anesthesia,operation_cases,service_order_id,uuid,FK,service_orders,SIMRS,P2,FK internal ke service_orders
+278,Surgery & Anesthesia,operation_cases,operation_room_id,uuid,FK,operation_rooms,SIMRS,P2,FK internal ke operation_rooms
+279,Surgery & Anesthesia,operation_cases,scheduled_at,timestamptz,Attribute,,SIMRS,P2,
+280,Surgery & Anesthesia,operation_cases,status,varchar,Attribute,,SIMRS,P2,
+281,Surgery & Anesthesia,operation_rooms,id,uuid,PK,,SIMRS,P2,Kamar operasi
+282,Surgery & Anesthesia,operation_rooms,location_id,uuid,FK,locations,SIMRS,P2,FK internal ke locations
+283,Surgery & Anesthesia,operation_rooms,room_number,varchar,Attribute,,SIMRS,P2,
+284,Surgery & Anesthesia,operation_rooms,status,varchar,Attribute,,SIMRS,P2,
+285,Surgery & Anesthesia,anesthesia_cases,id,uuid,PK,,SIMRS,P2,Catatan klinis anestesi tetap di CDR
+286,Surgery & Anesthesia,anesthesia_cases,operation_case_id,uuid,FK,operation_cases,SIMRS,P2,FK internal ke operation_cases
+287,Surgery & Anesthesia,anesthesia_cases,clinical_record_link_id,uuid,FK,clinical_record_links,SIMRS,P2,FK internal ke clinical_record_links
+288,Surgery & Anesthesia,anesthesia_cases,anesthesia_type,varchar,Attribute,,SIMRS,P2,
+289,Surgery & Anesthesia,anesthesia_cases,status,varchar,Attribute,,SIMRS,P2,
+290,Nutrition,nutrition_orders,id,uuid,PK,,SIMRS,P2,Instruksi diet klinis dipisahkan proses dapur
+291,Nutrition,nutrition_orders,encounter_id,uuid,FK,encounters,SIMRS,P2,FK internal ke encounters
+292,Nutrition,nutrition_orders,clinical_record_link_id,uuid,FK,clinical_record_links,SIMRS,P2,FK internal ke clinical_record_links
+293,Nutrition,nutrition_orders,diet_code,varchar,Attribute,,SIMRS,P2,
+294,Nutrition,nutrition_orders,start_date,date,Attribute,,SIMRS,P2,
+295,Nutrition,nutrition_orders,status,varchar,Attribute,,SIMRS,P2,
+296,Nutrition,diet_production_batches,id,uuid,PK,,SIMRS,P2,Produksi makanan
+297,Nutrition,diet_production_batches,production_date,date,Attribute,,SIMRS,P2,
+298,Nutrition,diet_production_batches,kitchen_unit_id,uuid,FK,service_units,SIMRS,P2,FK internal ke service_units
+299,Nutrition,diet_production_batches,batch_status,varchar,Attribute,,SIMRS,P2,
+300,Nutrition,diet_production_batches,total_portions,integer,Attribute,,SIMRS,P2,
+301,Nutrition,diet_distributions,id,uuid,PK,,SIMRS,P2,Distribusi makanan ke pasien
+302,Nutrition,diet_distributions,nutrition_order_id,uuid,FK,nutrition_orders,SIMRS,P2,FK internal ke nutrition_orders
+303,Nutrition,diet_distributions,diet_production_batch_id,uuid,FK,diet_production_batches,SIMRS,P2,FK internal ke diet_production_batches
+304,Nutrition,diet_distributions,delivered_at,timestamptz,Attribute,,SIMRS,P2,
+305,Nutrition,diet_distributions,status,varchar,Attribute,,SIMRS,P2,
+306,CSSD,cssd_instruments,id,uuid,PK,,SIMRS,P2,Master instrumen
+307,CSSD,cssd_instruments,item_code,varchar,Attribute,,SIMRS,P2,
+308,CSSD,cssd_instruments,name,varchar,Attribute,,SIMRS,P2,
+309,CSSD,cssd_instruments,serial_number,varchar,Attribute,,SIMRS,P2,
+310,CSSD,cssd_instruments,status,varchar,Attribute,,SIMRS,P2,
+311,CSSD,cssd_cycles,id,uuid,PK,,SIMRS,P2,Jejak sterilisasi
+312,CSSD,cssd_cycles,sterilizer_id,uuid,Attribute,,SIMRS,P2,
+313,CSSD,cssd_cycles,started_at,timestamptz,Attribute,,SIMRS,P2,
+314,CSSD,cssd_cycles,ended_at,timestamptz,Attribute,,SIMRS,P2,
+315,CSSD,cssd_cycles,cycle_status,varchar,Attribute,,SIMRS,P2,
+316,CSSD,cssd_cycle_items,id,uuid,PK,,SIMRS,P2,Detail alat per siklus
+317,CSSD,cssd_cycle_items,cssd_cycle_id,uuid,FK,cssd_cycles,SIMRS,P2,FK internal ke cssd_cycles
+318,CSSD,cssd_cycle_items,cssd_instrument_id,uuid,FK,cssd_instruments,SIMRS,P2,FK internal ke cssd_instruments
+319,CSSD,cssd_cycle_items,result_status,varchar,Attribute,,SIMRS,P2,
+320,Revenue Cycle,payers,id,uuid,PK,,SIMRS,P0,"BPJS, pribadi, swasta"
+321,Revenue Cycle,payers,code,varchar,Attribute,,SIMRS,P0,
+322,Revenue Cycle,payers,name,varchar,Attribute,,SIMRS,P0,
+323,Revenue Cycle,payers,payer_type,varchar,Attribute,,SIMRS,P0,
+324,Revenue Cycle,coverages,id,uuid,PK,,SIMRS,P0,Penjamin yang terdaftar
+325,Revenue Cycle,coverages,patient_id,uuid,FK,patients,SIMRS,P0,FK internal ke patients
+326,Revenue Cycle,coverages,payer_id,uuid,FK,payers,SIMRS,P0,FK internal ke payers
+327,Revenue Cycle,coverages,member_number,varchar,Attribute,,SIMRS,P0,
+328,Revenue Cycle,coverages,valid_from,date,Attribute,,SIMRS,P0,
+329,Revenue Cycle,coverages,valid_until,date,Attribute,,SIMRS,P0,
+330,Revenue Cycle,tariffs,id,uuid,PK,,SIMRS,P0,Tarif per penjamin
+331,Revenue Cycle,tariffs,service_catalog_id,uuid,FK,service_catalog,SIMRS,P0,FK internal ke service_catalog
+332,Revenue Cycle,tariffs,payer_id,uuid,FK,payers,SIMRS,P0,FK internal ke payers
+333,Revenue Cycle,tariffs,amount,decimal,Attribute,,SIMRS,P0,
+334,Revenue Cycle,tariffs,currency,varchar,Attribute,,SIMRS,P0,
+335,Revenue Cycle,tariffs,valid_from,date,Attribute,,SIMRS,P0,
+336,Revenue Cycle,billing_accounts,id,uuid,PK,,SIMRS,P0,Rekening keuangan episode
+337,Revenue Cycle,billing_accounts,patient_id,uuid,FK,patients,SIMRS,P0,FK internal ke patients
+338,Revenue Cycle,billing_accounts,encounter_id,uuid,FK,encounters,SIMRS,P0,FK internal ke encounters
+339,Revenue Cycle,billing_accounts,payer_id,uuid,FK,payers,SIMRS,P0,FK internal ke payers
+340,Revenue Cycle,billing_accounts,status,varchar,Attribute,,SIMRS,P0,
+341,Revenue Cycle,charge_items,id,uuid,PK,,SIMRS,P0,Peristiwa biaya berdasarkan layanan
+342,Revenue Cycle,charge_items,billing_account_id,uuid,FK,billing_accounts,SIMRS,P0,FK internal ke billing_accounts
+343,Revenue Cycle,charge_items,service_order_item_id,uuid,FK,service_order_items,SIMRS,P0,FK internal ke service_order_items
+344,Revenue Cycle,charge_items,tariff_id,uuid,FK,tariffs,SIMRS,P0,FK internal ke tariffs
+345,Revenue Cycle,charge_items,amount,decimal,Attribute,,SIMRS,P0,
+346,Revenue Cycle,charge_items,charge_status,varchar,Attribute,,SIMRS,P0,
+347,Revenue Cycle,invoices,id,uuid,PK,,SIMRS,P0,Invoice utama
+348,Revenue Cycle,invoices,billing_account_id,uuid,FK,billing_accounts,SIMRS,P0,FK internal ke billing_accounts
+349,Revenue Cycle,invoices,invoice_number,varchar,Attribute,,SIMRS,P0,
+350,Revenue Cycle,invoices,total_amount,decimal,Attribute,,SIMRS,P0,
+351,Revenue Cycle,invoices,status,varchar,Attribute,,SIMRS,P0,
+352,Revenue Cycle,invoice_items,id,uuid,PK,,SIMRS,P0,Perincian invoice
+353,Revenue Cycle,invoice_items,invoice_id,uuid,FK,invoices,SIMRS,P0,FK internal ke invoices
+354,Revenue Cycle,invoice_items,charge_item_id,uuid,FK,charge_items,SIMRS,P0,FK internal ke charge_items
+355,Revenue Cycle,invoice_items,quantity,decimal,Attribute,,SIMRS,P0,
+356,Revenue Cycle,invoice_items,amount,decimal,Attribute,,SIMRS,P0,
+357,Revenue Cycle,payments,id,uuid,PK,,SIMRS,P0,Penerimaan pembayaran
+358,Revenue Cycle,payments,invoice_id,uuid,FK,invoices,SIMRS,P0,FK internal ke invoices
+359,Revenue Cycle,payments,received_at,timestamptz,Attribute,,SIMRS,P0,
+360,Revenue Cycle,payments,amount,decimal,Attribute,,SIMRS,P0,
+361,Revenue Cycle,payments,payment_method,varchar,Attribute,,SIMRS,P0,
+362,Revenue Cycle,claims,id,uuid,PK,,SIMRS,P1,Proses klaim BPJS/asuransi
+363,Revenue Cycle,claims,billing_account_id,uuid,FK,billing_accounts,SIMRS,P1,FK internal ke billing_accounts
+364,Revenue Cycle,claims,payer_id,uuid,FK,payers,SIMRS,P1,FK internal ke payers
+365,Revenue Cycle,claims,claim_number,varchar,Attribute,,SIMRS,P1,
+366,Revenue Cycle,claims,claim_status,varchar,Attribute,,SIMRS,P1,
+367,Revenue Cycle,claims,submitted_at,timestamptz,Attribute,,SIMRS,P1,
+368,Revenue Cycle,claim_documents,id,uuid,PK,,SIMRS,P1,Berkas klaim jangan menduplikasi isi RME permanen
+369,Revenue Cycle,claim_documents,claim_id,uuid,FK,claims,SIMRS,P1,FK internal ke claims
+370,Revenue Cycle,claim_documents,clinical_record_link_id,uuid,FK,clinical_record_links,SIMRS,P1,FK internal ke clinical_record_links
+371,Revenue Cycle,claim_documents,document_uri,varchar,Attribute,,SIMRS,P1,
+372,Revenue Cycle,claim_documents,document_type,varchar,Attribute,,SIMRS,P1,
+373,Inventory & Purchasing,items,id,uuid,PK,,SIMRS,P1,General master item termasuk alat dan BHP
+374,Inventory & Purchasing,items,sku,varchar,Attribute,,SIMRS,P1,
+375,Inventory & Purchasing,items,item_name,varchar,Attribute,,SIMRS,P1,
+376,Inventory & Purchasing,items,item_category,varchar,Attribute,,SIMRS,P1,
+377,Inventory & Purchasing,items,unit_of_measure,varchar,Attribute,,SIMRS,P1,
+378,Inventory & Purchasing,warehouses,id,uuid,PK,,SIMRS,P1,Gudang
+379,Inventory & Purchasing,warehouses,facility_id,uuid,FK,facilities,SIMRS,P1,FK internal ke facilities
+380,Inventory & Purchasing,warehouses,code,varchar,Attribute,,SIMRS,P1,
+381,Inventory & Purchasing,warehouses,name,varchar,Attribute,,SIMRS,P1,
+382,Inventory & Purchasing,stocks,id,uuid,PK,,SIMRS,P1,Saldo material per lokasi & batch
+383,Inventory & Purchasing,stocks,item_id,uuid,FK,items,SIMRS,P1,FK internal ke items
+384,Inventory & Purchasing,stocks,warehouse_id,uuid,FK,warehouses,SIMRS,P1,FK internal ke warehouses
+385,Inventory & Purchasing,stocks,lot_number,varchar,Attribute,,SIMRS,P1,
+386,Inventory & Purchasing,stocks,quantity_on_hand,decimal,Attribute,,SIMRS,P1,
+387,Inventory & Purchasing,stock_movements,id,uuid,PK,,SIMRS,P1,Ledger mutasi stok; tidak edit saldo tanpa jejak
+388,Inventory & Purchasing,stock_movements,item_id,uuid,FK,items,SIMRS,P1,FK internal ke items
+389,Inventory & Purchasing,stock_movements,warehouse_id,uuid,FK,warehouses,SIMRS,P1,FK internal ke warehouses
+390,Inventory & Purchasing,stock_movements,quantity_delta,decimal,Attribute,,SIMRS,P1,
+391,Inventory & Purchasing,stock_movements,movement_type,varchar,Attribute,,SIMRS,P1,
+392,Inventory & Purchasing,stock_movements,reference_type,varchar,Attribute,,SIMRS,P1,
+393,Inventory & Purchasing,stock_movements,reference_id,uuid,Polymorphic ref,,SIMRS,P1,Perlu validasi referential integrity di aplikasi
+394,Inventory & Purchasing,vendors,id,uuid,PK,,SIMRS,P2,Pemasok
+395,Inventory & Purchasing,vendors,code,varchar,Attribute,,SIMRS,P2,
+396,Inventory & Purchasing,vendors,name,varchar,Attribute,,SIMRS,P2,
+397,Inventory & Purchasing,vendors,npwp,varchar,Attribute,,SIMRS,P2,
+398,Inventory & Purchasing,purchase_orders,id,uuid,PK,,SIMRS,P2,Pembelian
+399,Inventory & Purchasing,purchase_orders,vendor_id,uuid,FK,vendors,SIMRS,P2,FK internal ke vendors
+400,Inventory & Purchasing,purchase_orders,facility_id,uuid,FK,facilities,SIMRS,P2,FK internal ke facilities
+401,Inventory & Purchasing,purchase_orders,order_number,varchar,Attribute,,SIMRS,P2,
+402,Inventory & Purchasing,purchase_orders,status,varchar,Attribute,,SIMRS,P2,
+403,Inventory & Purchasing,purchase_orders,ordered_at,timestamptz,Attribute,,SIMRS,P2,
+404,Inventory & Purchasing,purchase_order_items,id,uuid,PK,,SIMRS,P2,Rincian PO
+405,Inventory & Purchasing,purchase_order_items,purchase_order_id,uuid,FK,purchase_orders,SIMRS,P2,FK internal ke purchase_orders
+406,Inventory & Purchasing,purchase_order_items,item_id,uuid,FK,items,SIMRS,P2,FK internal ke items
+407,Inventory & Purchasing,purchase_order_items,quantity,decimal,Attribute,,SIMRS,P2,
+408,Inventory & Purchasing,purchase_order_items,unit_price,decimal,Attribute,,SIMRS,P2,
+409,Finance & ERP,gl_accounts,id,uuid,PK,,SIMRS,P2,Chart of accounts
+410,Finance & ERP,gl_accounts,account_code,varchar,Attribute,,SIMRS,P2,
+411,Finance & ERP,gl_accounts,account_name,varchar,Attribute,,SIMRS,P2,
+412,Finance & ERP,gl_accounts,account_type,varchar,Attribute,,SIMRS,P2,
+413,Finance & ERP,journal_entries,id,uuid,PK,,SIMRS,P2,Jurnal
+414,Finance & ERP,journal_entries,reference_type,varchar,Attribute,,SIMRS,P2,
+415,Finance & ERP,journal_entries,reference_id,uuid,Polymorphic ref,,SIMRS,P2,Perlu validasi referential integrity di aplikasi
+416,Finance & ERP,journal_entries,posted_at,timestamptz,Attribute,,SIMRS,P2,
+417,Finance & ERP,journal_entries,status,varchar,Attribute,,SIMRS,P2,
+418,Finance & ERP,journal_lines,id,uuid,PK,,SIMRS,P2,Debet kredit seimbang
+419,Finance & ERP,journal_lines,journal_entry_id,uuid,FK,journal_entries,SIMRS,P2,FK internal ke journal_entries
+420,Finance & ERP,journal_lines,gl_account_id,uuid,FK,gl_accounts,SIMRS,P2,FK internal ke gl_accounts
+421,Finance & ERP,journal_lines,debit,decimal,Attribute,,SIMRS,P2,
+422,Finance & ERP,journal_lines,credit,decimal,Attribute,,SIMRS,P2,
+423,HR & Workforce,employees,id,uuid,PK,,SIMRS,P2,SDM klinis dan non-klinis
+424,HR & Workforce,employees,practitioner_id,uuid,FK,practitioners,SIMRS,P2,FK internal ke practitioners
+425,HR & Workforce,employees,employee_number,varchar,Attribute,,SIMRS,P2,
+426,HR & Workforce,employees,employment_status,varchar,Attribute,,SIMRS,P2,
+427,HR & Workforce,work_shifts,id,uuid,PK,,SIMRS,P2,Penjadwalan SDM
+428,HR & Workforce,work_shifts,employee_id,uuid,FK,employees,SIMRS,P2,FK internal ke employees
+429,HR & Workforce,work_shifts,service_unit_id,uuid,FK,service_units,SIMRS,P2,FK internal ke service_units
+430,HR & Workforce,work_shifts,starts_at,timestamptz,Attribute,,SIMRS,P2,
+431,HR & Workforce,work_shifts,ends_at,timestamptz,Attribute,,SIMRS,P2,
+432,HR & Workforce,recruitment_candidates,id,uuid,PK,,SIMRS,P3,Rekrutmen
+433,HR & Workforce,recruitment_candidates,full_name,varchar,Attribute,,SIMRS,P3,
+434,HR & Workforce,recruitment_candidates,position_code,varchar,Attribute,,SIMRS,P3,
+435,HR & Workforce,recruitment_candidates,application_status,varchar,Attribute,,SIMRS,P3,
+436,Interop & Governance,integration_jobs,id,uuid,PK,,SIMRS,P0,Monitoring integrasi
+437,Interop & Governance,integration_jobs,source_system,varchar,Attribute,,SIMRS,P0,
+438,Interop & Governance,integration_jobs,target_system,varchar,Attribute,,SIMRS,P0,
+439,Interop & Governance,integration_jobs,job_type,varchar,Attribute,,SIMRS,P0,
+440,Interop & Governance,integration_jobs,status,varchar,Attribute,,SIMRS,P0,
+441,Interop & Governance,integration_jobs,attempt_count,integer,Attribute,,SIMRS,P0,
+442,Interop & Governance,interop_outbox,id,uuid,PK,,SIMRS,P0,Transactional outbox; durable event and retry
+443,Interop & Governance,interop_outbox,aggregate_type,varchar,Attribute,,SIMRS,P0,
+444,Interop & Governance,interop_outbox,aggregate_id,uuid,Polymorphic ref,,SIMRS,P0,Perlu validasi referential integrity di aplikasi
+445,Interop & Governance,interop_outbox,event_type,varchar,Attribute,,SIMRS,P0,
+446,Interop & Governance,interop_outbox,payload_ref,varchar,Attribute,,SIMRS,P0,
+447,Interop & Governance,interop_outbox,status,varchar,Attribute,,SIMRS,P0,
+448,Interop & Governance,interop_outbox,created_at,timestamptz,Attribute,,SIMRS,P0,
+449,Interop & Governance,fhir_resource_links,id,uuid,PK,,SIMRS,P0,Hubungkan resource FHIR eksternal ke data lokal
+450,Interop & Governance,fhir_resource_links,local_resource_type,varchar,Attribute,,SIMRS,P0,
+451,Interop & Governance,fhir_resource_links,local_resource_id,uuid,Polymorphic ref,,SIMRS,P0,Perlu validasi referential integrity di aplikasi
+452,Interop & Governance,fhir_resource_links,fhir_type,varchar,Attribute,,SIMRS,P0,
+453,Interop & Governance,fhir_resource_links,fhir_id,varchar,Attribute,,SIMRS,P0,
+454,Interop & Governance,fhir_resource_links,version_id,varchar,Attribute,,SIMRS,P0,
+455,Interop & Governance,fhir_resource_links,endpoint_id,uuid,Attribute,,SIMRS,P0,
+456,Interop & Governance,external_identifiers,id,uuid,PK,,SIMRS,P0,Identifier lintas sistem termasuk IHS/SEP
+457,Interop & Governance,external_identifiers,entity_type,varchar,Attribute,,SIMRS,P0,
+458,Interop & Governance,external_identifiers,entity_id,uuid,Polymorphic ref,,SIMRS,P0,Perlu validasi referential integrity di aplikasi
+459,Interop & Governance,external_identifiers,system_uri,varchar,Attribute,,SIMRS,P0,
+460,Interop & Governance,external_identifiers,external_id,varchar,Attribute,,SIMRS,P0,
+461,Interop & Governance,sync_failures,id,uuid,PK,,SIMRS,P0,Jangan simpan payload PHI mentah di log
+462,Interop & Governance,sync_failures,integration_job_id,uuid,FK,integration_jobs,SIMRS,P0,FK internal ke integration_jobs
+463,Interop & Governance,sync_failures,error_code,varchar,Attribute,,SIMRS,P0,
+464,Interop & Governance,sync_failures,error_detail,varchar,Attribute,,SIMRS,P0,
+465,Interop & Governance,sync_failures,retry_after,timestamptz,Attribute,,SIMRS,P0,
+466,Interop & Governance,consent_records,id,uuid,PK,,SIMRS,P0,Kebijakan consent terpusat
+467,Interop & Governance,consent_records,patient_id,uuid,FK,patients,SIMRS,P0,FK internal ke patients
+468,Interop & Governance,consent_records,policy_code,varchar,Attribute,,SIMRS,P0,
+469,Interop & Governance,consent_records,valid_from,timestamptz,Attribute,,SIMRS,P0,
+470,Interop & Governance,consent_records,valid_until,timestamptz,Attribute,,SIMRS,P0,
+471,Interop & Governance,consent_records,status,varchar,Attribute,,SIMRS,P0,
+472,Interop & Governance,data_provenance,id,uuid,PK,,SIMRS,P1,Silsilah data clinical-to-FHIR
+473,Interop & Governance,data_provenance,entity_type,varchar,Attribute,,SIMRS,P1,
+474,Interop & Governance,data_provenance,entity_id,uuid,Polymorphic ref,,SIMRS,P1,Perlu validasi referential integrity di aplikasi
+475,Interop & Governance,data_provenance,source_system,varchar,Attribute,,SIMRS,P1,
+476,Interop & Governance,data_provenance,source_ref,varchar,Attribute,,SIMRS,P1,
+477,Interop & Governance,data_provenance,recorded_at,timestamptz,Attribute,,SIMRS,P1,
+478,Reporting & Analytics,report_definitions,id,uuid,PK,,Reporting DB,P2,Metadata laporan dinamis/RL
+479,Reporting & Analytics,report_definitions,report_code,varchar,Attribute,,Reporting DB,P2,
+480,Reporting & Analytics,report_definitions,name,varchar,Attribute,,Reporting DB,P2,
+481,Reporting & Analytics,report_definitions,sql_template_ref,varchar,Attribute,,Reporting DB,P2,
+482,Reporting & Analytics,report_definitions,owner_unit_id,uuid,FK,service_units,Reporting DB,P2,FK internal ke service_units
+483,Reporting & Analytics,report_runs,id,uuid,PK,,Reporting DB,P2,Eksekusi laporan terkontrol
+484,Reporting & Analytics,report_runs,report_definition_id,uuid,FK,report_definitions,Reporting DB,P2,FK internal ke report_definitions
+485,Reporting & Analytics,report_runs,generated_at,timestamptz,Attribute,,Reporting DB,P2,
+486,Reporting & Analytics,report_runs,job_status,varchar,Attribute,,Reporting DB,P2,
+487,Reporting & Analytics,report_runs,result_uri,varchar,Attribute,,Reporting DB,P2,
+488,Reporting & Analytics,reporting_facts,id,uuid,PK,,Reporting DB,P2,"Agregat, bukan database transaksi"
+489,Reporting & Analytics,reporting_facts,facility_id,uuid,FK,facilities,Reporting DB,P2,FK internal ke facilities
+490,Reporting & Analytics,reporting_facts,period_start,date,Attribute,,Reporting DB,P2,
+491,Reporting & Analytics,reporting_facts,metric_code,varchar,Attribute,,Reporting DB,P2,
+492,Reporting & Analytics,reporting_facts,metric_value,decimal,Attribute,,Reporting DB,P2,
+<PARSED TEXT FOR SHEET: 8 / 13 TABS
+TAB NAME: 07_TargetRelations>
+index,Usulan relationship FK aplikasi dan referensi lintas CDR,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6,Unnamed: 7,Unnamed: 8
+0,Studi desk research • 31 Oktober 2026 • 132 baris • Status bukti dibedakan dari rancangan usulan,,,,,,,,
+1,,,,,,,,,
+2,Parent table / object,Parent column,Child table,Child column,Kardinalitas,Jenis relasi,Level bukti,Aturan / risiko,Domain
+3,organizations,id,facilities,organization_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Master Data
+4,facilities,id,service_units,facility_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Master Data
+5,facilities,id,locations,facility_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Master Data
+6,locations,id,locations,parent_location_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Master Data
+7,locations,id,beds,location_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Master Data
+8,practitioners,id,practitioner_roles,practitioner_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Master Data
+9,organizations,id,practitioner_roles,organization_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Master Data
+10,service_units,id,practitioner_roles,service_unit_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Master Data
+11,patients,id,patient_identifiers,patient_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Identity
+12,patients,id,patient_contacts,patient_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Identity
+13,patients,id,patient_ehr_links,patient_id,1:N lintas CDR,SQL FK,Usulan,Periksa unicities tenant/CDR; patient_ehr_links.ehr_id bukan SQL FK ke EHRbase,Patient Identity
+14,cdr_endpoints,id,patient_ehr_links,cdr_endpoint_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Identity
+15,practitioners,id,users,practitioner_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,User & Access
+16,users,id,user_roles,user_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,User & Access
+17,roles,id,user_roles,role_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,User & Access
+18,facilities,id,user_roles,facility_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,User & Access
+19,users,id,access_audit_logs,user_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,User & Access
+20,patients,id,access_audit_logs,patient_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,User & Access
+21,patients,id,appointments,patient_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Flow
+22,service_units,id,appointments,service_unit_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Flow
+23,practitioners,id,appointments,practitioner_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Flow
+24,appointments,id,queues,appointment_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Flow
+25,patients,id,queues,patient_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Flow
+26,service_units,id,queues,service_unit_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Flow
+27,patients,id,visits,patient_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Flow
+28,visits,id,encounters,visit_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Flow
+29,patients,id,encounters,patient_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Flow
+30,service_units,id,encounters,service_unit_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Flow
+31,practitioners,id,encounters,practitioner_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Flow
+32,encounters,id,encounter_care_teams,encounter_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Flow
+33,practitioner_roles,id,encounter_care_teams,practitioner_role_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Flow
+34,encounters,id,admissions,encounter_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Flow
+35,admissions,id,bed_assignments,admission_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Flow
+36,beds,id,bed_assignments,bed_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Flow
+37,encounters,id,encounter_transfers,encounter_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Flow
+38,service_units,id,encounter_transfers,from_unit_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Flow
+39,service_units,id,encounter_transfers,to_unit_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Flow
+40,encounters,id,discharge_summaries,encounter_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Flow
+41,clinical_record_links,id,discharge_summaries,clinical_record_link_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Patient Flow
+42,service_units,id,service_catalog,unit_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Orders & Catalog
+43,encounters,id,service_orders,encounter_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Orders & Catalog
+44,practitioners,id,service_orders,ordered_by_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Orders & Catalog
+45,service_orders,id,service_order_items,service_order_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Orders & Catalog
+46,service_catalog,id,service_order_items,service_catalog_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Orders & Catalog
+47,service_orders,id,order_status_events,service_order_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Orders & Catalog
+48,users,id,order_status_events,actor_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Orders & Catalog
+49,service_order_items,id,specimens,service_order_item_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Laboratory
+50,service_order_items,id,lab_result_links,service_order_item_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Laboratory
+51,clinical_record_links,id,lab_result_links,clinical_record_link_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Laboratory
+52,service_order_items,id,imaging_orders,service_order_item_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Radiology
+53,imaging_orders,id,imaging_studies,imaging_order_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Radiology
+54,imaging_studies,id,radiology_report_links,imaging_study_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Radiology
+55,clinical_record_links,id,radiology_report_links,clinical_record_link_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Radiology
+56,encounters,id,medication_orders,encounter_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Pharmacy
+57,practitioners,id,medication_orders,prescriber_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Pharmacy
+58,medication_orders,id,medication_order_items,medication_order_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Pharmacy
+59,medicines,id,medication_order_items,medicine_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Pharmacy
+60,medication_orders,id,dispensations,medication_order_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Pharmacy
+61,practitioners,id,dispensations,dispensed_by_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Pharmacy
+62,dispensations,id,dispensation_items,dispensation_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Pharmacy
+63,medicines,id,dispensation_items,medicine_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Pharmacy
+64,encounters,id,medication_administrations,encounter_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Pharmacy
+65,medication_order_items,id,medication_administrations,medication_order_item_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Pharmacy
+66,patients,id,clinical_record_links,patient_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Clinical CDR Link
+67,encounters,id,clinical_record_links,encounter_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Clinical CDR Link
+68,clinical_record_links,id,clinical_record_signatures,clinical_record_link_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Clinical CDR Link
+69,practitioners,id,clinical_record_signatures,signed_by_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Clinical CDR Link
+70,patients,id,clinical_document_access,patient_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Clinical CDR Link
+71,facilities,id,clinical_document_access,facility_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Clinical CDR Link
+72,practitioners,id,clinical_document_access,practitioner_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Clinical CDR Link
+73,patients,id,clinical_observation_index,patient_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Clinical Read Model
+74,encounters,id,clinical_observation_index,encounter_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Clinical Read Model
+75,clinical_record_links,id,clinical_observation_index,clinical_record_link_id,1:N,SQL FK + projection,Usulan,Dapat dibangun ulang dari CDR; versi terbaru sesuai policy,Clinical Read Model
+76,patients,id,clinical_condition_index,patient_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Clinical Read Model
+77,encounters,id,clinical_condition_index,encounter_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Clinical Read Model
+78,clinical_record_links,id,clinical_condition_index,clinical_record_link_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Clinical Read Model
+79,patients,id,clinical_medication_index,patient_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Clinical Read Model
+80,encounters,id,clinical_medication_index,encounter_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Clinical Read Model
+81,clinical_record_links,id,clinical_medication_index,clinical_record_link_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Clinical Read Model
+82,clinical_record_links,id,clinical_index_versions,clinical_record_link_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Clinical Read Model
+83,encounters,id,operation_cases,encounter_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Surgery & Anesthesia
+84,service_orders,id,operation_cases,service_order_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Surgery & Anesthesia
+85,operation_rooms,id,operation_cases,operation_room_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Surgery & Anesthesia
+86,locations,id,operation_rooms,location_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Surgery & Anesthesia
+87,operation_cases,id,anesthesia_cases,operation_case_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Surgery & Anesthesia
+88,clinical_record_links,id,anesthesia_cases,clinical_record_link_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Surgery & Anesthesia
+89,encounters,id,nutrition_orders,encounter_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Nutrition
+90,clinical_record_links,id,nutrition_orders,clinical_record_link_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Nutrition
+91,service_units,id,diet_production_batches,kitchen_unit_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Nutrition
+92,nutrition_orders,id,diet_distributions,nutrition_order_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Nutrition
+93,diet_production_batches,id,diet_distributions,diet_production_batch_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Nutrition
+94,cssd_cycles,id,cssd_cycle_items,cssd_cycle_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,CSSD
+95,cssd_instruments,id,cssd_cycle_items,cssd_instrument_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,CSSD
+96,patients,id,coverages,patient_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Revenue Cycle
+97,payers,id,coverages,payer_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Revenue Cycle
+98,service_catalog,id,tariffs,service_catalog_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Revenue Cycle
+99,payers,id,tariffs,payer_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Revenue Cycle
+100,patients,id,billing_accounts,patient_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Revenue Cycle
+101,encounters,id,billing_accounts,encounter_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Revenue Cycle
+102,payers,id,billing_accounts,payer_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Revenue Cycle
+103,billing_accounts,id,charge_items,billing_account_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Revenue Cycle
+104,service_order_items,id,charge_items,service_order_item_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Revenue Cycle
+105,tariffs,id,charge_items,tariff_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Revenue Cycle
+106,billing_accounts,id,invoices,billing_account_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Revenue Cycle
+107,invoices,id,invoice_items,invoice_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Revenue Cycle
+108,charge_items,id,invoice_items,charge_item_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Revenue Cycle
+109,invoices,id,payments,invoice_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Revenue Cycle
+110,billing_accounts,id,claims,billing_account_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Revenue Cycle
+111,payers,id,claims,payer_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Revenue Cycle
+112,claims,id,claim_documents,claim_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Revenue Cycle
+113,clinical_record_links,id,claim_documents,clinical_record_link_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Revenue Cycle
+114,facilities,id,warehouses,facility_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Inventory & Purchasing
+115,items,id,stocks,item_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Inventory & Purchasing
+116,warehouses,id,stocks,warehouse_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Inventory & Purchasing
+117,items,id,stock_movements,item_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Inventory & Purchasing
+118,warehouses,id,stock_movements,warehouse_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Inventory & Purchasing
+119,vendors,id,purchase_orders,vendor_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Inventory & Purchasing
+120,facilities,id,purchase_orders,facility_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Inventory & Purchasing
+121,purchase_orders,id,purchase_order_items,purchase_order_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Inventory & Purchasing
+122,items,id,purchase_order_items,item_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Inventory & Purchasing
+123,journal_entries,id,journal_lines,journal_entry_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Finance & ERP
+124,gl_accounts,id,journal_lines,gl_account_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Finance & ERP
+125,practitioners,id,employees,practitioner_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,HR & Workforce
+126,employees,id,work_shifts,employee_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,HR & Workforce
+127,service_units,id,work_shifts,service_unit_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,HR & Workforce
+128,integration_jobs,id,sync_failures,integration_job_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Interop & Governance
+129,patients,id,consent_records,patient_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Interop & Governance
+130,service_units,id,report_definitions,owner_unit_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Reporting & Analytics
+131,report_definitions,id,report_runs,report_definition_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Reporting & Analytics
+132,facilities,id,reporting_facts,facility_id,1:N (umum),SQL FK,Terverifikasi sebagai usulan,ON DELETE RESTRICT/default; detail sesuai workflow,Reporting & Analytics
+133,EHRbase.EHR,ehr_id,patient_ehr_links,ehr_id,1:1 (target umum per CDR),External identifier,Konseptual,Tidak membuat SQL foreign key ke EHRbase; EHR ID UUID,Patient Identity
+134,EHRbase.COMPOSITION,uid,clinical_record_links,composition_uid,1:N versi/logis,External identifier,Konseptual,One Composition may have multiple versions; store version_uid separately,Clinical CDR Link
+<PARSED TEXT FOR SHEET: 9 / 13 TABS
+TAB NAME: 08_FHIR_openEHR>
+index,Pemetaan domain lintas Epic/Cerner → SIMRS → FHIR/openEHR,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6,Unnamed: 7
+0,Studi desk research • 31 Oktober 2026 • 29 baris • Status bukti dibedakan dari rancangan usulan,,,,,,,
+1,,,,,,,,
+2,Konsep,Tabel SIMRS,Model pembanding,FHIR R4,openEHR,Source of truth,Prioritas,Catatan/kondisi
+3,Identitas pasien,patients / patient_identifiers,Epic PATIENT; Oracle PERSON; OpenMRS patient,Patient,EHR.ehr_id via patient_ehr_links,Operational DB,P0,Source of truth identitas: SIMRS; jangan samakan NIK/MRN dengan ehr_id
+4,Kunjungan,visits / encounters,Epic PAT_ENC; Oracle ENCOUNTER; OpenMRS visit + encounter,Encounter,COMPOSITION.context dan link encounter,Operational DB,P0,Episode vs encounter vs clinical note tidak 1:1
+5,Sumber tenaga kesehatan,practitioners / practitioner_roles,Epic provider metadata; OpenMRS provider,Practitioner / PractitionerRole,PARTY_PROXY/participations,Operational DB,P0,Role dan organisasi jangan disimpan dalam catatan bebas
+6,Tekanan darah,clinical_observation_index + CDR,Cerner CLINICAL_EVENT; OpenMRS obs,Observation (sesuai profil target),OBSERVATION blood_pressure,EHRbase canonical,P0,Bisa menjadi 2 Observation terpisah untuk sistol/diastol sesuai profil SATUSEHAT
+7,Antropometri,clinical_observation_index + CDR,OpenMRS obs,Observation,"OBSERVATION body_weight, height",EHRbase canonical,P0,Unit UCUM; template versioning
+8,Diagnosis,clinical_condition_index + CDR,Epic ENC_DX_ASSOC_DATA; Cerner DIAGNOSIS,Condition,EVALUATION problem/diagnosis,EHRbase canonical,P0,Diagnosis billing dan diagnosis klinis mungkin beda lifecycle
+9,Alergi,CDR + clinical read model,OpenMRS obs (sebagian),AllergyIntolerance,EVALUATION adverse_reaction_risk,EHRbase canonical,P1,Pakai archetype yang sesuai; jangan simpulkan allergy hanya dari event
+10,Catatan SOAP,clinical_record_links,Epic HNO_INFO,Composition / DocumentReference,COMPOSITION + SECTION/ENTRY,EHRbase canonical,P0,Tanda tangan & author metadata aplikasi terpisah
+11,Order laboratorium,service_orders / service_order_items,Epic ORDER_PROC; Cerner ORDERS,ServiceRequest,INSTRUCTION bila relevan,Operational workflow,P0,Order bukan hasil; implementasi mapping version-aware
+12,Hasil laboratorium,lab_result_links + CDR,Epic ORDER_RESULTS; Cerner CLINICAL_EVENT,Observation / DiagnosticReport,OBSERVATION / COMPOSITION,EHRbase canonical,P1,Satu order -> banyak analit; verifikasi dan koreksi hasil
+13,Spesimen,specimens,Epic ORDER_PROC; Cerner ORDERS,Specimen,clinical context only,Operational workflow,P1,Chain of custody termasuk sistem LIS
+14,Pencitraan DICOM,imaging_studies,Epic ORDER_PROC; Cerner ORDERS,ImagingStudy,external imaging reference,PACS / Operational DB,P1,Simpan StudyInstanceUID dan endpoint PACS; objek DICOM tetap di PACS
+15,Laporan radiologi,radiology_report_links + CDR,Epic notes; Cerner events,DiagnosticReport,COMPOSITION / EVALUATION,EHRbase canonical,P1,Tidak simpan laporan final ganda sebagai nilai yang bisa divergen
+16,Resep,medication_orders / items + CDR,Epic ORDER_MED; Cerner ORDERS,MedicationRequest,INSTRUCTION medication,Shared orchestration,P0,Tentukan fakta klinis kanonis dan state workflow agar tidak konflik
+17,Dispensing,dispensations / items,Epic pharmacy workflows,MedicationDispense,ACTION if clinical,Operational DB,P0,Stok berkurang saat dispensing sesuai business rules
+18,Pemberian obat,medication_administrations + CDR,Epic MAR; Cerner Clinical Events,MedicationAdministration,ACTION medication,Clinical + operational,P1,Tidak disamakan dengan dispensing
+19,Rawat inap / transfer,admissions / bed_assignments,"Epic PAT_ENC, HSP_ACCOUNT; Cerner ENCOUNTER",Encounter,composition context,Operational DB,P0,Bed movement berjejak waktu
+20,Operasi/anestesi,operation_cases / anesthesia_cases,Epic perioperative domains,Procedure / ServiceRequest,INSTRUCTION/ACTION/COMPOSITION,Hybrid,P2,Clinical documentation harus versioned
+21,Gizi klinis,nutrition_orders,Domain operasional,NutritionOrder,INSTRUCTION diet,Hybrid,P2,Order klinis ↔ dapur
+22,Produksi gizi,diet_production_batches / distributions,Domain ERP/TrakCare,—,—,Operational DB,P2,Tidak perlu FHIR/openEHR untuk semua transaksi dapur
+23,Sterilisasi alat,cssd_cycles / items,Domain ERP/TrakCare,Device optional,—,Operational DB,P2,Traceability instrumen dan siklus
+24,Tarif & billing,billing_accounts / charge_items / invoices,Epic HSP_ACCOUNT,Account / ChargeItem / Invoice,—,Operational DB,P0,One account-to-many-charges; audit perubahan tarif
+25,Klaim,claims / claim_documents,Epic revenue cycle,Claim / DocumentReference,clinical links only,Operational DB,P1,Dokumen klaim referensi CDR dan berkas operasional
+26,Logistik,items / stocks / stock_movements,ERP domain / MEDITECH,—,—,Operational DB,P1,"Stock ledger, saldo dan lot/batch"
+27,Keuangan,gl_accounts / journal_entries / lines,Enterprise revenue and ERP,—,—,Operational DB,P2,Jurnal harus seimbang
+28,SDM,employees / work_shifts,ERP domain,PractitionerRole/Schedule partial,—,Operational DB,P2,Beda pegawai vs practitioner
+29,Interoperabilitas,interop_outbox / fhir_resource_links,Vendor API layers,FHIR resources,COMPOSITION as source,Integration DB,P0,Outbox + idempotency + reconciliation
+30,Clinical read model,clinical_*_index,Epic Clarity/Caboodle; Cerner ODS,Reporting materialized,AQL projection,Derived / rebuildable,P1,PHI access control; preserve provenance and source version
+31,Laporan RL,reporting_facts / report_runs,"Epic analytics, MEDITECH DR",MeasureReport optional,AQL projection,Analytics,P2,Agregat non-FHIR termasuk helpdesk/bed/infrastruktur
+<PARSED TEXT FOR SHEET: 10 / 13 TABS
+TAB NAME: 09_ADR>
+index,"Architecture Decision Records — rekomendasi awal, belum disahkan",Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6
+0,Studi desk research • 31 Oktober 2026 • 12 baris • Status bukti dibedakan dari rancangan usulan,,,,,,
+1,,,,,,,
+2,ADR,Keputusan,Status,Rancangan,Risiko/pertimbangan,Tahap,Domain
+3,ADR-01,Adopsi hybrid operasional + CDR,Disarankan,PostgreSQL untuk operasional dan ERP; EHRbase untuk catatan klinis terpilih,Pisahkan SLA dan akses data,PoC RJ P0,Clinical + Operations
+4,ADR-02,FHIR bukan database internal,Disarankan,FHIR R4 adapter menjadi interchange layer,Mencegah sumber kebenaran ganda,P0,Interop
+5,ADR-03,Pasien/Encounter kanonis di SIMRS,Disarankan,"Master pasien, kunjungan dan billing di operasional",Jaga patient ↔ EHR link,P0,Identity
+6,ADR-04,Composition klinis kanonis di CDR,Perlu PoC,"Mulai tekanan darah, SOAP, diagnosis, hasil",Perlu templates dan AQL,P0,Clinical
+7,ADR-05,Order operasional kanonis di SQL,Disarankan,CPOE status dan downstream workflow di SQL; clinical intent di CDR bila perlu,Desain sinkronisasi state,P0,CPOE
+8,ADR-06,Tidak JOIN ke tabel internal CDR,Disarankan,REST/AQL + link IDs; bukan FK lintas DB,Versi EHRbase berubah,P0,Architecture
+9,ADR-07,Model analitik terpisah,Disarankan,SQL projection + facts berbasis event/version UID,Sinkronisasi idempotent,P1,Analytics
+10,ADR-08,Versioning / signing governance,Disarankan,CDR versioning + workflow authorization & signature aplikasi,Tidak menyamakan save dengan signed,P0,Governance
+11,ADR-09,Audit dan consent end-to-end,Disarankan,Consent/checks di backend sebelum akses CDR dan query read model,Akses antarunit/tenant,P0,Security
+12,ADR-10,Batas DICOM,Disarankan,PACS/DICOM storage eksternal; SIMRS metadata/index laporan saja,Bukan BLOB radiologi PostgreSQL,P1,Radiology
+13,ADR-11,Klaim mengacu bukti klinis,Disarankan,Claim document link ke Composition/version dan dokumen operasional,Cegah duplikasi mutable,P1,RCM
+14,ADR-12,Evaluasi tanpa bias vendor,Disarankan,"Bandingkan biaya, produktivitas, upgrade, query, audit dan mapping SATUSEHAT",Keputusan final setelah PoC,P0,Strategy
+<PARSED TEXT FOR SHEET: 11 / 13 TABS
+TAB NAME: 10_Roadmap>
+index,Tahap implementasi + kriteria keluaran,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5
+0,Studi desk research • 31 Oktober 2026 • 8 baris • Status bukti dibedakan dari rancangan usulan,,,,,
+1,,,,,,
+2,Tahap,Paket,Tabel/komponen utama,Uji / acceptance criteria,Artefak target,ADR terkait
+3,P0,Desain Master Data / Registry,"patients, identifiers, encounters, facilities, practitioners","PK/FK, unique constraints, merge pasien, schema ownership",ERD + migration + acceptance tests,ADR-03
+4,P0,PoC EHRbase,"EHR create, template upload, Composition save/query/update",4 skenario data klinis rawat jalan; audit + status,Demo catatan klinis version-aware,ADR-01;ADR-04
+5,P0,CPOE & Billing Vertical Slice,order lab dan resep; charge_item; invoice,Satu encounter dari registrasi→order→hasil→billing,E2E integration tests,ADR-05
+6,P0,FHIR SATUSEHAT Adapter,FHIR mapping Patient/Encounter/Observation/Condition/ServiceRequest,Uji conformance against profile R4; retry/outbox,Payload valid + reconciliation dashboard,ADR-02;ADR-09
+7,P1,Hasil Lab/Rad + Farmasi,"specimen, lab result, RIS/PACS, dispensing","Result version, MAR, claims references",Clinical workflow lengkap,ADR-10;ADR-11
+8,P1,Clinical Read Model,clinical_observation_index/condition_index,"Rebuild projection, update-on-version, permissions",AQL vs SQL benchmark; query dashboards,ADR-06;ADR-07
+9,P2,Backoffice enterprise,"CSSD, laundry, gizi, finance, procurement, SDM, operasi","ERP traceability, approval, audit, RH",Fitur setara baseline enterprise,ADR-08
+10,P2,Performance & HA testing,"CDR, backend, PostgreSQL, integration","Backup/restore, concurrent writes, disaster recovery",Sign-off NFR dan production readiness,ADR-12
+<PARSED TEXT FOR SHEET: 12 / 13 TABS
+TAB NAME: 11_Sources>
+index,"Daftar sumber publik, tanggal, dan batas penggunaan",Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5
+0,Studi desk research • 31 Oktober 2026 • 22 baris • Status bukti dibedakan dari rancangan usulan,,,,,
+1,,,,,,
+2,ID,Vendor/standar,Dokumen,Tanggal/versi,URL,Catatan keterbatasan
+3,S01,Epic,Epic EHI Export Table Index,2026-10-23,https://open.epic.com/EHITables/GetTable/_index.htm,"Skema ekspor EHI, bukan ERD fisik Chronicles"
+4,S02,Epic,PATIENT,2026-10-23,https://open.epic.com/EHITables/GetTable/PATIENT.htm,Demografi; PAT_ID
+5,S03,Epic,PAT_ENC,2026-10-23,https://open.epic.com/EHITables/GetTable/PAT_ENC.htm,Encounter; PAT_ENC_CSN_ID
+6,S04,Epic,ORDER_PROC,2026-10-23,https://open.epic.com/EHITables/GetTable/ORDER_PROC.htm,Order pemeriksaan
+7,S05,Epic,ORDER_RESULTS,2026-10-23,https://open.epic.com/EHITables/GetTable/ORDER_RESULTS.htm,Hasil per komponen
+8,S06,Epic,ORDER_MED,2026-10-23,https://open.epic.com/EHITables/GetTable/ORDER_MED.htm,Resep
+9,S07,Epic,HNO_INFO,2026-10-23,https://open.epic.com/EHITables/GetTable/HNO_INFO.htm,Metadata catatan
+10,S08,Epic,HSP_ACCOUNT,2026-10-23,https://open.epic.com/EHITables/GetTable/HSP_ACCOUNT.htm,Akun billing rumah sakit
+11,S09,Epic,ENC_DX_ASSOC_DATA,2026-10-23,https://open.epic.com/EHITables/GetTable/ENC_DX_ASSOC_DATA.htm,Informasi diagnosis kunjungan
+12,S10,Epic,PAT_ENC_DOCS,2026-10-23,https://open.epic.com/EHITables/GetTable/PAT_ENC_DOCS.htm,Dokumen encounter
+13,S11,Epic,ORDER_MEDINFO,2026-10-23,https://open.epic.com/EHITables/GetTable/ORDER_MEDINFO.htm,Rincian resep
+14,S12,Oracle Health,Millennium ODS Data Dictionary,Tidak ditentukan,https://docs.healtheintent.com/feed_types/millennium-ods/v1/,Skema ODS data feed; bukan skema transaksional lengkap
+15,S13,OpenMRS,OpenMRS Data Model 1.9,2025-08-14,https://openmrs.atlassian.net/wiki/spaces/docs/pages/25477157/Data+Model,Model publik; ilustrasi v1.9
+16,S14,OpenMRS,OpenMRS Data Model Tables 1.9,v1.9,https://docs.openmrs.org/datamodel/openmrs-refapp-data-model-1.9.html,Nama tabel dan field referensi versi 1.9
+17,S15,OpenMRS,OpenMRS Information Model,Tidak ditentukan,https://guide.openmrs.org/getting-started/openmrs-information-model/,"Semantik visit, encounter, observation"
+18,S16,MEDITECH,Keys to Data Repository Mapping,2013,https://home.meditech.com/en/d/clientservicesccimages/otherfiles/2013marchnewsletterdatamapping.pdf,"Metadata SQL DR; sumber lama, bukan Expanse schema lengkap"
+19,S17,TrakCare,TrakCare Indonesia Official,Tidak ditentukan,https://www.intersystems.com/id/produk/trakcare/,"Arsitektur IRIS dan domain, tidak mempublikasikan tabel fisik"
+20,S18,openEHR,REST API COMPOSITION,Development specification,https://specifications.openehr.org/releases/ITS-REST/development/ehr.html,"Objek logis, bukan SQL tables"
+21,S19,openEHR/EHRbase,AQL Introduction,Tidak ditentukan,https://docs.ehrbase.org/docs/EHRbase/Explore/AQL/Introduction,AQL terpisah dari database fisik
+22,S20,openEHR,Platform Service Model,Latest,https://specifications.openehr.org/releases/SM/latest/openehr_platform.html,EHR/Composition/versioned composition
+23,S21,OpenMRS,OpenMRS Obs.java (core),Master,https://github.com/openmrs/openmrs-core/blob/master/api/src/main/java/org/openmrs/Obs.java,Struktur kelas observasi open source; berubah mengikuti versi
+24,S22,Epic,Epic EHI export index base,2026-10-23,https://open.epic.com/EHITables,Halaman indeks katalog
+<PARSED TEXT FOR SHEET: 13 / 13 TABS
+TAB NAME: 12_Case_RJ>
+index,"Contoh end-to-end RAWAT JALAN — jejak data lintas SQL, EHRbase, FHIR",Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6
+0,Studi desk research • 31 Oktober 2026 • 14 baris • Status bukti dibedakan dari rancangan usulan,,,,,,
+1,,,,,,,
+2,Urutan,Tahap,Tabel operasional / indeks,Source of truth,Output FHIR indikatif,Objek openEHR,Kontrol konsistensi
+3,01,Pasien mendaftar,"patients, patient_identifiers",SIMRS,Patient,EHR belum tentu dibuat,Unique MRN/identifier; consent & matching
+4,02,Buat/baca EHR,"patient_ehr_links, cdr_endpoints",EHRbase via API,Patient mapping,EHR.ehr_id,Idempotent create/link; 1 EHR per konteks
+5,03,Registrasi episode,"visits, encounters",SIMRS,Encounter,Composition context di tahap pencatatan,Encounter ID internal ≠ EHR ID
+6,04,Dokter mengisi SOAP,"clinical_templates, clinical_record_links",EHRbase,Composition (jika export),COMPOSITION (SOAP entries),Validasi archetype/template dan sign status
+7,05,Tanda vital 120/80,clinical_observation_index (proyeksi),EHRbase,2 Observation terpisah sesuai profil target,OBSERVATION blood_pressure,Indeks bukan sumber kebenaran; versi wajib tercatat
+8,06,Diagnosis ditetapkan,clinical_condition_index (proyeksi),EHRbase,Condition,EVALUATION problem/diagnosis,Status klinis vs coding klaim terpisah
+9,07,Order laboratorium,"service_orders, service_order_items",SIMRS,ServiceRequest,INSTRUCTION (bila clinical),Order lifecycle operasional kanonis
+10,08,Pengambilan spesimen,"specimens, order_status_events",SIMRS / LIS,Specimen,Context,Retry bila LIS unavailable
+11,09,Hasil lab diverifikasi,"lab_result_links, clinical_record_links",EHRbase,"Observation, DiagnosticReport",OBSERVATION + COMPOSITION,1 order banyak analit; versioning/verification
+12,10,Resep dan dispensing,"medication_orders, dispensations, stock_movements",SIMRS + EHRbase (intent klinis),MedicationRequest / MedicationDispense,INSTRUCTION/ACTION,Jangan kurangi stok saat order saja
+13,11,Tagihan dan bayar,"charge_items, invoices, payments",SIMRS,Account/ChargeItem/Invoice,none,Idempotensi biaya atas tindakan yang sah
+14,12,Kirim SATUSEHAT,"interop_outbox, fhir_resource_links, sync_failures",Integration layer,FHIR R4 API,Source Composition & SQL,"Outbox, ack response, id mapping, reconciliation"
+15,13,Tampilkan riwayat,clinical_record_links + CDR AQL + read model,Backend SIMRS,FHIR jika perlu,AQL,Bukan cross-database SQL JOIN fisik
+16,14,Revisi catatan,clinical_index_versions + clinical_record_links,EHRbase,Provenance (jika perlu),VERSIONED_COMPOSITION,Revisi harus memperbarui projection dan ditelusuri
