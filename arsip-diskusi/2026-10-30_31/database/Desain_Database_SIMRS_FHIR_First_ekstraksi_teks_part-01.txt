@@ -1,0 +1,1004 @@
+SOURCE: Desain_Database_SIMRS_FHIR_First_Tanpa_FHIR_Server_v1.xlsx
+STATUS: Text extraction only, NOT the original XLSX. Formula/format/validation may be lost.
+PART: 01, Lines: 1-1000 of 7562
+
+<PARSED TEXT FOR SHEET: 1 / 18 TABS
+TAB NAME: 00_README>
+index,SIMRS • DATABASE DESIGN BLUEPRINT,Unnamed: 1
+0,,
+1,,
+2,FHIR-FIRST  |  POSTGRESQL CANONICAL  |  TANPA DEDICATED FHIR SERVER,
+3,,
+4,Status,DRAFT — rancangan database; bukan migrasi SQL yang langsung diterapkan
+5,Tanggal,30 Oktober 2026
+6,Sumber utama,"Rencana_Induk_SIMRS_FHIR_First_Tanpa_FHIR_Server_v1.docx, §3 §6 §7 §8 dan Lampiran A"
+7,Arsitektur,React + TypeScript | Go modular monolith | PostgreSQL | FHIR R4 mapping+validation+client
+8,Inventaris,68 modul sumber yang dipetakan menjadi kandidat tabel hingga level atribut
+9,Aturan FHIR,FHIR adalah proyeksi/interoperabilitas; tidak ada duplikasi authoritative FHIR store
+10,Metodologi,Cakupan modul/field conventions dari DOCX; detail tabel/kolom/FK/constraint adalah elaborasi desain
+11,Peringatan,"Validasi akhir wajib melalui Product Owner, klinisi, legal/security, DBA, dan profil SATUSEHAT"
+12,Aturan tenant,tenant_id dan composite FK direkomendasikan; RLS wajib disimulasikan dan diuji sebelum produksi
+13,Aturan audit,Immutable ledger/jurnal/clinical signed artifact membutuhkan trigger/policy; bukan sekadar boolean flag
+14,Transaksi kritis,"Penurunan stok, charge, pembayaran, jurnal dan outbox menggunakan transaksi ACID + idempotency"
+15,Penggunaan workbook,Mulai 01_OVERVIEW → 02_MODULES → 04_TABLES → 05_COLUMNS → 06_RELATIONS → 08_RULES
+16,DDL,16_DDL_BLUEPRINT bersifat template usulan dan belum siap dieksekusi tanpa dependency ordering/constraint review
+17,Cakupan dukungan,"FHIR R4: resource mapping; BPJS/VClaim, INA-CBG, analyzer, DICOM tetap menggunakan adapter masing-masing"
+<PARSED TEXT FOR SHEET: 2 / 18 TABS
+TAB NAME: 01_OVERVIEW>
+index,DATABASE DESIGN • EXECUTIVE OVERVIEW,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4
+0,,,,,
+1,,,,,
+2,INDIKATOR,JUMLAH,,KEPUTUSAN UTAMA,STATUS
+3,Modul sumber,68,,FHIR Server,Tidak digunakan
+4,Schema domain,23,,Source of Truth,PostgreSQL
+5,Tabel kandidat,271,,Backend,Go modular monolith
+6,Kolom usulan,3395,,Frontend,React + TypeScript
+7,Relasi FK,762,,FHIR,R4 mapper/validator/worker
+8,Indeks kandidat,1003,,Database scope,Tenant + organization aware
+9,Aturan integritas,79,,Status spreadsheet,Draft for design review
+10,Mapping FHIR field,77,,,
+11,Event katalog,30,,,
+12,P0 tables,108,,,
+13,P1 tables,104,,,
+14,P2 tables,59,,,
+15,,,,,
+16,,,,,
+17,,,,TABLES PER SCHEMA,
+18,,,,identity,12
+19,,,,master,13
+20,,,,terminology,6
+21,,,,patient,7
+22,,,,scheduling,6
+23,,,,encounter,10
+24,,,,consent,6
+25,,,,clinical,24
+26,,,,orders,5
+27,,,,laboratory,12
+28,,,,radiology,8
+29,,,,pharmacy,9
+30,,,,inventory,11
+31,,,,nutrition,11
+32,,,,operations,32
+33,,,,procurement,10
+34,,,,billing,22
+35,,,,finance,16
+36,,,,hr,15
+37,,,,quality,15
+38,,,,integration,11
+39,,,,audit,5
+40,,,,analytics,5
+<PARSED TEXT FOR SHEET: 3 / 18 TABS
+TAB NAME: 02_MODULES>
+index,02 MODULES,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6,Unnamed: 7,Unnamed: 8,Unnamed: 9
+0,DRAFT • SIMRS FHIR-First • PostgreSQL source-of-truth • no dedicated FHIR Server,,,,,,,,,
+1,,,,,,,,,,
+2,Group,Modul benchmark,Ruang lingkup sumber,FHIR / standar dari sumber,Jenis,Prioritas,Jumlah tabel terkait,Tabel utama (candidate),Coverage,Traceability
+3,Core Platform & Front Office,Master Patient / MPI,"Identitas, MRN, dedup, merge, histori identitas","Patient, RelatedPerson",FHIR,P0,4,"patient.patients, patient.patient_identifiers, patient.patient_merges, patient.patient_identity_reviews",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+4,Core Platform & Front Office,Organisasi & Unit,"Cabang, instalasi, poli, ruang, lokasi fisik","Organization, Location",FHIR,P0,3,"master.organizations, master.organization_units, master.locations",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+5,Core Platform & Front Office,Tenaga Medis & Role,"Praktisi, kompetensi, SIP/STR, penugasan","Practitioner, PractitionerRole",FHIR,P0,3,"master.practitioners, master.practitioner_credentials, master.practitioner_assignments",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+6,Core Platform & Front Office,IAM & Permissions,"User, role, MFA, tenant, policy",Tidak wajib,ERP,P0,5,"identity.users, identity.roles, identity.permissions, identity.user_roles, identity.access_policies",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+7,Core Platform & Front Office,Appointment & Scheduling,"Slot, appointment, jadwal layanan","Schedule, Slot, Appointment",FHIR,P0,3,"scheduling.schedules, scheduling.slots, scheduling.appointments",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+8,Core Platform & Front Office,Antrean & Kiosk,"Booking, check-in, display antrean","Appointment, Encounter, Task",Hybrid,P0,3,"scheduling.queue_tickets, scheduling.queue_events, scheduling.kiosk_checkins",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+9,Core Platform & Front Office,Registrasi dan Admisi,"RJ, IGD, RI, identitas penjamin","Encounter, EpisodeOfCare",Hybrid,P0,3,"encounter.registrations, encounter.encounters, encounter.admissions",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+10,Core Platform & Front Office,Bed Management,"Kamar, bed, okupansi, mutasi","Location, Encounter",Hybrid,P1,4,"master.rooms, master.beds, encounter.bed_assignments, encounter.bed_movements",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+11,Core Platform & Front Office,Consent & Disclosure,Persetujuan pelayanan dan akses,"Consent, Provenance",Hybrid,P0,3,"consent.consent_records, consent.consent_artifacts, consent.disclosure_events",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+12,Core Platform & Front Office,Master Katalog Layanan,"Tarif, tindakan, paket, layanan",ServiceRequest / ChargeItem (pemetaan),Hybrid,P0,2,"master.service_catalog, master.tariff_catalog",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+13,Clinical / Frontoffice RME,Rawat Jalan,"Asesmen, SOAP, diagnosis, tindakan","Encounter, Condition, Observation",FHIR,P0,4,"encounter.encounters, clinical.assessments, clinical.clinical_notes, clinical.diagnoses",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+14,Clinical / Frontoffice RME,IGD & Triase,"Acuity, asesmen, observasi, disposition","Encounter, Observation",FHIR,P0,3,"encounter.emergency_triages, encounter.encounters, clinical.observations",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+15,Clinical / Frontoffice RME,Rawat Inap,"Visite, asuhan, transfer, discharge","Encounter, CarePlan",FHIR,P1,3,"encounter.admissions, encounter.bed_assignments, clinical.care_plans",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+16,Clinical / Frontoffice RME,CPPT & SOAP,Catatan longitudinal dokter/perawat,"Composition, Observation",FHIR,P0,3,"clinical.clinical_notes, clinical.note_addenda, clinical.assessments",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+17,Clinical / Frontoffice RME,Diagnosis & Prosedur,"Coding, verifikasi dan correction","Condition, Procedure",FHIR,P0,2,"clinical.diagnoses, clinical.procedures",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+18,Clinical / Frontoffice RME,CPOE / Orders,"Order lab, rad, tindakan dan obat","ServiceRequest, MedicationRequest",FHIR,P0,3,"orders.service_orders, orders.order_items, orders.order_events",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+19,Clinical / Frontoffice RME,Nursing & Medication Admin,"Asuhan, pemberian obat, barcode","CarePlan, MedicationAdministration",FHIR,P1,3,"clinical.nursing_tasks, pharmacy.medication_administrations, pharmacy.bcma_scan_events",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+20,Clinical / Frontoffice RME,Care Team & Clinical Plan,"Team, rencana asuhan, goals","CareTeam, CarePlan, Goal",FHIR,P1,4,"clinical.care_teams, clinical.care_team_members, clinical.care_plans, clinical.care_goals",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+21,Clinical / Frontoffice RME,Referral & Consultation,Rujukan internal/eksternal,"ServiceRequest, Task",FHIR,P1,3,"clinical.referrals, clinical.referral_responses, orders.service_orders",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+22,Clinical / Frontoffice RME,Clinical Documents,"Resume, surat, tanda tangan","Composition, DocumentReference",FHIR,P0,3,"clinical.clinical_documents, clinical.document_signatures, clinical.note_addenda",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+23,Clinical / Frontoffice RME,Allergy & Medication Safety,"Alergi, alerts, med reconciliation","AllergyIntolerance, DetectedIssue",FHIR,P1,2,"clinical.allergies, clinical.medication_safety_screenings",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+24,Clinical / Frontoffice RME,Clinical Decision Support,"Scores, warning, guideline","Observation, RiskAssessment",Hybrid,P1,3,"clinical.clinical_alerts, clinical.early_warning_scores, clinical.clinical_pathways",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+25,Clinical / Frontoffice RME,Patient Portal,"Antrean, janji, dokumen, riwayat","Patient, Appointment, DocumentReference",Hybrid,P2,3,"scheduling.appointments, clinical.clinical_documents, consent.disclosure_requests",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+26,Penunjang Klinis,Laboratory / LIS,"Order, barcode, specimen, result, QC","ServiceRequest, Specimen, Observation, DiagnosticReport",Hybrid,P0,4,"laboratory.lab_orders, laboratory.specimens, laboratory.lab_results, laboratory.lab_reports",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+27,Penunjang Klinis,Radiology / RIS,"Order, schedule, report, modality","ServiceRequest, ImagingStudy, DiagnosticReport",Hybrid,P0,3,"radiology.rad_orders, radiology.rad_exams, radiology.rad_reports",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+28,Penunjang Klinis,PACS / Viewer,"Storage, image retrieval, DICOM viewer",ImagingStudy + DICOM,Hybrid,P1,3,"radiology.imaging_studies, radiology.imaging_series, radiology.pacs_access_logs",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+29,Penunjang Klinis,Pharmacy / Dispensing,"Resep, verifikasi, serah, counseling","MedicationRequest, MedicationDispense",Hybrid,P0,4,"pharmacy.prescriptions, pharmacy.prescription_items, pharmacy.dispenses, pharmacy.dispense_items",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+30,Penunjang Klinis,Medication Administration,MAR/BCMA inpatient,MedicationAdministration,FHIR,P1,2,"pharmacy.medication_administrations, pharmacy.bcma_scan_events",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+31,Penunjang Klinis,Operating Theater,"Schedule, checklist, tindakan","ServiceRequest, Procedure",Hybrid,P1,3,"operations.surgery_schedules, operations.surgery_checklists, operations.surgery_events",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+32,Penunjang Klinis,Anesthesia & PACU,"Perioperatif, monitoring, recovery","Observation, Procedure, MedicationAdministration",FHIR,P1,3,"operations.anesthesia_records, operations.anesthesia_observations, operations.pacu_records",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+33,Penunjang Klinis,Hemodialysis,"Session, orders, observations","ServiceRequest, Procedure, Observation",Hybrid,P2,1,operations.dialysis_sessions,100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+34,Penunjang Klinis,Rehabilitation,"Asesmen, goal, jadwal terapi","CarePlan, Goal, Procedure",Hybrid,P2,1,operations.rehabilitation_sessions,100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+35,Penunjang Klinis,Medical Check Up,"Paket, pemeriksaan, resume hasil","ServiceRequest, DiagnosticReport",Hybrid,P2,2,"operations.mcu_packages, operations.mcu_package_items",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+36,Penunjang Klinis,Clinical Nutrition,"Asesmen, masalah gizi, diet","NutritionOrder, Observation, Condition",FHIR,P1,2,"nutrition.nutrition_assessments, nutrition.diet_orders",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+37,Penunjang Klinis,Blood Bank / Transfusion,"Matching, issue, administration","ServiceRequest, BiologicallyDerivedProduct",Hybrid,P2,3,"operations.blood_units, operations.blood_crossmatches, operations.transfusions",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+38,Penunjang Klinis,Infection Prevention / HAIs,Surveilans dan incident tracking,"Condition, Observation, AdverseEvent",Hybrid,P2,2,"quality.hai_surveillance, quality.hai_cases",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+39,Penunjang Klinis,Clinical Pathway,Rencana care terstruktur,"PlanDefinition, CarePlan, Task",Hybrid,P2,3,"clinical.clinical_pathways, clinical.pathway_steps, clinical.pathway_enrollments",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+40,Operasional & Logistik,Inventory & Warehouse,"Multi-gudang, batch, expiry, ledger",Medication/Supply* sebagai referensi,Hybrid,P0,4,"inventory.items, inventory.warehouses, inventory.stock_lots, inventory.stock_movements",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+41,Operasional & Logistik,Procurement / Vendor,"PR, RFQ, PO, GRN, retur",Tidak wajib,ERP,P1,4,"procurement.suppliers, procurement.purchase_requests, procurement.purchase_orders, procurement.goods_receipts",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+42,Operasional & Logistik,CSSD,"Siklus set instrumen, steril, tracking",Device / Supply* bila relevan,Hybrid,P2,4,"operations.cssd_instruments, operations.cssd_sets, operations.cssd_cycles, operations.cssd_distributions",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+43,Operasional & Logistik,Laundry & Linen,"Collection, washing, delivery",Location sebagai referensi,ERP,P2,4,"operations.linen_items, operations.linen_batches, operations.laundry_cycles, operations.linen_movements",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+44,Operasional & Logistik,Produksi & Distribusi Gizi,"Menu, resep, raw material, tray",NutritionOrder sebagai sumber,Hybrid,P1,5,"nutrition.menus, nutrition.recipes, nutrition.production_batches, nutrition.meal_trays, nutrition.tray_deliveries",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+45,Operasional & Logistik,Asset Management,"Aset, depresiasi, kalibrasi",Device untuk alat klinis,Hybrid,P2,2,"operations.assets, finance.fixed_asset_depreciations",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+46,Operasional & Logistik,Maintenance / Facility,"WO, preventive dan corrective",Device/Location sebagai referensi,Hybrid,P2,2,"operations.asset_maintenances, operations.facility_work_orders",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+47,Operasional & Logistik,Housekeeping,"Cleaning, inspection, checklist",Location sebagai referensi,ERP,P2,1,operations.housekeeping_tasks,100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+48,Operasional & Logistik,Ambulance & Transport,"Order, dispatch, fleet",ServiceRequest jika terkait klinis,Hybrid,P2,3,"operations.transport_requests, operations.vehicles, operations.transport_assignments",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+49,Operasional & Logistik,Nonmedical Operations,"Parkir, koperasi, kantin, perpustakaan",Tidak wajib,ERP,P2,1,operations.nonmedical_transactions,100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+50,"Finance, Billing, Claims",Charge Capture,Charge otomatis berdasar layanan,ChargeItem sebagai representasi,Hybrid,P0,3,"billing.charge_rules, billing.charges, billing.charge_adjustments",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+51,"Finance, Billing, Claims",Billing & Invoice,"Paket, tarif, diskon, piutang","Account, Invoice",Hybrid,P0,3,"billing.invoices, billing.invoice_lines, billing.payments",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+52,"Finance, Billing, Claims",Cashier & Payments,"Kasir, refund, deposit",PaymentReconciliation (terbatas),ERP,P0,4,"billing.payments, billing.payment_allocations, billing.refunds, billing.deposits",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+53,"Finance, Billing, Claims",Payer & Coverage,"BPJS, asuransi, corporate",Coverage,Hybrid,P0,3,"billing.payers, billing.coverages, billing.coverage_authorizations",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+54,"Finance, Billing, Claims",BPJS VClaim / Antrean,"SEP, rujukan, transaksi BPJS","Adapter BPJS, bukan FHIR universal",Hybrid,P1,3,"billing.bpjs_transactions, billing.coverage_authorizations, integration.integration_deliveries",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+55,"Finance, Billing, Claims",Casemix / INA-CBG,"Coding, grouper, dispute",Claim sebagai representasi konseptual,Hybrid,P1,2,"billing.casemix_cases, billing.casemix_codings",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+56,"Finance, Billing, Claims",Private Insurance Claims,"Package, upload, tracking",Claim/ClaimResponse bila sesuai mitra,Hybrid,P1,3,"billing.claims, billing.claim_documents, billing.claim_submissions",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+57,"Finance, Billing, Claims",General Ledger,"Jurnal, chart of accounts, posting",Tidak wajib,ERP,P1,3,"finance.chart_of_accounts, finance.journals, finance.journal_lines",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+58,"Finance, Billing, Claims",AP/AR & Treasury,"Hutang, piutang, bank",Tidak wajib,ERP,P1,4,"finance.ap_bills, finance.ap_payments, finance.ar_balances, finance.bank_transactions",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+59,"Finance, Billing, Claims",Costing & Doctor Fees,"Unit cost, fee, alokasi biaya",ChargeItem sebagai data referensi,Hybrid,P2,4,"finance.cost_centers, finance.cost_allocations, finance.doctor_fee_rules, finance.doctor_fee_ledger",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+60,"Finance, Billing, Claims",Budgeting & Financial Report,"Budget vs actual, konsolidasi",Tidak wajib,ERP,P2,3,"finance.budgets, finance.budget_lines, finance.accounting_periods",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+61,"HR, Quality & Enterprise",HR Master / Payroll,"Employee, shift, attendance, payroll",Practitioner sebagai referensi Nakes,ERP,P2,4,"hr.employees, hr.employment_contracts, hr.payroll_runs, hr.payroll_items",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+62,"HR, Quality & Enterprise",Recruitment & Talent,"ATS, training, competency",Tidak wajib,ERP,P2,5,"hr.job_openings, hr.applications, hr.trainings, hr.competencies, hr.performance_reviews",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+63,"HR, Quality & Enterprise",Patient Safety,"Incident, RCA, action plan",AdverseEvent bila relevan,Hybrid,P1,2,"quality.patient_safety_incidents, quality.incident_actions",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+64,"HR, Quality & Enterprise",Quality & Clinical Indicators,"KPI, audits, thresholds",Measure/MeasureReport bila tepat,Hybrid,P1,3,"quality.quality_indicators, quality.indicator_runs, quality.indicator_values",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+65,"HR, Quality & Enterprise",Risk Management,"Risk register, mitigation",RiskAssessment untuk risiko klinis,Hybrid,P2,2,"quality.risk_register, quality.risk_actions",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+66,"HR, Quality & Enterprise",RL / SIRS Reporting,"Pelaporan fasyankes, rekonsiliasi",Dataset klinis+ERP,Hybrid,P1,2,"quality.rl_reporting_periods, quality.rl_report_submissions",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+67,"HR, Quality & Enterprise",Dynamic Reporting / BI,"Self-service analytics, cubes","Data warehouse, Measure opsional",Hybrid,P1,3,"analytics.report_definitions, analytics.report_runs, analytics.aggregate_snapshots",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+68,"HR, Quality & Enterprise",Multi-Hospital Consolidation,"Master, konsolidasi jaringan RS",Organization + agregasi ERP,Hybrid,P2,3,"master.organizations, analytics.aggregate_snapshots, finance.accounting_periods",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+69,"HR, Quality & Enterprise",Portal Manajemen,"Balanced scorecard, approval",Tidak wajib,ERP,P2,2,"quality.management_approvals, analytics.report_runs",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+70,"HR, Quality & Enterprise","Audit, Compliance & BCP","Audit akses, log, disaster recovery",AuditEvent/Provenance bila relevan,Hybrid,P0,4,"audit.access_logs, audit.change_logs, audit.break_glass_events, integration.outbox_events",100% kandidat dipetakan,Master plan §3: source modul; relasi tabel usulan
+<PARSED TEXT FOR SHEET: 4 / 18 TABS
+TAB NAME: 03_SCHEMAS>
+index,03 SCHEMAS,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6
+0,DRAFT • SIMRS FHIR-First • PostgreSQL source-of-truth • no dedicated FHIR Server,,,,,,
+1,,,,,,,
+2,Schema,Bounded context,Tanggung jawab,Jumlah tabel,Tenant strategy,Status,Sumber
+3,identity,Identity & Tenant,"Auth, user, session, tenant, policy",12,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+4,master,Master Data,"Organization, provider, location, service catalog",13,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+5,terminology,Terminology,"Coding systems, units, crosswalk, value sets",6,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+6,patient,Patient Registry,"Demografi pasien, MRN, kontak, merge",7,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+7,scheduling,Scheduling & Queue,"Jadwal, appointment, queue",6,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+8,encounter,Encounter & Admission,"Episode, admisi, bed dan discharge",10,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+9,consent,Consent & Disclosure,"Persetujuan, revokasi, disclosure",6,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+10,clinical,Clinical Documentation,"Asesmen, catatan, observasi, care plan, referral",24,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+11,orders,Order Management,Permintaan dan lifecycle order,5,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+12,laboratory,Laboratory LIS,"Specimen, analyzer, hasil lab",12,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+13,radiology,Radiology RIS,"Imaging, laporan dan PACS refs",8,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+14,pharmacy,Pharmacy,"Medication, prescription, dispensing, MAR",9,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+15,inventory,Inventory,"Item master, lot dan stock ledger",11,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+16,nutrition,Nutrition & Kitchen,"Klinis gizi, produksi dan distribusi",11,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+17,operations,Hospital Operations,"Surgery, PACU, CSSD, laundry, assets, housekeeping",32,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+18,procurement,Procurement,"Vendor, purchase, GRN, invoice",10,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+19,billing,Billing & Claims,"Charge, invoice, payment, insurance, claim",22,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+20,finance,Finance,"GL, AP, AR, costing, budgeting",16,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+21,hr,Human Resources,"Employee, payroll, talent",15,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+22,quality,Quality & Reporting,"Safety, infection control, KPI, reporting",15,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+23,integration,Integration Platform,"External identity, outbox, delivery & jobs",11,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+24,audit,Audit & Compliance,Access and data change trail,5,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+25,analytics,Analytics & BI,"Read models, snapshots, de-identified datasets",5,tenant scoped + RLS,DRAFT,Master plan §7 + elaborasi desain
+<PARSED TEXT FOR SHEET: 5 / 18 TABS
+TAB NAME: 04_TABLES>
+index,04 TABLES,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6,Unnamed: 7,Unnamed: 8,Unnamed: 9,Unnamed: 10,Unnamed: 11,Unnamed: 12,Unnamed: 13,Unnamed: 14
+0,DRAFT • SIMRS FHIR-First • PostgreSQL source-of-truth • no dedicated FHIR Server,,,,,,,,,,,,,,
+1,,,,,,,,,,,,,,,
+2,ID,Schema,Table,Qualified table,Deskripsi / aggregate,Prioritas,Stage gate,Scope,FHIR resource,Append-only,Kolom,FK,Relasi modul,Status,Asal desain
+3,T001,identity,tenants,identity.tenants,Entitas pengelola jaringan RS / tenant,P0,G1-G5,tenant,-,NO,12,1,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+4,T002,identity,tenant_memberships,identity.tenant_memberships,Relasi user dengan tenant,P0,G1-G5,tenant,-,NO,11,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+5,T003,identity,users,identity.users,Akun autentikasi non-PHI,P0,G1-G5,tenant,-,NO,13,1,IAM & Permissions,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+6,T004,identity,roles,identity.roles,Role untuk RBAC,P0,G1-G5,tenant,-,NO,10,1,IAM & Permissions,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+7,T005,identity,permissions,identity.permissions,Izin granular API dan objek,P0,G1-G5,global,-,NO,9,0,IAM & Permissions,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+8,T006,identity,role_permissions,identity.role_permissions,Penugasan izin pada role,P0,G1-G5,tenant,-,NO,9,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+9,T007,identity,user_roles,identity.user_roles,Penugasan role tenant/unit,P0,G1-G5,tenant,-,NO,12,4,IAM & Permissions,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+10,T008,identity,sessions,identity.sessions,Session aktif/revoked,P0,G1-G5,tenant,-,NO,13,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+11,T009,identity,mfa_factors,identity.mfa_factors,TOTP/WebAuthn factor metadata,P0,G1-G5,tenant,-,NO,13,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+12,T010,identity,auth_events,identity.auth_events,Audit login dan MFA,P0,G1-G5,tenant,-,YES,10,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+13,T011,identity,access_policies,identity.access_policies,ABAC / policy berbasis kontekstual,P0,G1-G5,tenant,-,NO,12,1,IAM & Permissions,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+14,T012,identity,service_accounts,identity.service_accounts,Identitas dan kredensial antarservice,P1,G1-G5,tenant,-,NO,11,1,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+15,T013,master,organizations,master.organizations,"Hierarki fasilitas, RS, cabang dan penjamin",P0,G1-G5,tenant,-,NO,13,2,"Organisasi & Unit, Multi-Hospital Consolidation",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+16,T014,master,organization_identifiers,master.organization_identifiers,"NIB, kode RS, SATUSEHAT Org ID dan eksternal",P0,G1-G5,tenant,-,NO,12,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+17,T015,master,organization_units,master.organization_units,"Instalasi, departemen dan poli",P0,G1-G5,tenant,-,NO,13,3,Organisasi & Unit,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+18,T016,master,locations,master.locations,FHIR Location: fasilitas dan area fisik,P0,G1-G5,tenant,-,NO,14,3,Organisasi & Unit,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+19,T017,master,rooms,master.rooms,Ruang perawatan dan operasional,P1,G1-G5,tenant,-,NO,12,2,Bed Management,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+20,T018,master,beds,master.beds,Tempat tidur dan karakteristik klinis,P1,G1-G5,tenant,-,NO,13,3,Bed Management,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+21,T019,master,practitioners,master.practitioners,"Master tenaga medis, tidak sama dengan user",P0,G1-G5,tenant,-,NO,13,1,Tenaga Medis & Role,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+22,T020,master,practitioner_identifiers,master.practitioner_identifiers,"NIK, SIP, STR, IHS identifiers",P0,G1-G5,tenant,-,NO,11,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+23,T021,master,practitioner_credentials,master.practitioner_credentials,Lisensi/STR/SIP dan masa berlaku,P0,G1-G5,tenant,-,NO,13,2,Tenaga Medis & Role,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+24,T022,master,practitioner_assignments,master.practitioner_assignments,PractitionerRole per RS/Unit,P0,G1-G5,tenant,-,NO,14,4,Tenaga Medis & Role,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+25,T023,master,service_catalog,master.service_catalog,"Tindakan, pelayanan, paket, orderables",P0,G1-G5,tenant,-,NO,13,1,Master Katalog Layanan,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+26,T024,master,tariff_catalog,master.tariff_catalog,Daftar tarif dan periode berlaku,P0,G1-G5,tenant,-,NO,13,3,Master Katalog Layanan,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+27,T025,master,payment_methods,master.payment_methods,Metode pembayaran kasir,P0,G1-G5,tenant,-,NO,11,1,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+28,T026,terminology,code_systems,terminology.code_systems,"Daftar sistem terminologi ICD, LOINC, KFA",P0,G1-G5,global,-,NO,11,0,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+29,T027,terminology,concepts,terminology.concepts,Kode dan display terminologi,P0,G1-G5,global,-,NO,11,1,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+30,T028,terminology,value_sets,terminology.value_sets,Value set domain/profil,P0,G1-G5,global,-,NO,10,0,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+31,T029,terminology,value_set_members,terminology.value_set_members,Anggota value set,P0,G1-G5,global,-,NO,10,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+32,T030,terminology,code_mappings,terminology.code_mappings,Mapping lokal ke canonical/code nasional,P0,G1-G5,tenant,-,NO,13,1,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+33,T031,terminology,units,terminology.units,Kode unit UCUM,P0,G1-G5,global,-,NO,9,0,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+34,T032,patient,patients,patient.patients,Patient registry master,P0,G1-G5,tenant,Patient,NO,14,1,Master Patient / MPI,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+35,T033,patient,patient_identifiers,patient.patient_identifiers,"MRN, NIK, IHS, insurer member IDs",P0,G1-G5,tenant,-,NO,13,3,Master Patient / MPI,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+36,T034,patient,patient_contacts,patient.patient_contacts,Alamat/telepon/email sebagai PII,P0,G1-G5,tenant,-,NO,13,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+37,T035,patient,related_persons,patient.related_persons,"Keluarga, wali atau kontak darurat",P0,G1-G5,tenant,RelatedPerson,NO,13,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+38,T036,patient,patient_merges,patient.patient_merges,Riwayat penggabungan pasien yang dapat diaudit,P0,G1-G5,tenant,-,YES,9,4,Master Patient / MPI,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+39,T037,patient,patient_flags,patient.patient_flags,Perhatian klinis/administratif khusus,P1,G1-G5,tenant,-,NO,13,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+40,T038,patient,patient_identity_reviews,patient.patient_identity_reviews,Kemungkinan duplikasi dan verifikasi,P0,G1-G5,tenant,-,NO,13,4,Master Patient / MPI,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+41,T039,scheduling,schedules,scheduling.schedules,Jadwal layanan dan tenaga medis,P0,G1-G5,tenant,Schedule,NO,14,5,Appointment & Scheduling,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+42,T040,scheduling,slots,scheduling.slots,Slot waktu jadwal,P0,G1-G5,tenant,Slot,NO,13,2,Appointment & Scheduling,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+43,T041,scheduling,appointments,scheduling.appointments,Janji pasien / booking,P0,G1-G5,tenant,Appointment,NO,15,5,"Appointment & Scheduling, Patient Portal",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+44,T042,scheduling,queue_tickets,scheduling.queue_tickets,Nomor antrean per service/date,P0,G1-G5,tenant,-,NO,14,4,Antrean & Kiosk,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+45,T043,scheduling,queue_events,scheduling.queue_events,"Perubahan status antrean, immutable",P0,G1-G5,tenant,-,YES,9,3,Antrean & Kiosk,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+46,T044,scheduling,kiosk_checkins,scheduling.kiosk_checkins,Kehadiran/scan kode pada kiosk,P1,G1-G5,tenant,-,NO,12,3,Antrean & Kiosk,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+47,T045,encounter,episodes_of_care,encounter.episodes_of_care,Episode longitudinal pelayanan,P1,G1-G5,tenant,EpisodeOfCare,NO,13,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+48,T046,encounter,registrations,encounter.registrations,Pendaftaran per layanan dan cara bayar,P0,G1-G5,tenant,-,NO,13,4,Registrasi dan Admisi,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+49,T047,encounter,encounters,encounter.encounters,Kunjungan klinis RJ/IGD/RI,P0,G1-G5,tenant,Encounter,NO,16,6,"Registrasi dan Admisi, Rawat Jalan, IGD & Triase",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+50,T048,encounter,encounter_participants,encounter.encounter_participants,"DPJP, perawat, pelaksana; period-aware",P0,G1-G5,tenant,-,NO,12,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+51,T049,encounter,admissions,encounter.admissions,Admisi rawat inap,P1,G1-G5,tenant,-,NO,12,2,"Registrasi dan Admisi, Rawat Inap",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+52,T050,encounter,bed_assignments,encounter.bed_assignments,Penempatan bed aktif dan histori okupansi,P1,G1-G5,tenant,-,NO,12,3,"Bed Management, Rawat Inap",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+53,T051,encounter,bed_movements,encounter.bed_movements,Log mutasi pasien antar lokasi,P1,G1-G5,tenant,-,YES,9,4,Bed Management,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+54,T052,encounter,discharges,encounter.discharges,Keputusan akhir pelayanan dan discharge,P1,G1-G5,tenant,-,NO,12,4,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+55,T053,encounter,encounter_payers,encounter.encounter_payers,Penjamin / coordination of benefits,P0,G1-G5,tenant,-,NO,11,4,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+56,T054,encounter,emergency_triages,encounter.emergency_triages,Triase acuity IGD,P0,G1-G5,tenant,-,NO,13,3,IGD & Triase,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+57,T055,consent,consent_records,consent.consent_records,Persetujuan berbasis pasien/episode/tujuan,P0,G1-G5,tenant,Consent,NO,15,4,Consent & Disclosure,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+58,T056,consent,consent_policies,consent.consent_policies,Template aturan consent & disclosure,P0,G1-G5,tenant,-,NO,13,1,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+59,T057,consent,consent_artifacts,consent.consent_artifacts,Bukti persetujuan dan dokumen,P0,G1-G5,tenant,-,NO,13,3,Consent & Disclosure,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+60,T058,consent,consent_revocations,consent.consent_revocations,Riwayat pencabutan consent immutable,P0,G1-G5,tenant,-,YES,8,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+61,T059,consent,disclosure_requests,consent.disclosure_requests,Permintaan akses/pengungkapan data,P1,G1-G5,tenant,-,NO,13,4,Patient Portal,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+62,T060,consent,disclosure_events,consent.disclosure_events,Log akses terotorisasi dari permintaan,P1,G1-G5,tenant,-,YES,10,3,Consent & Disclosure,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+63,T061,clinical,assessments,clinical.assessments,Asesmen awal/ulang per encounter,P0,G1-G5,tenant,-,NO,15,4,"Rawat Jalan, CPPT & SOAP",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+64,T062,clinical,clinical_notes,clinical.clinical_notes,SOAP/CPPT dan dokumen naratif,P0,G1-G5,tenant,Composition,NO,15,4,"Rawat Jalan, CPPT & SOAP",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+65,T063,clinical,note_addenda,clinical.note_addenda,Amendment tanpa mengubah catatan final,P0,G1-G5,tenant,-,YES,9,3,"CPPT & SOAP, Clinical Documents",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+66,T064,clinical,diagnoses,clinical.diagnoses,Diagnosis primer/sekunder dan verifikasi,P0,G1-G5,tenant,Condition,NO,16,4,"Rawat Jalan, Diagnosis & Prosedur",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+67,T065,clinical,observations,clinical.observations,TTV dan nilai pengamatan klinis,P0,G1-G5,tenant,Observation,NO,17,4,IGD & Triase,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+68,T066,clinical,observation_components,clinical.observation_components,Komponen observation bila diperlukan profil,P1,G1-G5,tenant,-,NO,13,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+69,T067,clinical,procedures,clinical.procedures,Tindakan klinis yang dilakukan,P0,G1-G5,tenant,Procedure,NO,14,4,Diagnosis & Prosedur,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+70,T068,clinical,allergies,clinical.allergies,Daftar alergi dan evidensi,P1,G1-G5,tenant,AllergyIntolerance,NO,15,3,Allergy & Medication Safety,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+71,T069,clinical,care_plans,clinical.care_plans,Rencana asuhan dan pemantauan,P1,G1-G5,tenant,CarePlan,NO,15,4,"Rawat Inap, Care Team & Clinical Plan",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+72,T070,clinical,care_goals,clinical.care_goals,Tujuan objektif care plan,P1,G1-G5,tenant,Goal,NO,13,3,Care Team & Clinical Plan,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+73,T071,clinical,care_plan_activities,clinical.care_plan_activities,Tugas/intervensi rencana asuhan,P1,G1-G5,tenant,-,NO,14,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+74,T072,clinical,care_teams,clinical.care_teams,Tim perawatan pasien,P1,G1-G5,tenant,CareTeam,NO,13,3,Care Team & Clinical Plan,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+75,T073,clinical,care_team_members,clinical.care_team_members,Peran/period dokter dan perawat dalam team,P1,G1-G5,tenant,-,NO,12,3,Care Team & Clinical Plan,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+76,T074,clinical,referrals,clinical.referrals,Rujukan internal dan eksternal,P1,G1-G5,tenant,ServiceRequest;Task,NO,14,5,Referral & Consultation,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+77,T075,clinical,referral_responses,clinical.referral_responses,Penerimaan/penolakan dan alasan,P1,G1-G5,tenant,-,YES,10,3,Referral & Consultation,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+78,T076,clinical,clinical_documents,clinical.clinical_documents,"Resume, surat, clinical forms, signature",P0,G1-G5,tenant,DocumentReference;Composition,NO,16,4,"Clinical Documents, Patient Portal",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+79,T077,clinical,document_signatures,clinical.document_signatures,"Tanda tangan, fingerprint dan provenance",P0,G1-G5,tenant,-,YES,10,3,Clinical Documents,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+80,T078,clinical,nursing_tasks,clinical.nursing_tasks,Tugas asuhan dan checklist perawat,P1,G1-G5,tenant,-,NO,14,4,Nursing & Medication Admin,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+81,T079,clinical,clinical_alerts,clinical.clinical_alerts,"Warnings CDS, keselamatan dan follow-up",P1,G1-G5,tenant,-,NO,14,4,Clinical Decision Support,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+82,T080,clinical,medication_safety_screenings,clinical.medication_safety_screenings,"Hasil rule obat, alergi, interaksi",P1,G1-G5,tenant,-,NO,15,4,Allergy & Medication Safety,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+83,T081,clinical,early_warning_scores,clinical.early_warning_scores,NEWS2/PEWS dan nilai komponen,P1,G1-G5,tenant,-,NO,13,3,Clinical Decision Support,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+84,T082,clinical,clinical_pathways,clinical.clinical_pathways,Definisi pathway dan lifecycle,P2,G1-G5,tenant,PlanDefinition,NO,12,1,"Clinical Decision Support, Clinical Pathway",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+85,T083,clinical,pathway_steps,clinical.pathway_steps,Langkah prosedural pathway,P2,G1-G5,tenant,-,NO,13,2,Clinical Pathway,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+86,T084,clinical,pathway_enrollments,clinical.pathway_enrollments,Episode penggunaan pathway,P2,G1-G5,tenant,-,NO,12,3,Clinical Pathway,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+87,T085,orders,service_orders,orders.service_orders,"Order klinis lab, rad, rehab, tindakan",P0,G1-G5,tenant,ServiceRequest,NO,16,5,"CPOE / Orders, Referral & Consultation",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+88,T086,orders,order_items,orders.order_items,Rincian layanan/orderables,P0,G1-G5,tenant,-,NO,13,4,CPOE / Orders,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+89,T087,orders,order_events,orders.order_events,Immutable lifecycle order,P0,G1-G5,tenant,-,YES,9,3,CPOE / Orders,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+90,T088,orders,order_fulfillments,orders.order_fulfillments,Pemetaan order ke hasil/pelaksanaan,P1,G1-G5,tenant,-,NO,13,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+91,T089,orders,order_templates,orders.order_templates,Template order set clinical pathway,P1,G1-G5,tenant,-,NO,11,1,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+92,T090,laboratory,test_catalog,laboratory.test_catalog,Master test LOINC dan analyzer mapping,P0,G1-G5,tenant,-,NO,13,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+93,T091,laboratory,lab_panels,laboratory.lab_panels,Paket pemeriksaan lab,P1,G1-G5,tenant,-,NO,11,1,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+94,T092,laboratory,panel_members,laboratory.panel_members,Komponen pemeriksaan panel,P1,G1-G5,tenant,-,NO,11,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+95,T093,laboratory,lab_orders,laboratory.lab_orders,Worklist order LIS,P0,G1-G5,tenant,-,NO,13,3,Laboratory / LIS,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+96,T094,laboratory,specimens,laboratory.specimens,Bahan sampel berkode barcode,P0,G1-G5,tenant,Specimen,NO,14,2,Laboratory / LIS,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+97,T095,laboratory,specimen_events,laboratory.specimen_events,Chain of custody specimen,P0,G1-G5,tenant,-,YES,10,4,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+98,T096,laboratory,lab_results,laboratory.lab_results,Nilai hasil dan verifikasi lab,P0,G1-G5,tenant,Observation,NO,18,5,Laboratory / LIS,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+99,T097,laboratory,lab_result_versions,laboratory.lab_result_versions,Riwayat perubahan hasil yang sudah release,P0,G1-G5,tenant,-,YES,10,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+100,T098,laboratory,lab_reports,laboratory.lab_reports,DiagnosticReport teragregasi per order,P0,G1-G5,tenant,DiagnosticReport,NO,13,3,Laboratory / LIS,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+101,T099,laboratory,analyzer_devices,laboratory.analyzer_devices,Analyzer LIS dan protokol koneksi,P1,G1-G5,tenant,-,NO,13,1,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+102,T100,laboratory,analyzer_messages,laboratory.analyzer_messages,Inbound raw analyzer message/reconciliation,P1,G1-G5,tenant,-,YES,11,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+103,T101,laboratory,lab_qc_results,laboratory.lab_qc_results,Quality control instrument/test,P1,G1-G5,tenant,-,NO,14,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+104,T102,radiology,modalities,radiology.modalities,Perangkat modality per RS,P1,G1-G5,tenant,-,NO,12,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+105,T103,radiology,rad_orders,radiology.rad_orders,Worklist order radiologi,P0,G1-G5,tenant,-,NO,12,2,Radiology / RIS,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+106,T104,radiology,rad_exams,radiology.rad_exams,Pelaksanaan eksaminasi radiologi,P0,G1-G5,tenant,-,NO,13,4,Radiology / RIS,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+107,T105,radiology,rad_reports,radiology.rad_reports,Hasil ekspertise spesialis radiologi,P0,G1-G5,tenant,DiagnosticReport,NO,13,3,Radiology / RIS,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+108,T106,radiology,imaging_studies,radiology.imaging_studies,Referensi DICOM StudyInstanceUID,P0,G1-G5,tenant,ImagingStudy,NO,13,2,PACS / Viewer,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+109,T107,radiology,imaging_series,radiology.imaging_series,Referensi series DICOM tanpa pixel data,P1,G1-G5,tenant,-,NO,11,2,PACS / Viewer,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+110,T108,radiology,modality_worklists,radiology.modality_worklists,Worklist komunikasi RIS-DICOM,P1,G1-G5,tenant,-,NO,12,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+111,T109,radiology,pacs_access_logs,radiology.pacs_access_logs,Auditable access to imaging refs,P1,G1-G5,tenant,-,YES,9,3,PACS / Viewer,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+112,T110,pharmacy,medications,pharmacy.medications,Master obat klinis dan referensi KFA,P0,G1-G5,tenant,Medication,NO,13,1,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+113,T111,pharmacy,prescriptions,pharmacy.prescriptions,Resep klinis per encounter,P0,G1-G5,tenant,-,NO,12,4,Pharmacy / Dispensing,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+114,T112,pharmacy,prescription_items,pharmacy.prescription_items,Instruksi resep dan dosis,P0,G1-G5,tenant,MedicationRequest,NO,15,3,Pharmacy / Dispensing,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+115,T113,pharmacy,prescription_verifications,pharmacy.prescription_verifications,"Pharmacist review, clinical/administrative",P0,G1-G5,tenant,-,YES,10,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+116,T114,pharmacy,dispenses,pharmacy.dispenses,Bukti serah obat/resep,P0,G1-G5,tenant,MedicationDispense,NO,12,4,Pharmacy / Dispensing,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+117,T115,pharmacy,dispense_items,pharmacy.dispense_items,Rincian lot/qty serah obat,P0,G1-G5,tenant,-,NO,12,5,Pharmacy / Dispensing,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+118,T116,pharmacy,medication_administrations,pharmacy.medication_administrations,MAR: pelaksanaan pemberian obat,P1,G1-G5,tenant,MedicationAdministration,NO,14,4,"Nursing & Medication Admin, Medication Administration",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+119,T117,pharmacy,bcma_scan_events,pharmacy.bcma_scan_events,Barcode medication administration audit,P1,G1-G5,tenant,-,YES,11,5,"Nursing & Medication Admin, Medication Administration",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+120,T118,pharmacy,medication_reconciliations,pharmacy.medication_reconciliations,Riwayat rekonsiliasi obat pasien,P1,G1-G5,tenant,-,NO,13,4,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+121,T119,inventory,items,inventory.items,SKU item gudang baik obat/BMHP/nonmedis,P0,G1-G5,tenant,-,NO,15,2,Inventory & Warehouse,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+122,T120,inventory,item_identifiers,inventory.item_identifiers,"Barcode, GTIN, supplier SKU",P0,G1-G5,tenant,-,NO,11,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+123,T121,inventory,item_uoms,inventory.item_uoms,Konversi unit pembelian vs simpan vs dispensing,P0,G1-G5,tenant,-,NO,11,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+124,T122,inventory,warehouses,inventory.warehouses,Gudang dan substore per unit,P0,G1-G5,tenant,-,NO,13,3,Inventory & Warehouse,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+125,T123,inventory,stock_lots,inventory.stock_lots,Lot obat/BMHP dengan expiry,P0,G1-G5,tenant,-,NO,14,3,Inventory & Warehouse,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+126,T124,inventory,stock_movements,inventory.stock_movements,Immutable stock ledger per lot,P0,G1-G5,tenant,-,YES,13,5,Inventory & Warehouse,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+127,T125,inventory,stock_reservations,inventory.stock_reservations,Reservasi untuk order/dispensing,P0,G1-G5,tenant,-,NO,15,4,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+128,T126,inventory,stock_counts,inventory.stock_counts,Stock opname header,P1,G1-G5,tenant,-,NO,12,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+129,T127,inventory,stock_count_lines,inventory.stock_count_lines,Selisih stok fisik vs ledger,P1,G1-G5,tenant,-,NO,13,4,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+130,T128,inventory,stock_adjustments,inventory.stock_adjustments,Persetujuan penyesuaian stock,P1,G1-G5,tenant,-,NO,13,4,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+131,T129,inventory,reorder_rules,inventory.reorder_rules,Min/max safety stock dan EOQ sederhana,P1,G1-G5,tenant,-,NO,13,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+132,T130,nutrition,nutrition_assessments,nutrition.nutrition_assessments,Asesmen antropometri/skrining gizi,P1,G1-G5,tenant,Observation,NO,14,4,Clinical Nutrition,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+133,T131,nutrition,diet_types,nutrition.diet_types,Kamus diet standar/khusus,P1,G1-G5,tenant,-,NO,11,1,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+134,T132,nutrition,diet_orders,nutrition.diet_orders,Order diet klinis ke dapur,P1,G1-G5,tenant,NutritionOrder,NO,16,5,Clinical Nutrition,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+135,T133,nutrition,menus,nutrition.menus,Menu diet per siklus harian,P1,G1-G5,tenant,-,NO,12,2,Produksi & Distribusi Gizi,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+136,T134,nutrition,menu_items,nutrition.menu_items,Komponen makanan dalam menu,P1,G1-G5,tenant,-,NO,11,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+137,T135,nutrition,recipes,nutrition.recipes,Resep masakan dan standar porsi,P1,G1-G5,tenant,-,NO,12,1,Produksi & Distribusi Gizi,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+138,T136,nutrition,recipe_ingredients,nutrition.recipe_ingredients,Bill of materials resep makanan,P1,G1-G5,tenant,-,NO,12,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+139,T137,nutrition,production_batches,nutrition.production_batches,Batch produksi makanan,P1,G1-G5,tenant,-,NO,13,3,Produksi & Distribusi Gizi,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+140,T138,nutrition,production_consumptions,nutrition.production_consumptions,Bahan aktual digunakan untuk batch,P1,G1-G5,tenant,-,NO,12,5,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+141,T139,nutrition,meal_trays,nutrition.meal_trays,"Tray makanan per pasien, diet dan meal",P1,G1-G5,tenant,-,NO,14,5,Produksi & Distribusi Gizi,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+142,T140,nutrition,tray_deliveries,nutrition.tray_deliveries,Serah terima makanan ke bangsal,P1,G1-G5,tenant,-,NO,13,4,Produksi & Distribusi Gizi,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+143,T141,procurement,suppliers,procurement.suppliers,Master vendor barang/jasa,P1,G1-G5,tenant,-,NO,12,1,Procurement / Vendor,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+144,T142,procurement,purchase_requests,procurement.purchase_requests,Purchase requisition,P1,G1-G5,tenant,-,NO,13,4,Procurement / Vendor,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+145,T143,procurement,purchase_request_lines,procurement.purchase_request_lines,Line PR untuk item/jasa,P1,G1-G5,tenant,-,NO,13,4,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+146,T144,procurement,purchase_orders,procurement.purchase_orders,Purchase order supplier,P1,G1-G5,tenant,-,NO,14,4,Procurement / Vendor,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+147,T145,procurement,purchase_order_lines,procurement.purchase_order_lines,Order qty dan harga per item,P1,G1-G5,tenant,-,NO,13,4,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+148,T146,procurement,goods_receipts,procurement.goods_receipts,Penerimaan barang/GRN,P1,G1-G5,tenant,-,NO,13,4,Procurement / Vendor,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+149,T147,procurement,goods_receipt_lines,procurement.goods_receipt_lines,"GRN quantity, lot dan ledger",P1,G1-G5,tenant,-,NO,13,6,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+150,T148,procurement,supplier_invoices,procurement.supplier_invoices,Invoice tagihan pemasok,P1,G1-G5,tenant,-,NO,14,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+151,T149,procurement,supplier_invoice_lines,procurement.supplier_invoice_lines,Detail tagihan vendor,P1,G1-G5,tenant,-,NO,12,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+152,T150,procurement,purchase_returns,procurement.purchase_returns,Retur ke pemasok,P2,G1-G5,tenant,-,NO,12,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+153,T151,operations,operating_rooms,operations.operating_rooms,Kamar operasi,P1,G1-G5,tenant,-,NO,11,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+154,T152,operations,surgery_schedules,operations.surgery_schedules,Booking OK dan team,P1,G1-G5,tenant,-,NO,14,5,Operating Theater,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+155,T153,operations,surgery_checklists,operations.surgery_checklists,"Time-out, sign-in, sign-out",P1,G1-G5,tenant,-,NO,12,3,Operating Theater,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+156,T154,operations,surgery_events,operations.surgery_events,Lini masa operasi dan perubahan,P1,G1-G5,tenant,-,YES,9,3,Operating Theater,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+157,T155,operations,anesthesia_records,operations.anesthesia_records,Asesmen/induksi/perioperatif,P1,G1-G5,tenant,-,NO,13,3,Anesthesia & PACU,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+158,T156,operations,anesthesia_observations,operations.anesthesia_observations,TTV dan parameter monitoring intra-op,P1,G1-G5,tenant,-,NO,13,3,Anesthesia & PACU,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+159,T157,operations,pacu_records,operations.pacu_records,Recovery/aldrete dan discharge PACU,P1,G1-G5,tenant,-,NO,13,3,Anesthesia & PACU,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+160,T158,operations,dialysis_sessions,operations.dialysis_sessions,Sesi hemodialisis,P2,G1-G5,tenant,-,NO,14,4,Hemodialysis,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+161,T159,operations,rehabilitation_sessions,operations.rehabilitation_sessions,Pelaksanaan tindakan rehabilitasi,P2,G1-G5,tenant,-,NO,13,4,Rehabilitation,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+162,T160,operations,mcu_packages,operations.mcu_packages,Template paket MCU,P2,G1-G5,tenant,-,NO,10,1,Medical Check Up,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+163,T161,operations,mcu_package_items,operations.mcu_package_items,Pemeriksaan dalam paket MCU,P2,G1-G5,tenant,-,NO,10,3,Medical Check Up,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+164,T162,operations,blood_units,operations.blood_units,Unit produk darah dan expiry,P2,G1-G5,tenant,-,NO,13,1,Blood Bank / Transfusion,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+165,T163,operations,blood_crossmatches,operations.blood_crossmatches,Hasil crossmatch pasien unit darah,P2,G1-G5,tenant,-,NO,13,5,Blood Bank / Transfusion,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+166,T164,operations,transfusions,operations.transfusions,Pelaksanaan transfusi dan efek samping,P2,G1-G5,tenant,-,NO,14,5,Blood Bank / Transfusion,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+167,T165,operations,cssd_instruments,operations.cssd_instruments,Master instrumen steril,P2,G1-G5,tenant,-,NO,12,2,CSSD,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+168,T166,operations,cssd_sets,operations.cssd_sets,Set instrumen operasi,P2,G1-G5,tenant,-,NO,11,1,CSSD,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+169,T167,operations,cssd_set_items,operations.cssd_set_items,Keanggotaan instrumen dalam set,P2,G1-G5,tenant,-,NO,10,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+170,T168,operations,cssd_cycles,operations.cssd_cycles,Siklus sterilizer dan indicator,P2,G1-G5,tenant,-,NO,14,2,CSSD,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+171,T169,operations,cssd_cycle_items,operations.cssd_cycle_items,Set yang mengikuti siklus sterilisasi,P2,G1-G5,tenant,-,NO,11,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+172,T170,operations,cssd_distributions,operations.cssd_distributions,Distribusi set steril ke unit,P2,G1-G5,tenant,-,NO,12,4,CSSD,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+173,T171,operations,linen_items,operations.linen_items,Master jenis linen,P2,G1-G5,tenant,-,NO,11,1,Laundry & Linen,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+174,T172,operations,linen_batches,operations.linen_batches,Batch pengumpulan linen kotor/bersih,P2,G1-G5,tenant,-,NO,12,2,Laundry & Linen,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+175,T173,operations,laundry_cycles,operations.laundry_cycles,Siklus pencucian linen,P2,G1-G5,tenant,-,NO,12,3,Laundry & Linen,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+176,T174,operations,linen_movements,operations.linen_movements,Ledger perpindahan linen antar lokasi,P2,G1-G5,tenant,-,YES,10,4,Laundry & Linen,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+177,T175,operations,transport_requests,operations.transport_requests,Ambulans dan transport klinis/nonklinis,P2,G1-G5,tenant,-,NO,14,4,Ambulance & Transport,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+178,T176,operations,vehicles,operations.vehicles,Armada dan perawatan kendaraan,P2,G1-G5,tenant,-,NO,11,1,Ambulance & Transport,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+179,T177,operations,transport_assignments,operations.transport_assignments,Driver dan kendaraan per permintaan,P2,G1-G5,tenant,-,NO,12,4,Ambulance & Transport,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+180,T178,operations,housekeeping_tasks,operations.housekeeping_tasks,Permintaan kebersihan dan inspection,P2,G1-G5,tenant,-,NO,13,3,Housekeeping,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+181,T179,operations,nonmedical_transactions,operations.nonmedical_transactions,Ringkasan operasional nonmedis (parkir/dll),P2,G1-G5,tenant,-,NO,13,2,Nonmedical Operations,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+182,T180,operations,assets,operations.assets,Master aset klinis/nonklinis,P2,G1-G5,tenant,-,NO,14,2,Asset Management,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+183,T181,operations,asset_maintenances,operations.asset_maintenances,Kalibrasi/preventive/corrective maintenance,P2,G1-G5,tenant,-,NO,14,3,Maintenance / Facility,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+184,T182,operations,facility_work_orders,operations.facility_work_orders,Tiket pekerjaan bangunan / utilitas,P2,G1-G5,tenant,-,NO,14,3,Maintenance / Facility,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+185,T183,billing,payers,billing.payers,Master penjamin BPJS/swasta/corporate,P0,G1-G5,tenant,-,NO,11,1,Payer & Coverage,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+186,T184,billing,payer_contracts,billing.payer_contracts,Kontrak layanan dan manfaat,P1,G1-G5,tenant,-,NO,13,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+187,T185,billing,coverages,billing.coverages,Coverage patient dengan penjamin,P0,G1-G5,tenant,Coverage,NO,14,3,Payer & Coverage,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+188,T186,billing,coverage_authorizations,billing.coverage_authorizations,SEP/otorisasi preapproval,P0,G1-G5,tenant,-,NO,14,3,"Payer & Coverage, BPJS VClaim / Antrean",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+189,T187,billing,charge_rules,billing.charge_rules,Aturan tarif per layanan/provider/konteks,P0,G1-G5,tenant,-,NO,14,3,Charge Capture,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+190,T188,billing,charges,billing.charges,Charge otomatis/manual yang idempotent,P0,G1-G5,tenant,ChargeItem,NO,18,5,Charge Capture,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+191,T189,billing,charge_adjustments,billing.charge_adjustments,"Retur, diskon, koreksi charge",P0,G1-G5,tenant,-,NO,13,3,Charge Capture,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+192,T190,billing,service_packages,billing.service_packages,Master paket layanan / bundle komersial,P1,G1-G5,tenant,-,NO,11,1,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+193,T191,billing,service_package_items,billing.service_package_items,Isi paket vs service catalog,P1,G1-G5,tenant,-,NO,11,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+194,T192,billing,invoices,billing.invoices,Invoice encounter per payer/split,P0,G1-G5,tenant,Invoice,NO,17,4,Billing & Invoice,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+195,T193,billing,invoice_lines,billing.invoice_lines,Rincian charge pada invoice,P0,G1-G5,tenant,-,NO,13,3,Billing & Invoice,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+196,T194,billing,payments,billing.payments,Bukti bayar pasien/penjamin,P0,G1-G5,tenant,-,NO,15,4,"Billing & Invoice, Cashier & Payments",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+197,T195,billing,payment_allocations,billing.payment_allocations,Alokasi payment ke invoice,P0,G1-G5,tenant,-,NO,11,3,Cashier & Payments,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+198,T196,billing,refunds,billing.refunds,Refund terotorisasi dan kontrol,P0,G1-G5,tenant,-,NO,13,3,Cashier & Payments,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+199,T197,billing,deposits,billing.deposits,Deposit rawat inap/pasien,P0,G1-G5,tenant,-,NO,12,4,Cashier & Payments,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+200,T198,billing,claims,billing.claims,Klaim ke penjamin,P1,G1-G5,tenant,Claim,NO,14,4,Private Insurance Claims,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+201,T199,billing,claim_items,billing.claim_items,Item klaim dan kode tarif,P1,G1-G5,tenant,-,NO,13,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+202,T200,billing,claim_documents,billing.claim_documents,Berkas lampiran klaim dan fingerprint,P1,G1-G5,tenant,-,NO,13,3,Private Insurance Claims,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+203,T201,billing,claim_submissions,billing.claim_submissions,Versi submit ke payer & hasil validasi,P1,G1-G5,tenant,-,YES,11,3,Private Insurance Claims,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+204,T202,billing,casemix_cases,billing.casemix_cases,Episode grouping/casemix INA-CBG,P1,G1-G5,tenant,-,NO,13,2,Casemix / INA-CBG,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+205,T203,billing,casemix_codings,billing.casemix_codings,Coding diagnosis/procedure untuk grouper,P1,G1-G5,tenant,-,NO,13,3,Casemix / INA-CBG,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+206,T204,billing,bpjs_transactions,billing.bpjs_transactions,Audit transaksi bridging BPJS,P1,G1-G5,tenant,-,YES,12,3,BPJS VClaim / Antrean,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+207,T205,finance,chart_of_accounts,finance.chart_of_accounts,Bagan akun dan parent COA,P1,G1-G5,tenant,-,NO,13,2,General Ledger,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+208,T206,finance,accounting_periods,finance.accounting_periods,Tutup buku dan periode fiskal,P1,G1-G5,tenant,-,NO,13,2,"Budgeting & Financial Report, Multi-Hospital Consolidation",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+209,T207,finance,journals,finance.journals,Header jurnal ACID/immutable post,P1,G1-G5,tenant,-,NO,15,2,General Ledger,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+210,T208,finance,journal_lines,finance.journal_lines,Debit/kredit ledger; keseimbangan enforced,P1,G1-G5,tenant,-,YES,10,4,General Ledger,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+211,T209,finance,ap_bills,finance.ap_bills,Utang tagihan vendor (AP),P1,G1-G5,tenant,-,NO,13,3,AP/AR & Treasury,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+212,T210,finance,ap_payments,finance.ap_payments,Pembayaran AP dan jurnal,P1,G1-G5,tenant,-,NO,12,4,AP/AR & Treasury,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+213,T211,finance,ar_balances,finance.ar_balances,Piutang payer/pasien,P1,G1-G5,tenant,-,NO,11,2,AP/AR & Treasury,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+214,T212,finance,bank_accounts,finance.bank_accounts,Bank/kas organisasi,P1,G1-G5,tenant,-,NO,13,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+215,T213,finance,bank_transactions,finance.bank_transactions,Mutasi rekening dan rekonsiliasi,P1,G1-G5,tenant,-,YES,10,3,AP/AR & Treasury,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+216,T214,finance,budgets,finance.budgets,Rencana anggaran per fiscal year,P2,G1-G5,tenant,-,NO,12,3,Budgeting & Financial Report,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+217,T215,finance,budget_lines,finance.budget_lines,Anggaran akun/cost center per periode,P2,G1-G5,tenant,-,NO,12,4,Budgeting & Financial Report,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+218,T216,finance,cost_centers,finance.cost_centers,Unit cost center untuk costing,P2,G1-G5,tenant,-,NO,11,2,Costing & Doctor Fees,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+219,T217,finance,cost_allocations,finance.cost_allocations,Alokasi biaya unit ke layanan,P2,G1-G5,tenant,-,NO,12,4,Costing & Doctor Fees,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+220,T218,finance,doctor_fee_rules,finance.doctor_fee_rules,Rumus jasa medis per layanan dan peran,P2,G1-G5,tenant,-,NO,14,2,Costing & Doctor Fees,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+221,T219,finance,doctor_fee_ledger,finance.doctor_fee_ledger,Jasa medis immutable/idempotent,P2,G1-G5,tenant,-,YES,10,4,Costing & Doctor Fees,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+222,T220,finance,fixed_asset_depreciations,finance.fixed_asset_depreciations,Depresiasi asset per periode,P2,G1-G5,tenant,-,YES,8,4,Asset Management,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+223,T221,hr,employees,hr.employees,Master pegawai dan relasi nakes,P2,G1-G5,tenant,-,NO,13,2,HR Master / Payroll,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+224,T222,hr,employment_contracts,hr.employment_contracts,Kontrak kerja dan status,P2,G1-G5,tenant,-,NO,13,2,HR Master / Payroll,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+225,T223,hr,shifts,hr.shifts,Template shift dan jam kerja,P2,G1-G5,tenant,-,NO,12,1,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+226,T224,hr,shift_assignments,hr.shift_assignments,Penugasan shift staf per tanggal,P2,G1-G5,tenant,-,NO,12,4,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+227,T225,hr,attendance,hr.attendance,Rekaman presensi,P2,G1-G5,tenant,-,NO,13,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+228,T226,hr,leave_requests,hr.leave_requests,Cuti dan persetujuan,P2,G1-G5,tenant,-,NO,13,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+229,T227,hr,payroll_runs,hr.payroll_runs,Run penggajian per period,P2,G1-G5,tenant,-,NO,12,3,HR Master / Payroll,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+230,T228,hr,payroll_items,hr.payroll_items,Gaji/tunjangan/potongan individual,P2,G1-G5,tenant,-,NO,13,3,HR Master / Payroll,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+231,T229,hr,job_openings,hr.job_openings,Lowongan rekrutmen,P2,G1-G5,tenant,-,NO,12,2,Recruitment & Talent,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+232,T230,hr,applications,hr.applications,Kandidat dan tahap seleksi,P2,G1-G5,tenant,-,NO,13,2,Recruitment & Talent,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+233,T231,hr,trainings,hr.trainings,Pelatihan dan sertifikasi,P2,G1-G5,tenant,-,NO,12,1,Recruitment & Talent,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+234,T232,hr,employee_trainings,hr.employee_trainings,Keikutsertaan staf pada pelatihan,P2,G1-G5,tenant,-,NO,12,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+235,T233,hr,competencies,hr.competencies,Katalog kompetensi SDM,P2,G1-G5,tenant,-,NO,10,1,Recruitment & Talent,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+236,T234,hr,employee_competencies,hr.employee_competencies,Skor kompetensi pegawai,P2,G1-G5,tenant,-,NO,12,4,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+237,T235,hr,performance_reviews,hr.performance_reviews,Evaluasi kinerja periodik,P2,G1-G5,tenant,-,NO,13,3,Recruitment & Talent,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+238,T236,quality,patient_safety_incidents,quality.patient_safety_incidents,Insiden keselamatan pasien,P1,G1-G5,tenant,AdverseEvent,NO,14,4,Patient Safety,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+239,T237,quality,incident_actions,quality.incident_actions,CAPA/RCA insiden,P1,G1-G5,tenant,-,NO,13,3,Patient Safety,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+240,T238,quality,hai_surveillance,quality.hai_surveillance,Periode surveilans HAIs,P2,G1-G5,tenant,-,NO,12,2,Infection Prevention / HAIs,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+241,T239,quality,hai_cases,quality.hai_cases,Kasus infeksi terkait pelayanan,P2,G1-G5,tenant,-,NO,13,4,Infection Prevention / HAIs,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+242,T240,quality,risk_register,quality.risk_register,Daftar risiko klinis/operasional,P2,G1-G5,tenant,-,NO,14,2,Risk Management,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+243,T241,quality,risk_actions,quality.risk_actions,Mitigasi risiko,P2,G1-G5,tenant,-,NO,12,3,Risk Management,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+244,T242,quality,quality_indicators,quality.quality_indicators,Master definisi indikator mutu,P1,G1-G5,tenant,Measure,NO,14,1,Quality & Clinical Indicators,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+245,T243,quality,indicator_runs,quality.indicator_runs,Eksekusi penghitungan indikator,P1,G1-G5,tenant,-,NO,13,2,Quality & Clinical Indicators,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+246,T244,quality,indicator_values,quality.indicator_values,Numerator denominator hasil eksekusi,P1,G1-G5,tenant,MeasureReport,NO,13,3,Quality & Clinical Indicators,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+247,T245,quality,quality_audits,quality.quality_audits,Audit mutu klinis/administratif,P1,G1-G5,tenant,-,NO,13,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+248,T246,quality,audit_findings,quality.audit_findings,Temuan audit dan rekomendasi,P1,G1-G5,tenant,-,NO,14,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+249,T247,quality,rl_reporting_periods,quality.rl_reporting_periods,Periode dan jenis laporan RL/SIRS,P1,G1-G5,tenant,-,NO,12,2,RL / SIRS Reporting,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+250,T248,quality,rl_report_submissions,quality.rl_report_submissions,Versi output RL dan pengiriman,P1,G1-G5,tenant,-,YES,10,2,RL / SIRS Reporting,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+251,T249,quality,data_quality_issues,quality.data_quality_issues,"Anomali data, follow-up dan rule id",P1,G1-G5,tenant,-,NO,14,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+252,T250,quality,management_approvals,quality.management_approvals,Approval portal manajemen,P2,G1-G5,tenant,-,NO,14,3,Portal Manajemen,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+253,T251,integration,external_systems,integration.external_systems,"SATUSEHAT, BPJS, lab analyzer, payer",P0,G1-G5,tenant,-,NO,12,1,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+254,T252,integration,external_endpoints,integration.external_endpoints,URL tujuan dan metode integrasi,P0,G1-G5,tenant,-,NO,13,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+255,T253,integration,integration_credentials,integration.integration_credentials,Referensi secret vault; bukan plain token,P0,G1-G5,tenant,-,NO,12,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+256,T254,integration,external_resource_links,integration.external_resource_links,Pemetaan ID internal dengan ID FHIR/eksternal,P0,G1-G5,tenant,FHIR reference reconciliation,NO,14,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+257,T255,integration,outbox_events,integration.outbox_events,Event persisten dalam transaksi bisnis,P0,G1-G5,tenant,-,YES,14,1,"Audit, Compliance & BCP",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+258,T256,integration,integration_deliveries,integration.integration_deliveries,Status pengiriman outbox ke eksternal,P0,G1-G5,tenant,-,NO,15,4,BPJS VClaim / Antrean,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+259,T257,integration,delivery_attempts,integration.delivery_attempts,Log retry yang aman dari PII,P0,G1-G5,tenant,-,YES,12,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+260,T258,integration,inbox_messages,integration.inbox_messages,Idempotency inbound dari eksternal,P1,G1-G5,tenant,-,NO,13,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+261,T259,integration,mapping_rules,integration.mapping_rules,Versi pemetaan domain→FHIR/eksternal,P0,G1-G5,tenant,-,NO,13,1,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+262,T260,integration,integration_jobs,integration.integration_jobs,Sinkronisasi periodik/reconciliation,P1,G1-G5,tenant,-,NO,13,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+263,T261,integration,webhook_subscriptions,integration.webhook_subscriptions,Subscriptions ke aplikasi eksternal,P2,G1-G5,tenant,-,NO,12,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+264,T262,audit,access_logs,audit.access_logs,"Riwayat akses PHI, immutable",P0,G1-G5,tenant,-,YES,13,4,"Audit, Compliance & BCP",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+265,T263,audit,change_logs,audit.change_logs,Data change audit dan versi,P0,G1-G5,tenant,-,YES,11,2,"Audit, Compliance & BCP",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+266,T264,audit,disclosure_logs,audit.disclosure_logs,Jejak data dibagikan ke penerima,P0,G1-G5,tenant,-,YES,10,3,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+267,T265,audit,break_glass_events,audit.break_glass_events,Emergency override access,P0,G1-G5,tenant,-,YES,11,4,"Audit, Compliance & BCP",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+268,T266,audit,export_logs,audit.export_logs,Export cetak unduh data sensitif,P0,G1-G5,tenant,-,YES,10,2,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+269,T267,analytics,report_definitions,analytics.report_definitions,Query/semantic model BI yang diizinkan,P1,G1-G5,tenant,-,NO,13,1,Dynamic Reporting / BI,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+270,T268,analytics,report_runs,analytics.report_runs,Eksekusi laporan asinkron dan file,P1,G1-G5,tenant,-,NO,14,3,"Dynamic Reporting / BI, Portal Manajemen",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+271,T269,analytics,aggregate_snapshots,analytics.aggregate_snapshots,KPI dan agregasi tenant/RS,P1,G1-G5,tenant,-,NO,13,2,"Dynamic Reporting / BI, Multi-Hospital Consolidation",PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+272,T270,analytics,deid_datasets,analytics.deid_datasets,Metadata dataset anonim penelitian,P2,G1-G5,tenant,-,NO,14,1,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+273,T271,analytics,model_registry,analytics.model_registry,Model AI/analitik yang diberi approval,P2,G1-G5,tenant,-,NO,13,1,,PROPOSED,Master plan §7 / Lampiran A + pengembangan blueprint
+<PARSED TEXT FOR SHEET: 6 / 18 TABS
+TAB NAME: 05_COLUMNS>
+index,05 COLUMNS,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6,Unnamed: 7,Unnamed: 8,Unnamed: 9,Unnamed: 10,Unnamed: 11,Unnamed: 12,Unnamed: 13,Unnamed: 14,Unnamed: 15
+0,DRAFT • SIMRS FHIR-First • PostgreSQL source-of-truth • no dedicated FHIR Server,,,,,,,,,,,,,,,
+1,,,,,,,,,,,,,,,,
+2,Field ID,Qualified table,Schema,Table,Urutan,Column name,PostgreSQL type,PK,FK target table,NOT NULL,Unique?,Default,Klasifikasi data,Definisi & tata kelola,Status,Enum group
+3,C00001,identity.tenants,identity,tenants,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+4,C00002,identity.tenants,identity,tenants,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+5,C00003,identity.tenants,identity,tenants,3,tenant_code,varchar(40),,,YES,YES,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+6,C00004,identity.tenants,identity,tenants,4,legal_name,varchar(250),,,YES,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+7,C00005,identity.tenants,identity,tenants,5,status,varchar(24),,,YES,NO,,Internal,Status state machine; transisi dikendalikan domain,DRAFT,tenant_status
+8,C00006,identity.tenants,identity,tenants,6,timezone,varchar(60),,,YES,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+9,C00007,identity.tenants,identity,tenants,7,default_locale,varchar(12),,,NO,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+10,C00008,identity.tenants,identity,tenants,8,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+11,C00009,identity.tenants,identity,tenants,9,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+12,C00010,identity.tenants,identity,tenants,10,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+13,C00011,identity.tenants,identity,tenants,11,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+14,C00012,identity.tenants,identity,tenants,12,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+15,C00013,identity.tenant_memberships,identity,tenant_memberships,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+16,C00014,identity.tenant_memberships,identity,tenant_memberships,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+17,C00015,identity.tenant_memberships,identity,tenant_memberships,3,user_id,uuid,,identity.users,YES,NO,,Internal,Referensi ke identity.users,DRAFT,
+18,C00016,identity.tenant_memberships,identity,tenant_memberships,4,membership_status,varchar(24),,,YES,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+19,C00017,identity.tenant_memberships,identity,tenant_memberships,5,valid_from,date,,,NO,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+20,C00018,identity.tenant_memberships,identity,tenant_memberships,6,valid_to,date,,,NO,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+21,C00019,identity.tenant_memberships,identity,tenant_memberships,7,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+22,C00020,identity.tenant_memberships,identity,tenant_memberships,8,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+23,C00021,identity.tenant_memberships,identity,tenant_memberships,9,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+24,C00022,identity.tenant_memberships,identity,tenant_memberships,10,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+25,C00023,identity.tenant_memberships,identity,tenant_memberships,11,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+26,C00024,identity.users,identity,users,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+27,C00025,identity.users,identity,users,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+28,C00026,identity.users,identity,users,3,username,varchar(100),,,YES,YES,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+29,C00027,identity.users,identity,users,4,email,varchar(254),,,NO,NO,,PII,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+30,C00028,identity.users,identity,users,5,password_hash,text,,,NO,NO,,Sangat sensitif,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+31,C00029,identity.users,identity,users,6,subject_external,varchar(200),,,NO,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+32,C00030,identity.users,identity,users,7,status,varchar(24),,,YES,NO,,Internal,Status state machine; transisi dikendalikan domain,DRAFT,user_status
+33,C00031,identity.users,identity,users,8,last_login_at,timestamptz,,,NO,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+34,C00032,identity.users,identity,users,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+35,C00033,identity.users,identity,users,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+36,C00034,identity.users,identity,users,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+37,C00035,identity.users,identity,users,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+38,C00036,identity.users,identity,users,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+39,C00037,identity.roles,identity,roles,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+40,C00038,identity.roles,identity,roles,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+41,C00039,identity.roles,identity,roles,3,role_code,varchar(80),,,YES,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+42,C00040,identity.roles,identity,roles,4,display_name,varchar(180),,,YES,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+43,C00041,identity.roles,identity,roles,5,scope_kind,varchar(20),,,YES,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+44,C00042,identity.roles,identity,roles,6,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+45,C00043,identity.roles,identity,roles,7,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+46,C00044,identity.roles,identity,roles,8,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+47,C00045,identity.roles,identity,roles,9,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+48,C00046,identity.roles,identity,roles,10,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+49,C00047,identity.permissions,identity,permissions,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+50,C00048,identity.permissions,identity,permissions,2,permission_key,varchar(150),,,YES,YES,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+51,C00049,identity.permissions,identity,permissions,3,resource_name,varchar(120),,,YES,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+52,C00050,identity.permissions,identity,permissions,4,action,varchar(50),,,YES,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+53,C00051,identity.permissions,identity,permissions,5,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+54,C00052,identity.permissions,identity,permissions,6,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+55,C00053,identity.permissions,identity,permissions,7,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+56,C00054,identity.permissions,identity,permissions,8,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+57,C00055,identity.permissions,identity,permissions,9,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+58,C00056,identity.role_permissions,identity,role_permissions,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+59,C00057,identity.role_permissions,identity,role_permissions,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+60,C00058,identity.role_permissions,identity,role_permissions,3,role_id,uuid,,identity.roles,YES,NO,,Internal,Referensi ke identity.roles,DRAFT,
+61,C00059,identity.role_permissions,identity,role_permissions,4,permission_id,uuid,,identity.permissions,YES,NO,,Internal,Referensi ke identity.permissions,DRAFT,
+62,C00060,identity.role_permissions,identity,role_permissions,5,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+63,C00061,identity.role_permissions,identity,role_permissions,6,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+64,C00062,identity.role_permissions,identity,role_permissions,7,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+65,C00063,identity.role_permissions,identity,role_permissions,8,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+66,C00064,identity.role_permissions,identity,role_permissions,9,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+67,C00065,identity.user_roles,identity,user_roles,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+68,C00066,identity.user_roles,identity,user_roles,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+69,C00067,identity.user_roles,identity,user_roles,3,user_id,uuid,,identity.users,YES,NO,,Internal,Referensi ke identity.users,DRAFT,
+70,C00068,identity.user_roles,identity,user_roles,4,role_id,uuid,,identity.roles,YES,NO,,Internal,Referensi ke identity.roles,DRAFT,
+71,C00069,identity.user_roles,identity,user_roles,5,organization_id,uuid,,master.organizations,NO,NO,,Internal,FK organisasi pelayanan (tidak identik tenant_id),DRAFT,
+72,C00070,identity.user_roles,identity,user_roles,6,valid_from,timestamptz,,,NO,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+73,C00071,identity.user_roles,identity,user_roles,7,valid_to,timestamptz,,,NO,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+74,C00072,identity.user_roles,identity,user_roles,8,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+75,C00073,identity.user_roles,identity,user_roles,9,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+76,C00074,identity.user_roles,identity,user_roles,10,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+77,C00075,identity.user_roles,identity,user_roles,11,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+78,C00076,identity.user_roles,identity,user_roles,12,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+79,C00077,identity.sessions,identity,sessions,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+80,C00078,identity.sessions,identity,sessions,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+81,C00079,identity.sessions,identity,sessions,3,user_id,uuid,,identity.users,YES,NO,,Internal,Referensi ke identity.users,DRAFT,
+82,C00080,identity.sessions,identity,sessions,4,session_token_hash,varchar(128),,,YES,YES,,Sangat sensitif,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+83,C00081,identity.sessions,identity,sessions,5,issued_at,timestamptz,,,YES,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+84,C00082,identity.sessions,identity,sessions,6,expires_at,timestamptz,,,YES,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+85,C00083,identity.sessions,identity,sessions,7,revoked_at,timestamptz,,,NO,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+86,C00084,identity.sessions,identity,sessions,8,ip_hash,varchar(128),,,NO,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+87,C00085,identity.sessions,identity,sessions,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+88,C00086,identity.sessions,identity,sessions,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+89,C00087,identity.sessions,identity,sessions,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+90,C00088,identity.sessions,identity,sessions,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+91,C00089,identity.sessions,identity,sessions,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+92,C00090,identity.mfa_factors,identity,mfa_factors,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+93,C00091,identity.mfa_factors,identity,mfa_factors,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+94,C00092,identity.mfa_factors,identity,mfa_factors,3,user_id,uuid,,identity.users,YES,NO,,Internal,Referensi ke identity.users,DRAFT,
+95,C00093,identity.mfa_factors,identity,mfa_factors,4,factor_type,varchar(24),,,YES,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+96,C00094,identity.mfa_factors,identity,mfa_factors,5,secret_ciphertext,bytea,,,NO,NO,,Sangat sensitif,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+97,C00095,identity.mfa_factors,identity,mfa_factors,6,credential_ref,varchar(250),,,NO,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+98,C00096,identity.mfa_factors,identity,mfa_factors,7,enabled_at,timestamptz,,,NO,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+99,C00097,identity.mfa_factors,identity,mfa_factors,8,disabled_at,timestamptz,,,NO,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+100,C00098,identity.mfa_factors,identity,mfa_factors,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+101,C00099,identity.mfa_factors,identity,mfa_factors,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+102,C00100,identity.mfa_factors,identity,mfa_factors,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+103,C00101,identity.mfa_factors,identity,mfa_factors,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+104,C00102,identity.mfa_factors,identity,mfa_factors,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+105,C00103,identity.auth_events,identity,auth_events,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+106,C00104,identity.auth_events,identity,auth_events,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+107,C00105,identity.auth_events,identity,auth_events,3,user_id,uuid,,identity.users,NO,NO,,Internal,Referensi ke identity.users,DRAFT,
+108,C00106,identity.auth_events,identity,auth_events,4,event_type,varchar(40),,,YES,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+109,C00107,identity.auth_events,identity,auth_events,5,success,boolean,,,YES,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+110,C00108,identity.auth_events,identity,auth_events,6,occurred_at,timestamptz,,,YES,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+111,C00109,identity.auth_events,identity,auth_events,7,ip_hash,varchar(128),,,NO,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+112,C00110,identity.auth_events,identity,auth_events,8,reason_code,varchar(50),,,NO,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+113,C00111,identity.auth_events,identity,auth_events,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+114,C00112,identity.auth_events,identity,auth_events,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+115,C00113,identity.access_policies,identity,access_policies,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+116,C00114,identity.access_policies,identity,access_policies,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+117,C00115,identity.access_policies,identity,access_policies,3,policy_code,varchar(100),,,YES,YES,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+118,C00116,identity.access_policies,identity,access_policies,4,target_type,varchar(80),,,YES,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+119,C00117,identity.access_policies,identity,access_policies,5,action,varchar(40),,,YES,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+120,C00118,identity.access_policies,identity,access_policies,6,expression_json,jsonb,,,YES,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+121,C00119,identity.access_policies,identity,access_policies,7,status,varchar(20),,,YES,NO,,Internal,Status state machine; transisi dikendalikan domain,DRAFT,
+122,C00120,identity.access_policies,identity,access_policies,8,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+123,C00121,identity.access_policies,identity,access_policies,9,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+124,C00122,identity.access_policies,identity,access_policies,10,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+125,C00123,identity.access_policies,identity,access_policies,11,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+126,C00124,identity.access_policies,identity,access_policies,12,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+127,C00125,identity.service_accounts,identity,service_accounts,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+128,C00126,identity.service_accounts,identity,service_accounts,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+129,C00127,identity.service_accounts,identity,service_accounts,3,service_code,varchar(80),,,YES,YES,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+130,C00128,identity.service_accounts,identity,service_accounts,4,label,varchar(200),,,YES,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+131,C00129,identity.service_accounts,identity,service_accounts,5,scope_json,jsonb,,,NO,NO,,Internal,Atribut domain identity; detail nilai/aturan divalidasi bersama SME,DRAFT,
+132,C00130,identity.service_accounts,identity,service_accounts,6,status,varchar(24),,,YES,NO,,Internal,Status state machine; transisi dikendalikan domain,DRAFT,
+133,C00131,identity.service_accounts,identity,service_accounts,7,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+134,C00132,identity.service_accounts,identity,service_accounts,8,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+135,C00133,identity.service_accounts,identity,service_accounts,9,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+136,C00134,identity.service_accounts,identity,service_accounts,10,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+137,C00135,identity.service_accounts,identity,service_accounts,11,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+138,C00136,master.organizations,master,organizations,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+139,C00137,master.organizations,master,organizations,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+140,C00138,master.organizations,master,organizations,3,parent_organization_id,uuid,,master.organizations,NO,NO,,Internal,Referensi ke master.organizations,DRAFT,
+141,C00139,master.organizations,master,organizations,4,organization_code,varchar(80),,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+142,C00140,master.organizations,master,organizations,5,name,varchar(250),,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+143,C00141,master.organizations,master,organizations,6,organization_type,varchar(40),,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+144,C00142,master.organizations,master,organizations,7,satusehat_org_id,varchar(80),,,NO,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+145,C00143,master.organizations,master,organizations,8,active,boolean,,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+146,C00144,master.organizations,master,organizations,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+147,C00145,master.organizations,master,organizations,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+148,C00146,master.organizations,master,organizations,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+149,C00147,master.organizations,master,organizations,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+150,C00148,master.organizations,master,organizations,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+151,C00149,master.organization_identifiers,master,organization_identifiers,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+152,C00150,master.organization_identifiers,master,organization_identifiers,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+153,C00151,master.organization_identifiers,master,organization_identifiers,3,organization_id,uuid,,master.organizations,YES,NO,,Internal,FK organisasi pelayanan (tidak identik tenant_id),DRAFT,
+154,C00152,master.organization_identifiers,master,organization_identifiers,4,identifier_system,varchar(200),,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+155,C00153,master.organization_identifiers,master,organization_identifiers,5,identifier_value,varchar(200),,,YES,NO,,PII,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+156,C00154,master.organization_identifiers,master,organization_identifiers,6,valid_from,date,,,NO,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+157,C00155,master.organization_identifiers,master,organization_identifiers,7,valid_to,date,,,NO,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+158,C00156,master.organization_identifiers,master,organization_identifiers,8,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+159,C00157,master.organization_identifiers,master,organization_identifiers,9,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+160,C00158,master.organization_identifiers,master,organization_identifiers,10,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+161,C00159,master.organization_identifiers,master,organization_identifiers,11,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+162,C00160,master.organization_identifiers,master,organization_identifiers,12,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+163,C00161,master.organization_units,master,organization_units,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+164,C00162,master.organization_units,master,organization_units,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+165,C00163,master.organization_units,master,organization_units,3,organization_id,uuid,,master.organizations,YES,NO,,Internal,FK organisasi pelayanan (tidak identik tenant_id),DRAFT,
+166,C00164,master.organization_units,master,organization_units,4,parent_unit_id,uuid,,master.organization_units,NO,NO,,Internal,Referensi ke master.organization_units,DRAFT,
+167,C00165,master.organization_units,master,organization_units,5,unit_code,varchar(70),,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+168,C00166,master.organization_units,master,organization_units,6,unit_name,varchar(200),,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+169,C00167,master.organization_units,master,organization_units,7,unit_kind,varchar(40),,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+170,C00168,master.organization_units,master,organization_units,8,active,boolean,,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+171,C00169,master.organization_units,master,organization_units,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+172,C00170,master.organization_units,master,organization_units,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+173,C00171,master.organization_units,master,organization_units,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+174,C00172,master.organization_units,master,organization_units,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+175,C00173,master.organization_units,master,organization_units,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+176,C00174,master.locations,master,locations,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+177,C00175,master.locations,master,locations,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+178,C00176,master.locations,master,locations,3,organization_id,uuid,,master.organizations,YES,NO,,Internal,FK organisasi pelayanan (tidak identik tenant_id),DRAFT,
+179,C00177,master.locations,master,locations,4,parent_location_id,uuid,,master.locations,NO,NO,,Internal,Referensi ke master.locations,DRAFT,
+180,C00178,master.locations,master,locations,5,location_code,varchar(90),,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+181,C00179,master.locations,master,locations,6,name,varchar(200),,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+182,C00180,master.locations,master,locations,7,location_kind,varchar(50),,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+183,C00181,master.locations,master,locations,8,active,boolean,,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+184,C00182,master.locations,master,locations,9,satusehat_location_id,varchar(100),,,NO,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+185,C00183,master.locations,master,locations,10,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+186,C00184,master.locations,master,locations,11,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+187,C00185,master.locations,master,locations,12,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+188,C00186,master.locations,master,locations,13,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+189,C00187,master.locations,master,locations,14,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+190,C00188,master.rooms,master,rooms,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+191,C00189,master.rooms,master,rooms,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+192,C00190,master.rooms,master,rooms,3,location_id,uuid,,master.locations,YES,NO,,Internal,Referensi ke master.locations,DRAFT,
+193,C00191,master.rooms,master,rooms,4,room_code,varchar(60),,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+194,C00192,master.rooms,master,rooms,5,room_class,varchar(50),,,NO,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+195,C00193,master.rooms,master,rooms,6,gender_policy,varchar(24),,,NO,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+196,C00194,master.rooms,master,rooms,7,active,boolean,,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+197,C00195,master.rooms,master,rooms,8,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+198,C00196,master.rooms,master,rooms,9,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+199,C00197,master.rooms,master,rooms,10,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+200,C00198,master.rooms,master,rooms,11,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+201,C00199,master.rooms,master,rooms,12,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+202,C00200,master.beds,master,beds,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+203,C00201,master.beds,master,beds,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+204,C00202,master.beds,master,beds,3,room_id,uuid,,master.rooms,YES,NO,,Internal,Referensi ke master.rooms,DRAFT,
+205,C00203,master.beds,master,beds,4,location_id,uuid,,master.locations,YES,NO,,Internal,Referensi ke master.locations,DRAFT,
+206,C00204,master.beds,master,beds,5,bed_code,varchar(60),,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+207,C00205,master.beds,master,beds,6,bed_class,varchar(40),,,NO,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+208,C00206,master.beds,master,beds,7,capability_json,jsonb,,,NO,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+209,C00207,master.beds,master,beds,8,active,boolean,,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+210,C00208,master.beds,master,beds,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+211,C00209,master.beds,master,beds,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+212,C00210,master.beds,master,beds,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+213,C00211,master.beds,master,beds,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+214,C00212,master.beds,master,beds,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+215,C00213,master.practitioners,master,practitioners,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+216,C00214,master.practitioners,master,practitioners,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+217,C00215,master.practitioners,master,practitioners,3,full_name,varchar(250),,,YES,NO,,PII,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+218,C00216,master.practitioners,master,practitioners,4,registration_no,varchar(80),,,NO,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+219,C00217,master.practitioners,master,practitioners,5,gender,varchar(16),,,NO,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,administrative_sex
+220,C00218,master.practitioners,master,practitioners,6,birth_date,date,,,NO,NO,,PII,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+221,C00219,master.practitioners,master,practitioners,7,ihs_practitioner_id,varchar(90),,,NO,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+222,C00220,master.practitioners,master,practitioners,8,active,boolean,,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+223,C00221,master.practitioners,master,practitioners,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+224,C00222,master.practitioners,master,practitioners,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+225,C00223,master.practitioners,master,practitioners,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+226,C00224,master.practitioners,master,practitioners,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+227,C00225,master.practitioners,master,practitioners,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+228,C00226,master.practitioner_identifiers,master,practitioner_identifiers,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+229,C00227,master.practitioner_identifiers,master,practitioner_identifiers,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+230,C00228,master.practitioner_identifiers,master,practitioner_identifiers,3,practitioner_id,uuid,,master.practitioners,YES,NO,,Internal,FK master practitioner (tidak identik user_id),DRAFT,
+231,C00229,master.practitioner_identifiers,master,practitioner_identifiers,4,identifier_system,varchar(160),,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+232,C00230,master.practitioner_identifiers,master,practitioner_identifiers,5,identifier_value,varchar(200),,,YES,NO,,PII,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+233,C00231,master.practitioner_identifiers,master,practitioner_identifiers,6,valid_to,date,,,NO,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+234,C00232,master.practitioner_identifiers,master,practitioner_identifiers,7,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+235,C00233,master.practitioner_identifiers,master,practitioner_identifiers,8,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+236,C00234,master.practitioner_identifiers,master,practitioner_identifiers,9,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+237,C00235,master.practitioner_identifiers,master,practitioner_identifiers,10,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+238,C00236,master.practitioner_identifiers,master,practitioner_identifiers,11,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+239,C00237,master.practitioner_credentials,master,practitioner_credentials,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+240,C00238,master.practitioner_credentials,master,practitioner_credentials,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+241,C00239,master.practitioner_credentials,master,practitioner_credentials,3,practitioner_id,uuid,,master.practitioners,YES,NO,,Internal,FK master practitioner (tidak identik user_id),DRAFT,
+242,C00240,master.practitioner_credentials,master,practitioner_credentials,4,credential_type,varchar(50),,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+243,C00241,master.practitioner_credentials,master,practitioner_credentials,5,credential_number,varchar(120),,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+244,C00242,master.practitioner_credentials,master,practitioner_credentials,6,valid_from,date,,,NO,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+245,C00243,master.practitioner_credentials,master,practitioner_credentials,7,valid_to,date,,,NO,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+246,C00244,master.practitioner_credentials,master,practitioner_credentials,8,issued_by,varchar(200),,,NO,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+247,C00245,master.practitioner_credentials,master,practitioner_credentials,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+248,C00246,master.practitioner_credentials,master,practitioner_credentials,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+249,C00247,master.practitioner_credentials,master,practitioner_credentials,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+250,C00248,master.practitioner_credentials,master,practitioner_credentials,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+251,C00249,master.practitioner_credentials,master,practitioner_credentials,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+252,C00250,master.practitioner_assignments,master,practitioner_assignments,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+253,C00251,master.practitioner_assignments,master,practitioner_assignments,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+254,C00252,master.practitioner_assignments,master,practitioner_assignments,3,practitioner_id,uuid,,master.practitioners,YES,NO,,Internal,FK master practitioner (tidak identik user_id),DRAFT,
+255,C00253,master.practitioner_assignments,master,practitioner_assignments,4,organization_id,uuid,,master.organizations,YES,NO,,Internal,FK organisasi pelayanan (tidak identik tenant_id),DRAFT,
+256,C00254,master.practitioner_assignments,master,practitioner_assignments,5,unit_id,uuid,,master.organization_units,NO,NO,,Internal,Referensi ke master.organization_units,DRAFT,
+257,C00255,master.practitioner_assignments,master,practitioner_assignments,6,specialty_code,varchar(80),,,NO,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+258,C00256,master.practitioner_assignments,master,practitioner_assignments,7,position_code,varchar(80),,,NO,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+259,C00257,master.practitioner_assignments,master,practitioner_assignments,8,valid_from,date,,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+260,C00258,master.practitioner_assignments,master,practitioner_assignments,9,valid_to,date,,,NO,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+261,C00259,master.practitioner_assignments,master,practitioner_assignments,10,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+262,C00260,master.practitioner_assignments,master,practitioner_assignments,11,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+263,C00261,master.practitioner_assignments,master,practitioner_assignments,12,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+264,C00262,master.practitioner_assignments,master,practitioner_assignments,13,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+265,C00263,master.practitioner_assignments,master,practitioner_assignments,14,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+266,C00264,master.service_catalog,master,service_catalog,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+267,C00265,master.service_catalog,master,service_catalog,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+268,C00266,master.service_catalog,master,service_catalog,3,service_code,varchar(80),,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+269,C00267,master.service_catalog,master,service_catalog,4,service_name,varchar(250),,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+270,C00268,master.service_catalog,master,service_catalog,5,service_type,varchar(50),,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+271,C00269,master.service_catalog,master,service_catalog,6,clinical_code_system,varchar(220),,,NO,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+272,C00270,master.service_catalog,master,service_catalog,7,clinical_code,varchar(90),,,NO,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+273,C00271,master.service_catalog,master,service_catalog,8,active,boolean,,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+274,C00272,master.service_catalog,master,service_catalog,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+275,C00273,master.service_catalog,master,service_catalog,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+276,C00274,master.service_catalog,master,service_catalog,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+277,C00275,master.service_catalog,master,service_catalog,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+278,C00276,master.service_catalog,master,service_catalog,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+279,C00277,master.tariff_catalog,master,tariff_catalog,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+280,C00278,master.tariff_catalog,master,tariff_catalog,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+281,C00279,master.tariff_catalog,master,tariff_catalog,3,service_id,uuid,,master.service_catalog,YES,NO,,Internal,Referensi ke master.service_catalog,DRAFT,
+282,C00280,master.tariff_catalog,master,tariff_catalog,4,payer_id,uuid,,billing.payers,NO,NO,,Internal,Referensi ke billing.payers,DRAFT,
+283,C00281,master.tariff_catalog,master,tariff_catalog,5,currency,char(3),,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+284,C00282,master.tariff_catalog,master,tariff_catalog,6,amount,"numeric(18,2)",,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+285,C00283,master.tariff_catalog,master,tariff_catalog,7,effective_from,date,,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+286,C00284,master.tariff_catalog,master,tariff_catalog,8,effective_to,date,,,NO,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+287,C00285,master.tariff_catalog,master,tariff_catalog,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+288,C00286,master.tariff_catalog,master,tariff_catalog,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+289,C00287,master.tariff_catalog,master,tariff_catalog,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+290,C00288,master.tariff_catalog,master,tariff_catalog,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+291,C00289,master.tariff_catalog,master,tariff_catalog,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+292,C00290,master.payment_methods,master,payment_methods,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+293,C00291,master.payment_methods,master,payment_methods,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+294,C00292,master.payment_methods,master,payment_methods,3,method_code,varchar(60),,,YES,YES,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+295,C00293,master.payment_methods,master,payment_methods,4,method_name,varchar(150),,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+296,C00294,master.payment_methods,master,payment_methods,5,channel,varchar(30),,,NO,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+297,C00295,master.payment_methods,master,payment_methods,6,active,boolean,,,YES,NO,,Internal,Atribut domain master; detail nilai/aturan divalidasi bersama SME,DRAFT,
+298,C00296,master.payment_methods,master,payment_methods,7,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+299,C00297,master.payment_methods,master,payment_methods,8,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+300,C00298,master.payment_methods,master,payment_methods,9,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+301,C00299,master.payment_methods,master,payment_methods,10,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+302,C00300,master.payment_methods,master,payment_methods,11,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+303,C00301,terminology.code_systems,terminology,code_systems,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+304,C00302,terminology.code_systems,terminology,code_systems,2,canonical_uri,varchar(300),,,YES,YES,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+305,C00303,terminology.code_systems,terminology,code_systems,3,name,varchar(180),,,YES,NO,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+306,C00304,terminology.code_systems,terminology,code_systems,4,version_label,varchar(80),,,NO,NO,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+307,C00305,terminology.code_systems,terminology,code_systems,5,publisher,varchar(200),,,NO,NO,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+308,C00306,terminology.code_systems,terminology,code_systems,6,active,boolean,,,YES,NO,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+309,C00307,terminology.code_systems,terminology,code_systems,7,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+310,C00308,terminology.code_systems,terminology,code_systems,8,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+311,C00309,terminology.code_systems,terminology,code_systems,9,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+312,C00310,terminology.code_systems,terminology,code_systems,10,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+313,C00311,terminology.code_systems,terminology,code_systems,11,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+314,C00312,terminology.concepts,terminology,concepts,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+315,C00313,terminology.concepts,terminology,concepts,2,code_system_id,uuid,,terminology.code_systems,YES,NO,,Internal,Referensi ke terminology.code_systems,DRAFT,
+316,C00314,terminology.concepts,terminology,concepts,3,code,varchar(100),,,YES,NO,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+317,C00315,terminology.concepts,terminology,concepts,4,display,varchar(350),,,YES,NO,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+318,C00316,terminology.concepts,terminology,concepts,5,definition,text,,,NO,NO,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+319,C00317,terminology.concepts,terminology,concepts,6,inactive,boolean,,,YES,NO,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+320,C00318,terminology.concepts,terminology,concepts,7,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+321,C00319,terminology.concepts,terminology,concepts,8,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+322,C00320,terminology.concepts,terminology,concepts,9,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+323,C00321,terminology.concepts,terminology,concepts,10,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+324,C00322,terminology.concepts,terminology,concepts,11,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+325,C00323,terminology.value_sets,terminology,value_sets,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+326,C00324,terminology.value_sets,terminology,value_sets,2,canonical_uri,varchar(300),,,YES,NO,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+327,C00325,terminology.value_sets,terminology,value_sets,3,name,varchar(200),,,YES,NO,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+328,C00326,terminology.value_sets,terminology,value_sets,4,version_label,varchar(80),,,NO,NO,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+329,C00327,terminology.value_sets,terminology,value_sets,5,status,varchar(24),,,YES,NO,,Internal,Status state machine; transisi dikendalikan domain,DRAFT,
+330,C00328,terminology.value_sets,terminology,value_sets,6,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+331,C00329,terminology.value_sets,terminology,value_sets,7,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+332,C00330,terminology.value_sets,terminology,value_sets,8,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+333,C00331,terminology.value_sets,terminology,value_sets,9,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+334,C00332,terminology.value_sets,terminology,value_sets,10,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+335,C00333,terminology.value_set_members,terminology,value_set_members,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+336,C00334,terminology.value_set_members,terminology,value_set_members,2,value_set_id,uuid,,terminology.value_sets,YES,NO,,Internal,Referensi ke terminology.value_sets,DRAFT,
+337,C00335,terminology.value_set_members,terminology,value_set_members,3,concept_id,uuid,,terminology.concepts,YES,NO,,Internal,Referensi ke terminology.concepts,DRAFT,
+338,C00336,terminology.value_set_members,terminology,value_set_members,4,valid_from,date,,,NO,NO,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+339,C00337,terminology.value_set_members,terminology,value_set_members,5,valid_to,date,,,NO,NO,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+340,C00338,terminology.value_set_members,terminology,value_set_members,6,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+341,C00339,terminology.value_set_members,terminology,value_set_members,7,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+342,C00340,terminology.value_set_members,terminology,value_set_members,8,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+343,C00341,terminology.value_set_members,terminology,value_set_members,9,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+344,C00342,terminology.value_set_members,terminology,value_set_members,10,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+345,C00343,terminology.code_mappings,terminology,code_mappings,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+346,C00344,terminology.code_mappings,terminology,code_mappings,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+347,C00345,terminology.code_mappings,terminology,code_mappings,3,source_system,varchar(300),,,YES,NO,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+348,C00346,terminology.code_mappings,terminology,code_mappings,4,source_code,varchar(100),,,YES,NO,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+349,C00347,terminology.code_mappings,terminology,code_mappings,5,target_system,varchar(300),,,YES,NO,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+350,C00348,terminology.code_mappings,terminology,code_mappings,6,target_code,varchar(100),,,YES,NO,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+351,C00349,terminology.code_mappings,terminology,code_mappings,7,map_quality,varchar(24),,,YES,NO,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+352,C00350,terminology.code_mappings,terminology,code_mappings,8,valid_from,date,,,NO,NO,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+353,C00351,terminology.code_mappings,terminology,code_mappings,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+354,C00352,terminology.code_mappings,terminology,code_mappings,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+355,C00353,terminology.code_mappings,terminology,code_mappings,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+356,C00354,terminology.code_mappings,terminology,code_mappings,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+357,C00355,terminology.code_mappings,terminology,code_mappings,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+358,C00356,terminology.units,terminology,units,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+359,C00357,terminology.units,terminology,units,2,ucum_code,varchar(70),,,YES,YES,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+360,C00358,terminology.units,terminology,units,3,unit_label,varchar(120),,,YES,NO,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+361,C00359,terminology.units,terminology,units,4,quantity_kind,varchar(80),,,NO,NO,,Internal,Atribut domain terminology; detail nilai/aturan divalidasi bersama SME,DRAFT,
+362,C00360,terminology.units,terminology,units,5,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+363,C00361,terminology.units,terminology,units,6,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+364,C00362,terminology.units,terminology,units,7,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+365,C00363,terminology.units,terminology,units,8,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+366,C00364,terminology.units,terminology,units,9,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+367,C00365,patient.patients,patient,patients,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+368,C00366,patient.patients,patient,patients,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+369,C00367,patient.patients,patient,patients,3,mrn,varchar(80),,,YES,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+370,C00368,patient.patients,patient,patients,4,full_name,varchar(250),,,YES,NO,,PII,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+371,C00369,patient.patients,patient,patients,5,birth_date,date,,,NO,NO,,PII,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+372,C00370,patient.patients,patient,patients,6,administrative_sex,varchar(20),,,NO,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,administrative_sex
+373,C00371,patient.patients,patient,patients,7,deceased_at,timestamptz,,,NO,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+374,C00372,patient.patients,patient,patients,8,lifecycle_status,varchar(24),,,YES,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+375,C00373,patient.patients,patient,patients,9,is_merged,boolean,,,YES,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+376,C00374,patient.patients,patient,patients,10,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+377,C00375,patient.patients,patient,patients,11,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+378,C00376,patient.patients,patient,patients,12,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+379,C00377,patient.patients,patient,patients,13,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+380,C00378,patient.patients,patient,patients,14,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+381,C00379,patient.patient_identifiers,patient,patient_identifiers,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+382,C00380,patient.patient_identifiers,patient,patient_identifiers,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+383,C00381,patient.patient_identifiers,patient,patient_identifiers,3,patient_id,uuid,,patient.patients,YES,NO,,Klinis,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+384,C00382,patient.patient_identifiers,patient,patient_identifiers,4,identifier_system,varchar(240),,,YES,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+385,C00383,patient.patient_identifiers,patient,patient_identifiers,5,identifier_value,varchar(200),,,YES,NO,,PII,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+386,C00384,patient.patient_identifiers,patient,patient_identifiers,6,issuer_organization_id,uuid,,master.organizations,NO,NO,,Klinis,Referensi ke master.organizations,DRAFT,
+387,C00385,patient.patient_identifiers,patient,patient_identifiers,7,valid_from,date,,,NO,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+388,C00386,patient.patient_identifiers,patient,patient_identifiers,8,valid_to,date,,,NO,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+389,C00387,patient.patient_identifiers,patient,patient_identifiers,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+390,C00388,patient.patient_identifiers,patient,patient_identifiers,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+391,C00389,patient.patient_identifiers,patient,patient_identifiers,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+392,C00390,patient.patient_identifiers,patient,patient_identifiers,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+393,C00391,patient.patient_identifiers,patient,patient_identifiers,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+394,C00392,patient.patient_contacts,patient,patient_contacts,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+395,C00393,patient.patient_contacts,patient,patient_contacts,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+396,C00394,patient.patient_contacts,patient,patient_contacts,3,patient_id,uuid,,patient.patients,YES,NO,,Klinis,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+397,C00395,patient.patient_contacts,patient,patient_contacts,4,contact_type,varchar(32),,,YES,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+398,C00396,patient.patient_contacts,patient,patient_contacts,5,value_ciphertext,bytea,,,NO,NO,,Sangat sensitif,PII terenkripsi; pencarian melalui index hash terpisah dan berizin,DRAFT,
+399,C00397,patient.patient_contacts,patient,patient_contacts,6,value_hash,varchar(128),,,NO,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+400,C00398,patient.patient_contacts,patient,patient_contacts,7,preferred,boolean,,,YES,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+401,C00399,patient.patient_contacts,patient,patient_contacts,8,verified_at,timestamptz,,,NO,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+402,C00400,patient.patient_contacts,patient,patient_contacts,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+403,C00401,patient.patient_contacts,patient,patient_contacts,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+404,C00402,patient.patient_contacts,patient,patient_contacts,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+405,C00403,patient.patient_contacts,patient,patient_contacts,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+406,C00404,patient.patient_contacts,patient,patient_contacts,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+407,C00405,patient.related_persons,patient,related_persons,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+408,C00406,patient.related_persons,patient,related_persons,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+409,C00407,patient.related_persons,patient,related_persons,3,patient_id,uuid,,patient.patients,YES,NO,,Klinis,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+410,C00408,patient.related_persons,patient,related_persons,4,full_name,varchar(250),,,YES,NO,,PII,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+411,C00409,patient.related_persons,patient,related_persons,5,relationship_code,varchar(50),,,NO,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+412,C00410,patient.related_persons,patient,related_persons,6,phone_ciphertext,bytea,,,NO,NO,,Sangat sensitif,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+413,C00411,patient.related_persons,patient,related_persons,7,identifier_hash,varchar(128),,,NO,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+414,C00412,patient.related_persons,patient,related_persons,8,is_emergency_contact,boolean,,,YES,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+415,C00413,patient.related_persons,patient,related_persons,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+416,C00414,patient.related_persons,patient,related_persons,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+417,C00415,patient.related_persons,patient,related_persons,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+418,C00416,patient.related_persons,patient,related_persons,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+419,C00417,patient.related_persons,patient,related_persons,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+420,C00418,patient.patient_merges,patient,patient_merges,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+421,C00419,patient.patient_merges,patient,patient_merges,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+422,C00420,patient.patient_merges,patient,patient_merges,3,source_patient_id,uuid,,patient.patients,YES,NO,,Klinis,Referensi ke patient.patients,DRAFT,
+423,C00421,patient.patient_merges,patient,patient_merges,4,target_patient_id,uuid,,patient.patients,YES,NO,,Klinis,Referensi ke patient.patients,DRAFT,
+424,C00422,patient.patient_merges,patient,patient_merges,5,reason,text,,,YES,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+425,C00423,patient.patient_merges,patient,patient_merges,6,approved_by,uuid,,identity.users,NO,NO,,Klinis,Referensi ke identity.users,DRAFT,
+426,C00424,patient.patient_merges,patient,patient_merges,7,merged_at,timestamptz,,,YES,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+427,C00425,patient.patient_merges,patient,patient_merges,8,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+428,C00426,patient.patient_merges,patient,patient_merges,9,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+429,C00427,patient.patient_flags,patient,patient_flags,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+430,C00428,patient.patient_flags,patient,patient_flags,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+431,C00429,patient.patient_flags,patient,patient_flags,3,patient_id,uuid,,patient.patients,YES,NO,,Klinis,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+432,C00430,patient.patient_flags,patient,patient_flags,4,flag_kind,varchar(70),,,YES,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+433,C00431,patient.patient_flags,patient,patient_flags,5,severity,varchar(20),,,NO,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+434,C00432,patient.patient_flags,patient,patient_flags,6,description,text,,,NO,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+435,C00433,patient.patient_flags,patient,patient_flags,7,active_from,timestamptz,,,YES,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+436,C00434,patient.patient_flags,patient,patient_flags,8,active_until,timestamptz,,,NO,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+437,C00435,patient.patient_flags,patient,patient_flags,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+438,C00436,patient.patient_flags,patient,patient_flags,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+439,C00437,patient.patient_flags,patient,patient_flags,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+440,C00438,patient.patient_flags,patient,patient_flags,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+441,C00439,patient.patient_flags,patient,patient_flags,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+442,C00440,patient.patient_identity_reviews,patient,patient_identity_reviews,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+443,C00441,patient.patient_identity_reviews,patient,patient_identity_reviews,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+444,C00442,patient.patient_identity_reviews,patient,patient_identity_reviews,3,patient_id,uuid,,patient.patients,YES,NO,,Klinis,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+445,C00443,patient.patient_identity_reviews,patient,patient_identity_reviews,4,candidate_patient_id,uuid,,patient.patients,NO,NO,,Klinis,Referensi ke patient.patients,DRAFT,
+446,C00444,patient.patient_identity_reviews,patient,patient_identity_reviews,5,match_score,"numeric(6,3)",,,NO,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+447,C00445,patient.patient_identity_reviews,patient,patient_identity_reviews,6,decision,varchar(24),,,YES,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+448,C00446,patient.patient_identity_reviews,patient,patient_identity_reviews,7,reviewed_by,uuid,,identity.users,NO,NO,,Klinis,Referensi ke identity.users,DRAFT,
+449,C00447,patient.patient_identity_reviews,patient,patient_identity_reviews,8,reviewed_at,timestamptz,,,NO,NO,,Klinis,Atribut domain patient; detail nilai/aturan divalidasi bersama SME,DRAFT,
+450,C00448,patient.patient_identity_reviews,patient,patient_identity_reviews,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+451,C00449,patient.patient_identity_reviews,patient,patient_identity_reviews,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+452,C00450,patient.patient_identity_reviews,patient,patient_identity_reviews,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+453,C00451,patient.patient_identity_reviews,patient,patient_identity_reviews,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+454,C00452,patient.patient_identity_reviews,patient,patient_identity_reviews,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+455,C00453,scheduling.schedules,scheduling,schedules,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+456,C00454,scheduling.schedules,scheduling,schedules,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+457,C00455,scheduling.schedules,scheduling,schedules,3,organization_id,uuid,,master.organizations,YES,NO,,Internal,FK organisasi pelayanan (tidak identik tenant_id),DRAFT,
+458,C00456,scheduling.schedules,scheduling,schedules,4,service_id,uuid,,master.service_catalog,NO,NO,,Internal,Referensi ke master.service_catalog,DRAFT,
+459,C00457,scheduling.schedules,scheduling,schedules,5,practitioner_id,uuid,,master.practitioners,NO,NO,,Internal,FK master practitioner (tidak identik user_id),DRAFT,
+460,C00458,scheduling.schedules,scheduling,schedules,6,unit_id,uuid,,master.organization_units,NO,NO,,Internal,Referensi ke master.organization_units,DRAFT,
+461,C00459,scheduling.schedules,scheduling,schedules,7,valid_from,date,,,YES,NO,,Internal,Atribut domain scheduling; detail nilai/aturan divalidasi bersama SME,DRAFT,
+462,C00460,scheduling.schedules,scheduling,schedules,8,valid_to,date,,,NO,NO,,Internal,Atribut domain scheduling; detail nilai/aturan divalidasi bersama SME,DRAFT,
+463,C00461,scheduling.schedules,scheduling,schedules,9,status,varchar(20),,,YES,NO,,Internal,Status state machine; transisi dikendalikan domain,DRAFT,
+464,C00462,scheduling.schedules,scheduling,schedules,10,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+465,C00463,scheduling.schedules,scheduling,schedules,11,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+466,C00464,scheduling.schedules,scheduling,schedules,12,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+467,C00465,scheduling.schedules,scheduling,schedules,13,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+468,C00466,scheduling.schedules,scheduling,schedules,14,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+469,C00467,scheduling.slots,scheduling,slots,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+470,C00468,scheduling.slots,scheduling,slots,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+471,C00469,scheduling.slots,scheduling,slots,3,schedule_id,uuid,,scheduling.schedules,YES,NO,,Internal,Referensi ke scheduling.schedules,DRAFT,
+472,C00470,scheduling.slots,scheduling,slots,4,start_at,timestamptz,,,YES,NO,,Internal,Atribut domain scheduling; detail nilai/aturan divalidasi bersama SME,DRAFT,
+473,C00471,scheduling.slots,scheduling,slots,5,end_at,timestamptz,,,YES,NO,,Internal,Atribut domain scheduling; detail nilai/aturan divalidasi bersama SME,DRAFT,
+474,C00472,scheduling.slots,scheduling,slots,6,capacity,int,,,YES,NO,,Internal,Atribut domain scheduling; detail nilai/aturan divalidasi bersama SME,DRAFT,
+475,C00473,scheduling.slots,scheduling,slots,7,booked,int,,,YES,NO,,Internal,Atribut domain scheduling; detail nilai/aturan divalidasi bersama SME,DRAFT,
+476,C00474,scheduling.slots,scheduling,slots,8,status,varchar(24),,,YES,NO,,Internal,Status state machine; transisi dikendalikan domain,DRAFT,
+477,C00475,scheduling.slots,scheduling,slots,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+478,C00476,scheduling.slots,scheduling,slots,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+479,C00477,scheduling.slots,scheduling,slots,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+480,C00478,scheduling.slots,scheduling,slots,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+481,C00479,scheduling.slots,scheduling,slots,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+482,C00480,scheduling.appointments,scheduling,appointments,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+483,C00481,scheduling.appointments,scheduling,appointments,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+484,C00482,scheduling.appointments,scheduling,appointments,3,patient_id,uuid,,patient.patients,YES,NO,,Internal,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+485,C00483,scheduling.appointments,scheduling,appointments,4,slot_id,uuid,,scheduling.slots,NO,NO,,Internal,Referensi ke scheduling.slots,DRAFT,
+486,C00484,scheduling.appointments,scheduling,appointments,5,service_id,uuid,,master.service_catalog,NO,NO,,Internal,Referensi ke master.service_catalog,DRAFT,
+487,C00485,scheduling.appointments,scheduling,appointments,6,practitioner_id,uuid,,master.practitioners,NO,NO,,Internal,FK master practitioner (tidak identik user_id),DRAFT,
+488,C00486,scheduling.appointments,scheduling,appointments,7,start_at,timestamptz,,,YES,NO,,Internal,Atribut domain scheduling; detail nilai/aturan divalidasi bersama SME,DRAFT,
+489,C00487,scheduling.appointments,scheduling,appointments,8,end_at,timestamptz,,,NO,NO,,Internal,Atribut domain scheduling; detail nilai/aturan divalidasi bersama SME,DRAFT,
+490,C00488,scheduling.appointments,scheduling,appointments,9,status,varchar(24),,,YES,NO,,Internal,Status state machine; transisi dikendalikan domain,DRAFT,appointment_status
+491,C00489,scheduling.appointments,scheduling,appointments,10,booking_channel,varchar(50),,,NO,NO,,Internal,Atribut domain scheduling; detail nilai/aturan divalidasi bersama SME,DRAFT,
+492,C00490,scheduling.appointments,scheduling,appointments,11,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+493,C00491,scheduling.appointments,scheduling,appointments,12,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+494,C00492,scheduling.appointments,scheduling,appointments,13,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+495,C00493,scheduling.appointments,scheduling,appointments,14,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+496,C00494,scheduling.appointments,scheduling,appointments,15,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+497,C00495,scheduling.queue_tickets,scheduling,queue_tickets,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+498,C00496,scheduling.queue_tickets,scheduling,queue_tickets,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+499,C00497,scheduling.queue_tickets,scheduling,queue_tickets,3,patient_id,uuid,,patient.patients,NO,NO,,Internal,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+500,C00498,scheduling.queue_tickets,scheduling,queue_tickets,4,appointment_id,uuid,,scheduling.appointments,NO,NO,,Internal,Referensi ke scheduling.appointments,DRAFT,
+501,C00499,scheduling.queue_tickets,scheduling,queue_tickets,5,organization_id,uuid,,master.organizations,YES,NO,,Internal,FK organisasi pelayanan (tidak identik tenant_id),DRAFT,
+502,C00500,scheduling.queue_tickets,scheduling,queue_tickets,6,service_date,date,,,YES,NO,,Internal,Atribut domain scheduling; detail nilai/aturan divalidasi bersama SME,DRAFT,
+503,C00501,scheduling.queue_tickets,scheduling,queue_tickets,7,queue_prefix,varchar(10),,,NO,NO,,Internal,Atribut domain scheduling; detail nilai/aturan divalidasi bersama SME,DRAFT,
+504,C00502,scheduling.queue_tickets,scheduling,queue_tickets,8,queue_number,int,,,YES,NO,,Internal,Atribut domain scheduling; detail nilai/aturan divalidasi bersama SME,DRAFT,
+505,C00503,scheduling.queue_tickets,scheduling,queue_tickets,9,status,varchar(24),,,YES,NO,,Internal,Status state machine; transisi dikendalikan domain,DRAFT,queue_status
+506,C00504,scheduling.queue_tickets,scheduling,queue_tickets,10,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+507,C00505,scheduling.queue_tickets,scheduling,queue_tickets,11,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+508,C00506,scheduling.queue_tickets,scheduling,queue_tickets,12,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+509,C00507,scheduling.queue_tickets,scheduling,queue_tickets,13,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+510,C00508,scheduling.queue_tickets,scheduling,queue_tickets,14,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+511,C00509,scheduling.queue_events,scheduling,queue_events,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+512,C00510,scheduling.queue_events,scheduling,queue_events,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+513,C00511,scheduling.queue_events,scheduling,queue_events,3,queue_ticket_id,uuid,,scheduling.queue_tickets,YES,NO,,Internal,Referensi ke scheduling.queue_tickets,DRAFT,
+514,C00512,scheduling.queue_events,scheduling,queue_events,4,event_type,varchar(40),,,YES,NO,,Internal,Atribut domain scheduling; detail nilai/aturan divalidasi bersama SME,DRAFT,
+515,C00513,scheduling.queue_events,scheduling,queue_events,5,event_at,timestamptz,,,YES,NO,,Internal,Atribut domain scheduling; detail nilai/aturan divalidasi bersama SME,DRAFT,
+516,C00514,scheduling.queue_events,scheduling,queue_events,6,counter_code,varchar(30),,,NO,NO,,Internal,Atribut domain scheduling; detail nilai/aturan divalidasi bersama SME,DRAFT,
+517,C00515,scheduling.queue_events,scheduling,queue_events,7,operator_user_id,uuid,,identity.users,NO,NO,,Internal,Referensi ke identity.users,DRAFT,
+518,C00516,scheduling.queue_events,scheduling,queue_events,8,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+519,C00517,scheduling.queue_events,scheduling,queue_events,9,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+520,C00518,scheduling.kiosk_checkins,scheduling,kiosk_checkins,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+521,C00519,scheduling.kiosk_checkins,scheduling,kiosk_checkins,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+522,C00520,scheduling.kiosk_checkins,scheduling,kiosk_checkins,3,appointment_id,uuid,,scheduling.appointments,NO,NO,,Internal,Referensi ke scheduling.appointments,DRAFT,
+523,C00521,scheduling.kiosk_checkins,scheduling,kiosk_checkins,4,queue_ticket_id,uuid,,scheduling.queue_tickets,NO,NO,,Internal,Referensi ke scheduling.queue_tickets,DRAFT,
+524,C00522,scheduling.kiosk_checkins,scheduling,kiosk_checkins,5,checked_in_at,timestamptz,,,YES,NO,,Internal,Atribut domain scheduling; detail nilai/aturan divalidasi bersama SME,DRAFT,
+525,C00523,scheduling.kiosk_checkins,scheduling,kiosk_checkins,6,channel,varchar(30),,,YES,NO,,Internal,Atribut domain scheduling; detail nilai/aturan divalidasi bersama SME,DRAFT,
+526,C00524,scheduling.kiosk_checkins,scheduling,kiosk_checkins,7,device_code,varchar(100),,,NO,NO,,Internal,Atribut domain scheduling; detail nilai/aturan divalidasi bersama SME,DRAFT,
+527,C00525,scheduling.kiosk_checkins,scheduling,kiosk_checkins,8,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+528,C00526,scheduling.kiosk_checkins,scheduling,kiosk_checkins,9,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+529,C00527,scheduling.kiosk_checkins,scheduling,kiosk_checkins,10,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+530,C00528,scheduling.kiosk_checkins,scheduling,kiosk_checkins,11,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+531,C00529,scheduling.kiosk_checkins,scheduling,kiosk_checkins,12,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+532,C00530,encounter.episodes_of_care,encounter,episodes_of_care,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+533,C00531,encounter.episodes_of_care,encounter,episodes_of_care,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+534,C00532,encounter.episodes_of_care,encounter,episodes_of_care,3,patient_id,uuid,,patient.patients,YES,NO,,Internal,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+535,C00533,encounter.episodes_of_care,encounter,episodes_of_care,4,managing_organization_id,uuid,,master.organizations,YES,NO,,Internal,Referensi ke master.organizations,DRAFT,
+536,C00534,encounter.episodes_of_care,encounter,episodes_of_care,5,episode_type,varchar(50),,,YES,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+537,C00535,encounter.episodes_of_care,encounter,episodes_of_care,6,status,varchar(24),,,YES,NO,,Internal,Status state machine; transisi dikendalikan domain,DRAFT,
+538,C00536,encounter.episodes_of_care,encounter,episodes_of_care,7,started_at,timestamptz,,,NO,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+539,C00537,encounter.episodes_of_care,encounter,episodes_of_care,8,ended_at,timestamptz,,,NO,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+540,C00538,encounter.episodes_of_care,encounter,episodes_of_care,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+541,C00539,encounter.episodes_of_care,encounter,episodes_of_care,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+542,C00540,encounter.episodes_of_care,encounter,episodes_of_care,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+543,C00541,encounter.episodes_of_care,encounter,episodes_of_care,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+544,C00542,encounter.episodes_of_care,encounter,episodes_of_care,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+545,C00543,encounter.registrations,encounter,registrations,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+546,C00544,encounter.registrations,encounter,registrations,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+547,C00545,encounter.registrations,encounter,registrations,3,patient_id,uuid,,patient.patients,YES,NO,,Internal,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+548,C00546,encounter.registrations,encounter,registrations,4,appointment_id,uuid,,scheduling.appointments,NO,NO,,Internal,Referensi ke scheduling.appointments,DRAFT,
+549,C00547,encounter.registrations,encounter,registrations,5,organization_id,uuid,,master.organizations,YES,NO,,Internal,FK organisasi pelayanan (tidak identik tenant_id),DRAFT,
+550,C00548,encounter.registrations,encounter,registrations,6,registration_number,varchar(90),,,YES,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+551,C00549,encounter.registrations,encounter,registrations,7,registered_at,timestamptz,,,YES,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
