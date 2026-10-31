@@ -1,0 +1,1004 @@
+SOURCE: Desain_Database_SIMRS_FHIR_First_Tanpa_FHIR_Server_v1.xlsx
+STATUS: Text extraction only, NOT the original XLSX. Formula/format/validation may be lost.
+PART: 02, Lines: 1001-2000 of 7562
+
+552,C00550,encounter.registrations,encounter,registrations,8,status,varchar(24),,,YES,NO,,Internal,Status state machine; transisi dikendalikan domain,DRAFT,
+553,C00551,encounter.registrations,encounter,registrations,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+554,C00552,encounter.registrations,encounter,registrations,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+555,C00553,encounter.registrations,encounter,registrations,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+556,C00554,encounter.registrations,encounter,registrations,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+557,C00555,encounter.registrations,encounter,registrations,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+558,C00556,encounter.encounters,encounter,encounters,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+559,C00557,encounter.encounters,encounter,encounters,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+560,C00558,encounter.encounters,encounter,encounters,3,patient_id,uuid,,patient.patients,YES,NO,,Internal,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+561,C00559,encounter.encounters,encounter,encounters,4,registration_id,uuid,,encounter.registrations,NO,NO,,Internal,Referensi ke encounter.registrations,DRAFT,
+562,C00560,encounter.encounters,encounter,encounters,5,episode_id,uuid,,encounter.episodes_of_care,NO,NO,,Internal,Referensi ke encounter.episodes_of_care,DRAFT,
+563,C00561,encounter.encounters,encounter,encounters,6,organization_id,uuid,,master.organizations,YES,NO,,Internal,FK organisasi pelayanan (tidak identik tenant_id),DRAFT,
+564,C00562,encounter.encounters,encounter,encounters,7,service_unit_id,uuid,,master.organization_units,NO,NO,,Internal,Referensi ke master.organization_units,DRAFT,
+565,C00563,encounter.encounters,encounter,encounters,8,encounter_class,varchar(24),,,YES,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+566,C00564,encounter.encounters,encounter,encounters,9,status,varchar(24),,,YES,NO,,Internal,Status state machine; transisi dikendalikan domain,DRAFT,encounter_status
+567,C00565,encounter.encounters,encounter,encounters,10,started_at,timestamptz,,,NO,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+568,C00566,encounter.encounters,encounter,encounters,11,ended_at,timestamptz,,,NO,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+569,C00567,encounter.encounters,encounter,encounters,12,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+570,C00568,encounter.encounters,encounter,encounters,13,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+571,C00569,encounter.encounters,encounter,encounters,14,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+572,C00570,encounter.encounters,encounter,encounters,15,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+573,C00571,encounter.encounters,encounter,encounters,16,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+574,C00572,encounter.encounter_participants,encounter,encounter_participants,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+575,C00573,encounter.encounter_participants,encounter,encounter_participants,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+576,C00574,encounter.encounter_participants,encounter,encounter_participants,3,encounter_id,uuid,,encounter.encounters,YES,NO,,Internal,FK encounter internal; wajib valid untuk rekam klinis kunjungan,DRAFT,
+577,C00575,encounter.encounter_participants,encounter,encounter_participants,4,practitioner_id,uuid,,master.practitioners,YES,NO,,Internal,FK master practitioner (tidak identik user_id),DRAFT,
+578,C00576,encounter.encounter_participants,encounter,encounter_participants,5,participant_role,varchar(60),,,YES,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+579,C00577,encounter.encounter_participants,encounter,encounter_participants,6,start_at,timestamptz,,,YES,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+580,C00578,encounter.encounter_participants,encounter,encounter_participants,7,end_at,timestamptz,,,NO,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+581,C00579,encounter.encounter_participants,encounter,encounter_participants,8,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+582,C00580,encounter.encounter_participants,encounter,encounter_participants,9,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+583,C00581,encounter.encounter_participants,encounter,encounter_participants,10,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+584,C00582,encounter.encounter_participants,encounter,encounter_participants,11,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+585,C00583,encounter.encounter_participants,encounter,encounter_participants,12,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+586,C00584,encounter.admissions,encounter,admissions,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+587,C00585,encounter.admissions,encounter,admissions,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+588,C00586,encounter.admissions,encounter,admissions,3,encounter_id,uuid,,encounter.encounters,YES,NO,,Internal,FK encounter internal; wajib valid untuk rekam klinis kunjungan,DRAFT,
+589,C00587,encounter.admissions,encounter,admissions,4,admission_at,timestamptz,,,YES,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+590,C00588,encounter.admissions,encounter,admissions,5,source,varchar(40),,,NO,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+591,C00589,encounter.admissions,encounter,admissions,6,admission_status,varchar(24),,,YES,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+592,C00590,encounter.admissions,encounter,admissions,7,planned_discharge_at,timestamptz,,,NO,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+593,C00591,encounter.admissions,encounter,admissions,8,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+594,C00592,encounter.admissions,encounter,admissions,9,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+595,C00593,encounter.admissions,encounter,admissions,10,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+596,C00594,encounter.admissions,encounter,admissions,11,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+597,C00595,encounter.admissions,encounter,admissions,12,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+598,C00596,encounter.bed_assignments,encounter,bed_assignments,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+599,C00597,encounter.bed_assignments,encounter,bed_assignments,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+600,C00598,encounter.bed_assignments,encounter,bed_assignments,3,encounter_id,uuid,,encounter.encounters,YES,NO,,Internal,FK encounter internal; wajib valid untuk rekam klinis kunjungan,DRAFT,
+601,C00599,encounter.bed_assignments,encounter,bed_assignments,4,bed_id,uuid,,master.beds,YES,NO,,Internal,Referensi ke master.beds,DRAFT,
+602,C00600,encounter.bed_assignments,encounter,bed_assignments,5,occupied_from,timestamptz,,,YES,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+603,C00601,encounter.bed_assignments,encounter,bed_assignments,6,occupied_until,timestamptz,,,NO,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+604,C00602,encounter.bed_assignments,encounter,bed_assignments,7,assignment_status,varchar(24),,,YES,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+605,C00603,encounter.bed_assignments,encounter,bed_assignments,8,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+606,C00604,encounter.bed_assignments,encounter,bed_assignments,9,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+607,C00605,encounter.bed_assignments,encounter,bed_assignments,10,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+608,C00606,encounter.bed_assignments,encounter,bed_assignments,11,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+609,C00607,encounter.bed_assignments,encounter,bed_assignments,12,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+610,C00608,encounter.bed_movements,encounter,bed_movements,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+611,C00609,encounter.bed_movements,encounter,bed_movements,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+612,C00610,encounter.bed_movements,encounter,bed_movements,3,encounter_id,uuid,,encounter.encounters,YES,NO,,Internal,FK encounter internal; wajib valid untuk rekam klinis kunjungan,DRAFT,
+613,C00611,encounter.bed_movements,encounter,bed_movements,4,from_bed_id,uuid,,master.beds,NO,NO,,Internal,Referensi ke master.beds,DRAFT,
+614,C00612,encounter.bed_movements,encounter,bed_movements,5,to_bed_id,uuid,,master.beds,NO,NO,,Internal,Referensi ke master.beds,DRAFT,
+615,C00613,encounter.bed_movements,encounter,bed_movements,6,moved_at,timestamptz,,,YES,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+616,C00614,encounter.bed_movements,encounter,bed_movements,7,reason,varchar(120),,,NO,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+617,C00615,encounter.bed_movements,encounter,bed_movements,8,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+618,C00616,encounter.bed_movements,encounter,bed_movements,9,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+619,C00617,encounter.discharges,encounter,discharges,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+620,C00618,encounter.discharges,encounter,discharges,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+621,C00619,encounter.discharges,encounter,discharges,3,encounter_id,uuid,,encounter.encounters,YES,NO,,Internal,FK encounter internal; wajib valid untuk rekam klinis kunjungan,DRAFT,
+622,C00620,encounter.discharges,encounter,discharges,4,discharge_disposition,varchar(40),,,YES,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+623,C00621,encounter.discharges,encounter,discharges,5,discharge_at,timestamptz,,,YES,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+624,C00622,encounter.discharges,encounter,discharges,6,authorized_by,uuid,,master.practitioners,NO,NO,,Internal,Referensi ke master.practitioners,DRAFT,
+625,C00623,encounter.discharges,encounter,discharges,7,summary_document_id,uuid,,clinical.clinical_documents,NO,NO,,Internal,Referensi ke clinical.clinical_documents,DRAFT,
+626,C00624,encounter.discharges,encounter,discharges,8,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+627,C00625,encounter.discharges,encounter,discharges,9,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+628,C00626,encounter.discharges,encounter,discharges,10,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+629,C00627,encounter.discharges,encounter,discharges,11,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+630,C00628,encounter.discharges,encounter,discharges,12,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+631,C00629,encounter.encounter_payers,encounter,encounter_payers,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+632,C00630,encounter.encounter_payers,encounter,encounter_payers,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+633,C00631,encounter.encounter_payers,encounter,encounter_payers,3,encounter_id,uuid,,encounter.encounters,YES,NO,,Internal,FK encounter internal; wajib valid untuk rekam klinis kunjungan,DRAFT,
+634,C00632,encounter.encounter_payers,encounter,encounter_payers,4,coverage_id,uuid,,billing.coverages,NO,NO,,Internal,Referensi ke billing.coverages,DRAFT,
+635,C00633,encounter.encounter_payers,encounter,encounter_payers,5,priority_order,int,,,YES,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+636,C00634,encounter.encounter_payers,encounter,encounter_payers,6,authorization_id,uuid,,billing.coverage_authorizations,NO,NO,,Internal,Referensi ke billing.coverage_authorizations,DRAFT,
+637,C00635,encounter.encounter_payers,encounter,encounter_payers,7,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+638,C00636,encounter.encounter_payers,encounter,encounter_payers,8,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+639,C00637,encounter.encounter_payers,encounter,encounter_payers,9,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+640,C00638,encounter.encounter_payers,encounter,encounter_payers,10,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+641,C00639,encounter.encounter_payers,encounter,encounter_payers,11,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+642,C00640,encounter.emergency_triages,encounter,emergency_triages,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+643,C00641,encounter.emergency_triages,encounter,emergency_triages,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+644,C00642,encounter.emergency_triages,encounter,emergency_triages,3,encounter_id,uuid,,encounter.encounters,YES,NO,,Internal,FK encounter internal; wajib valid untuk rekam klinis kunjungan,DRAFT,
+645,C00643,encounter.emergency_triages,encounter,emergency_triages,4,triage_code,varchar(40),,,YES,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+646,C00644,encounter.emergency_triages,encounter,emergency_triages,5,triaged_at,timestamptz,,,YES,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+647,C00645,encounter.emergency_triages,encounter,emergency_triages,6,triaged_by,uuid,,master.practitioners,NO,NO,,Internal,Referensi ke master.practitioners,DRAFT,
+648,C00646,encounter.emergency_triages,encounter,emergency_triages,7,complaint,text,,,NO,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+649,C00647,encounter.emergency_triages,encounter,emergency_triages,8,reassessment_due_at,timestamptz,,,NO,NO,,Internal,Atribut domain encounter; detail nilai/aturan divalidasi bersama SME,DRAFT,
+650,C00648,encounter.emergency_triages,encounter,emergency_triages,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+651,C00649,encounter.emergency_triages,encounter,emergency_triages,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+652,C00650,encounter.emergency_triages,encounter,emergency_triages,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+653,C00651,encounter.emergency_triages,encounter,emergency_triages,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+654,C00652,encounter.emergency_triages,encounter,emergency_triages,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+655,C00653,consent.consent_records,consent,consent_records,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+656,C00654,consent.consent_records,consent,consent_records,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+657,C00655,consent.consent_records,consent,consent_records,3,patient_id,uuid,,patient.patients,YES,NO,,Klinis,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+658,C00656,consent.consent_records,consent,consent_records,4,encounter_id,uuid,,encounter.encounters,NO,NO,,Klinis,FK encounter internal; wajib valid untuk rekam klinis kunjungan,DRAFT,
+659,C00657,consent.consent_records,consent,consent_records,5,policy_id,uuid,,consent.consent_policies,NO,NO,,Klinis,Referensi ke consent.consent_policies,DRAFT,
+660,C00658,consent.consent_records,consent,consent_records,6,consent_kind,varchar(50),,,YES,NO,,Klinis,Atribut domain consent; detail nilai/aturan divalidasi bersama SME,DRAFT,
+661,C00659,consent.consent_records,consent,consent_records,7,status,varchar(24),,,YES,NO,,Klinis,Status state machine; transisi dikendalikan domain,DRAFT,consent_status
+662,C00660,consent.consent_records,consent,consent_records,8,effective_from,timestamptz,,,NO,NO,,Klinis,Atribut domain consent; detail nilai/aturan divalidasi bersama SME,DRAFT,
+663,C00661,consent.consent_records,consent,consent_records,9,effective_to,timestamptz,,,NO,NO,,Klinis,Atribut domain consent; detail nilai/aturan divalidasi bersama SME,DRAFT,
+664,C00662,consent.consent_records,consent,consent_records,10,given_at,timestamptz,,,NO,NO,,Klinis,Atribut domain consent; detail nilai/aturan divalidasi bersama SME,DRAFT,
+665,C00663,consent.consent_records,consent,consent_records,11,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+666,C00664,consent.consent_records,consent,consent_records,12,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+667,C00665,consent.consent_records,consent,consent_records,13,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+668,C00666,consent.consent_records,consent,consent_records,14,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+669,C00667,consent.consent_records,consent,consent_records,15,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+670,C00668,consent.consent_policies,consent,consent_policies,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+671,C00669,consent.consent_policies,consent,consent_policies,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+672,C00670,consent.consent_policies,consent,consent_policies,3,policy_code,varchar(100),,,YES,NO,,Klinis,Atribut domain consent; detail nilai/aturan divalidasi bersama SME,DRAFT,
+673,C00671,consent.consent_policies,consent,consent_policies,4,policy_version,varchar(40),,,YES,NO,,Klinis,Atribut domain consent; detail nilai/aturan divalidasi bersama SME,DRAFT,
+674,C00672,consent.consent_policies,consent,consent_policies,5,purpose_code,varchar(80),,,YES,NO,,Klinis,Atribut domain consent; detail nilai/aturan divalidasi bersama SME,DRAFT,
+675,C00673,consent.consent_policies,consent,consent_policies,6,scope_json,jsonb,,,YES,NO,,Klinis,Atribut domain consent; detail nilai/aturan divalidasi bersama SME,DRAFT,
+676,C00674,consent.consent_policies,consent,consent_policies,7,effective_from,date,,,YES,NO,,Klinis,Atribut domain consent; detail nilai/aturan divalidasi bersama SME,DRAFT,
+677,C00675,consent.consent_policies,consent,consent_policies,8,effective_to,date,,,NO,NO,,Klinis,Atribut domain consent; detail nilai/aturan divalidasi bersama SME,DRAFT,
+678,C00676,consent.consent_policies,consent,consent_policies,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+679,C00677,consent.consent_policies,consent,consent_policies,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+680,C00678,consent.consent_policies,consent,consent_policies,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+681,C00679,consent.consent_policies,consent,consent_policies,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+682,C00680,consent.consent_policies,consent,consent_policies,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+683,C00681,consent.consent_artifacts,consent,consent_artifacts,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+684,C00682,consent.consent_artifacts,consent,consent_artifacts,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+685,C00683,consent.consent_artifacts,consent,consent_artifacts,3,consent_id,uuid,,consent.consent_records,YES,NO,,Klinis,Referensi ke consent.consent_records,DRAFT,
+686,C00684,consent.consent_artifacts,consent,consent_artifacts,4,storage_uri,text,,,YES,NO,,Klinis,Atribut domain consent; detail nilai/aturan divalidasi bersama SME,DRAFT,
+687,C00685,consent.consent_artifacts,consent,consent_artifacts,5,sha256,char(64),,,YES,NO,,Klinis,Atribut domain consent; detail nilai/aturan divalidasi bersama SME,DRAFT,
+688,C00686,consent.consent_artifacts,consent,consent_artifacts,6,content_type,varchar(90),,,YES,NO,,Klinis,Atribut domain consent; detail nilai/aturan divalidasi bersama SME,DRAFT,
+689,C00687,consent.consent_artifacts,consent,consent_artifacts,7,signed_by,uuid,,identity.users,NO,NO,,Klinis,Referensi ke identity.users,DRAFT,
+690,C00688,consent.consent_artifacts,consent,consent_artifacts,8,signed_at,timestamptz,,,NO,NO,,Klinis,Atribut domain consent; detail nilai/aturan divalidasi bersama SME,DRAFT,
+691,C00689,consent.consent_artifacts,consent,consent_artifacts,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+692,C00690,consent.consent_artifacts,consent,consent_artifacts,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+693,C00691,consent.consent_artifacts,consent,consent_artifacts,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+694,C00692,consent.consent_artifacts,consent,consent_artifacts,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+695,C00693,consent.consent_artifacts,consent,consent_artifacts,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+696,C00694,consent.consent_revocations,consent,consent_revocations,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+697,C00695,consent.consent_revocations,consent,consent_revocations,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+698,C00696,consent.consent_revocations,consent,consent_revocations,3,consent_id,uuid,,consent.consent_records,YES,NO,,Klinis,Referensi ke consent.consent_records,DRAFT,
+699,C00697,consent.consent_revocations,consent,consent_revocations,4,revoked_at,timestamptz,,,YES,NO,,Klinis,Atribut domain consent; detail nilai/aturan divalidasi bersama SME,DRAFT,
+700,C00698,consent.consent_revocations,consent,consent_revocations,5,revoked_by,uuid,,identity.users,NO,NO,,Klinis,Referensi ke identity.users,DRAFT,
+701,C00699,consent.consent_revocations,consent,consent_revocations,6,reason,text,,,NO,NO,,Klinis,Atribut domain consent; detail nilai/aturan divalidasi bersama SME,DRAFT,
+702,C00700,consent.consent_revocations,consent,consent_revocations,7,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+703,C00701,consent.consent_revocations,consent,consent_revocations,8,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+704,C00702,consent.disclosure_requests,consent,disclosure_requests,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+705,C00703,consent.disclosure_requests,consent,disclosure_requests,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+706,C00704,consent.disclosure_requests,consent,disclosure_requests,3,patient_id,uuid,,patient.patients,YES,NO,,Klinis,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+707,C00705,consent.disclosure_requests,consent,disclosure_requests,4,requester_organization_id,uuid,,master.organizations,NO,NO,,Klinis,Referensi ke master.organizations,DRAFT,
+708,C00706,consent.disclosure_requests,consent,disclosure_requests,5,purpose_code,varchar(80),,,YES,NO,,Klinis,Atribut domain consent; detail nilai/aturan divalidasi bersama SME,DRAFT,
+709,C00707,consent.disclosure_requests,consent,disclosure_requests,6,requested_at,timestamptz,,,YES,NO,,Klinis,Atribut domain consent; detail nilai/aturan divalidasi bersama SME,DRAFT,
+710,C00708,consent.disclosure_requests,consent,disclosure_requests,7,status,varchar(30),,,YES,NO,,Klinis,Status state machine; transisi dikendalikan domain,DRAFT,
+711,C00709,consent.disclosure_requests,consent,disclosure_requests,8,reviewed_by,uuid,,identity.users,NO,NO,,Klinis,Referensi ke identity.users,DRAFT,
+712,C00710,consent.disclosure_requests,consent,disclosure_requests,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+713,C00711,consent.disclosure_requests,consent,disclosure_requests,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+714,C00712,consent.disclosure_requests,consent,disclosure_requests,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+715,C00713,consent.disclosure_requests,consent,disclosure_requests,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+716,C00714,consent.disclosure_requests,consent,disclosure_requests,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+717,C00715,consent.disclosure_events,consent,disclosure_events,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+718,C00716,consent.disclosure_events,consent,disclosure_events,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+719,C00717,consent.disclosure_events,consent,disclosure_events,3,disclosure_request_id,uuid,,consent.disclosure_requests,NO,NO,,Klinis,Referensi ke consent.disclosure_requests,DRAFT,
+720,C00718,consent.disclosure_events,consent,disclosure_events,4,consent_id,uuid,,consent.consent_records,NO,NO,,Klinis,Referensi ke consent.consent_records,DRAFT,
+721,C00719,consent.disclosure_events,consent,disclosure_events,5,destination,varchar(180),,,YES,NO,,Klinis,Atribut domain consent; detail nilai/aturan divalidasi bersama SME,DRAFT,
+722,C00720,consent.disclosure_events,consent,disclosure_events,6,data_scope_json,jsonb,,,YES,NO,,Klinis,Atribut domain consent; detail nilai/aturan divalidasi bersama SME,DRAFT,
+723,C00721,consent.disclosure_events,consent,disclosure_events,7,occurred_at,timestamptz,,,YES,NO,,Klinis,Atribut domain consent; detail nilai/aturan divalidasi bersama SME,DRAFT,
+724,C00722,consent.disclosure_events,consent,disclosure_events,8,request_hash,char(64),,,NO,NO,,Klinis,Atribut domain consent; detail nilai/aturan divalidasi bersama SME,DRAFT,
+725,C00723,consent.disclosure_events,consent,disclosure_events,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+726,C00724,consent.disclosure_events,consent,disclosure_events,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+727,C00725,clinical.assessments,clinical,assessments,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+728,C00726,clinical.assessments,clinical,assessments,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+729,C00727,clinical.assessments,clinical,assessments,3,encounter_id,uuid,,encounter.encounters,YES,NO,,Klinis,FK encounter internal; wajib valid untuk rekam klinis kunjungan,DRAFT,
+730,C00728,clinical.assessments,clinical,assessments,4,patient_id,uuid,,patient.patients,YES,NO,,Klinis,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+731,C00729,clinical.assessments,clinical,assessments,5,assessment_type,varchar(70),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+732,C00730,clinical.assessments,clinical,assessments,6,form_version,varchar(30),,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+733,C00731,clinical.assessments,clinical,assessments,7,structured_answers,jsonb,,,NO,NO,,Klinis,"Form terversi, tidak menggantikan kolom klinis terstruktur",DRAFT,
+734,C00732,clinical.assessments,clinical,assessments,8,status,varchar(25),,,YES,NO,,Klinis,Status state machine; transisi dikendalikan domain,DRAFT,
+735,C00733,clinical.assessments,clinical,assessments,9,assessed_by,uuid,,master.practitioners,NO,NO,,Klinis,Referensi ke master.practitioners,DRAFT,
+736,C00734,clinical.assessments,clinical,assessments,10,assessed_at,timestamptz,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+737,C00735,clinical.assessments,clinical,assessments,11,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+738,C00736,clinical.assessments,clinical,assessments,12,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+739,C00737,clinical.assessments,clinical,assessments,13,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+740,C00738,clinical.assessments,clinical,assessments,14,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+741,C00739,clinical.assessments,clinical,assessments,15,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+742,C00740,clinical.clinical_notes,clinical,clinical_notes,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+743,C00741,clinical.clinical_notes,clinical,clinical_notes,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+744,C00742,clinical.clinical_notes,clinical,clinical_notes,3,encounter_id,uuid,,encounter.encounters,YES,NO,,Klinis,FK encounter internal; wajib valid untuk rekam klinis kunjungan,DRAFT,
+745,C00743,clinical.clinical_notes,clinical,clinical_notes,4,author_practitioner_id,uuid,,master.practitioners,YES,NO,,Klinis,Referensi ke master.practitioners,DRAFT,
+746,C00744,clinical.clinical_notes,clinical,clinical_notes,5,note_type,varchar(60),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+747,C00745,clinical.clinical_notes,clinical,clinical_notes,6,body_text,text,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+748,C00746,clinical.clinical_notes,clinical,clinical_notes,7,structured_content,jsonb,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+749,C00747,clinical.clinical_notes,clinical,clinical_notes,8,status,varchar(24),,,YES,NO,,Klinis,Status state machine; transisi dikendalikan domain,DRAFT,document_status
+750,C00748,clinical.clinical_notes,clinical,clinical_notes,9,signed_at,timestamptz,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+751,C00749,clinical.clinical_notes,clinical,clinical_notes,10,supersedes_id,uuid,,clinical.clinical_notes,NO,NO,,Klinis,Referensi ke clinical.clinical_notes,DRAFT,
+752,C00750,clinical.clinical_notes,clinical,clinical_notes,11,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+753,C00751,clinical.clinical_notes,clinical,clinical_notes,12,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+754,C00752,clinical.clinical_notes,clinical,clinical_notes,13,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+755,C00753,clinical.clinical_notes,clinical,clinical_notes,14,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+756,C00754,clinical.clinical_notes,clinical,clinical_notes,15,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+757,C00755,clinical.note_addenda,clinical,note_addenda,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+758,C00756,clinical.note_addenda,clinical,note_addenda,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+759,C00757,clinical.note_addenda,clinical,note_addenda,3,clinical_note_id,uuid,,clinical.clinical_notes,YES,NO,,Klinis,Referensi ke clinical.clinical_notes,DRAFT,
+760,C00758,clinical.note_addenda,clinical,note_addenda,4,author_practitioner_id,uuid,,master.practitioners,YES,NO,,Klinis,Referensi ke master.practitioners,DRAFT,
+761,C00759,clinical.note_addenda,clinical,note_addenda,5,addendum_body,text,,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+762,C00760,clinical.note_addenda,clinical,note_addenda,6,created_reason,varchar(120),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+763,C00761,clinical.note_addenda,clinical,note_addenda,7,signed_at,timestamptz,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+764,C00762,clinical.note_addenda,clinical,note_addenda,8,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+765,C00763,clinical.note_addenda,clinical,note_addenda,9,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+766,C00764,clinical.diagnoses,clinical,diagnoses,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+767,C00765,clinical.diagnoses,clinical,diagnoses,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+768,C00766,clinical.diagnoses,clinical,diagnoses,3,encounter_id,uuid,,encounter.encounters,YES,NO,,Klinis,FK encounter internal; wajib valid untuk rekam klinis kunjungan,DRAFT,
+769,C00767,clinical.diagnoses,clinical,diagnoses,4,patient_id,uuid,,patient.patients,YES,NO,,Klinis,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+770,C00768,clinical.diagnoses,clinical,diagnoses,5,diagnosis_code_system,varchar(300),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+771,C00769,clinical.diagnoses,clinical,diagnoses,6,diagnosis_code,varchar(100),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+772,C00770,clinical.diagnoses,clinical,diagnoses,7,rank_order,int,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+773,C00771,clinical.diagnoses,clinical,diagnoses,8,category,varchar(30),,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+774,C00772,clinical.diagnoses,clinical,diagnoses,9,clinical_status,varchar(30),,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+775,C00773,clinical.diagnoses,clinical,diagnoses,10,verification_status,varchar(30),,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+776,C00774,clinical.diagnoses,clinical,diagnoses,11,asserted_by,uuid,,master.practitioners,NO,NO,,Klinis,Referensi ke master.practitioners,DRAFT,
+777,C00775,clinical.diagnoses,clinical,diagnoses,12,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+778,C00776,clinical.diagnoses,clinical,diagnoses,13,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+779,C00777,clinical.diagnoses,clinical,diagnoses,14,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+780,C00778,clinical.diagnoses,clinical,diagnoses,15,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+781,C00779,clinical.diagnoses,clinical,diagnoses,16,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+782,C00780,clinical.observations,clinical,observations,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+783,C00781,clinical.observations,clinical,observations,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+784,C00782,clinical.observations,clinical,observations,3,encounter_id,uuid,,encounter.encounters,YES,NO,,Klinis,FK encounter internal; wajib valid untuk rekam klinis kunjungan,DRAFT,
+785,C00783,clinical.observations,clinical,observations,4,patient_id,uuid,,patient.patients,YES,NO,,Klinis,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+786,C00784,clinical.observations,clinical,observations,5,code_system,varchar(300),,,YES,NO,,Klinis,Canonical URI sistem kode/terminologi,DRAFT,
+787,C00785,clinical.observations,clinical,observations,6,code,varchar(100),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+788,C00786,clinical.observations,clinical,observations,7,value_numeric,"numeric(20,6)",,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+789,C00787,clinical.observations,clinical,observations,8,value_text,text,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+790,C00788,clinical.observations,clinical,observations,9,unit_ucum,varchar(50),,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+791,C00789,clinical.observations,clinical,observations,10,effective_at,timestamptz,,,YES,NO,,Klinis,"Waktu klinis kejadian, dapat berbeda dari created_at",DRAFT,
+792,C00790,clinical.observations,clinical,observations,11,status,varchar(24),,,YES,NO,,Klinis,Status state machine; transisi dikendalikan domain,DRAFT,
+793,C00791,clinical.observations,clinical,observations,12,performer_id,uuid,,master.practitioners,NO,NO,,Klinis,Referensi ke master.practitioners,DRAFT,
+794,C00792,clinical.observations,clinical,observations,13,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+795,C00793,clinical.observations,clinical,observations,14,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+796,C00794,clinical.observations,clinical,observations,15,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+797,C00795,clinical.observations,clinical,observations,16,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+798,C00796,clinical.observations,clinical,observations,17,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+799,C00797,clinical.observation_components,clinical,observation_components,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+800,C00798,clinical.observation_components,clinical,observation_components,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+801,C00799,clinical.observation_components,clinical,observation_components,3,observation_id,uuid,,clinical.observations,YES,NO,,Klinis,Referensi ke clinical.observations,DRAFT,
+802,C00800,clinical.observation_components,clinical,observation_components,4,component_code_system,varchar(300),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+803,C00801,clinical.observation_components,clinical,observation_components,5,component_code,varchar(100),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+804,C00802,clinical.observation_components,clinical,observation_components,6,value_numeric,"numeric(20,6)",,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+805,C00803,clinical.observation_components,clinical,observation_components,7,value_text,text,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+806,C00804,clinical.observation_components,clinical,observation_components,8,unit_ucum,varchar(50),,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+807,C00805,clinical.observation_components,clinical,observation_components,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+808,C00806,clinical.observation_components,clinical,observation_components,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+809,C00807,clinical.observation_components,clinical,observation_components,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+810,C00808,clinical.observation_components,clinical,observation_components,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+811,C00809,clinical.observation_components,clinical,observation_components,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+812,C00810,clinical.procedures,clinical,procedures,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+813,C00811,clinical.procedures,clinical,procedures,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+814,C00812,clinical.procedures,clinical,procedures,3,encounter_id,uuid,,encounter.encounters,YES,NO,,Klinis,FK encounter internal; wajib valid untuk rekam klinis kunjungan,DRAFT,
+815,C00813,clinical.procedures,clinical,procedures,4,patient_id,uuid,,patient.patients,YES,NO,,Klinis,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+816,C00814,clinical.procedures,clinical,procedures,5,procedure_code_system,varchar(300),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+817,C00815,clinical.procedures,clinical,procedures,6,procedure_code,varchar(100),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+818,C00816,clinical.procedures,clinical,procedures,7,status,varchar(25),,,YES,NO,,Klinis,Status state machine; transisi dikendalikan domain,DRAFT,
+819,C00817,clinical.procedures,clinical,procedures,8,performed_at,timestamptz,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+820,C00818,clinical.procedures,clinical,procedures,9,performer_id,uuid,,master.practitioners,NO,NO,,Klinis,Referensi ke master.practitioners,DRAFT,
+821,C00819,clinical.procedures,clinical,procedures,10,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+822,C00820,clinical.procedures,clinical,procedures,11,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+823,C00821,clinical.procedures,clinical,procedures,12,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+824,C00822,clinical.procedures,clinical,procedures,13,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+825,C00823,clinical.procedures,clinical,procedures,14,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+826,C00824,clinical.allergies,clinical,allergies,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+827,C00825,clinical.allergies,clinical,allergies,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+828,C00826,clinical.allergies,clinical,allergies,3,patient_id,uuid,,patient.patients,YES,NO,,Klinis,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+829,C00827,clinical.allergies,clinical,allergies,4,substance_system,varchar(300),,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+830,C00828,clinical.allergies,clinical,allergies,5,substance_code,varchar(90),,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+831,C00829,clinical.allergies,clinical,allergies,6,manifestation,text,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+832,C00830,clinical.allergies,clinical,allergies,7,clinical_status,varchar(30),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+833,C00831,clinical.allergies,clinical,allergies,8,verification_status,varchar(30),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+834,C00832,clinical.allergies,clinical,allergies,9,onset_at,timestamptz,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+835,C00833,clinical.allergies,clinical,allergies,10,recorded_by,uuid,,master.practitioners,NO,NO,,Klinis,Referensi ke master.practitioners,DRAFT,
+836,C00834,clinical.allergies,clinical,allergies,11,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+837,C00835,clinical.allergies,clinical,allergies,12,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+838,C00836,clinical.allergies,clinical,allergies,13,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+839,C00837,clinical.allergies,clinical,allergies,14,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+840,C00838,clinical.allergies,clinical,allergies,15,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+841,C00839,clinical.care_plans,clinical,care_plans,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+842,C00840,clinical.care_plans,clinical,care_plans,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+843,C00841,clinical.care_plans,clinical,care_plans,3,patient_id,uuid,,patient.patients,YES,NO,,Klinis,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+844,C00842,clinical.care_plans,clinical,care_plans,4,encounter_id,uuid,,encounter.encounters,NO,NO,,Klinis,FK encounter internal; wajib valid untuk rekam klinis kunjungan,DRAFT,
+845,C00843,clinical.care_plans,clinical,care_plans,5,title,varchar(250),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+846,C00844,clinical.care_plans,clinical,care_plans,6,status,varchar(25),,,YES,NO,,Klinis,Status state machine; transisi dikendalikan domain,DRAFT,
+847,C00845,clinical.care_plans,clinical,care_plans,7,intent,varchar(30),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+848,C00846,clinical.care_plans,clinical,care_plans,8,authored_by,uuid,,master.practitioners,NO,NO,,Klinis,Referensi ke master.practitioners,DRAFT,
+849,C00847,clinical.care_plans,clinical,care_plans,9,effective_from,timestamptz,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+850,C00848,clinical.care_plans,clinical,care_plans,10,effective_to,timestamptz,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+851,C00849,clinical.care_plans,clinical,care_plans,11,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+852,C00850,clinical.care_plans,clinical,care_plans,12,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+853,C00851,clinical.care_plans,clinical,care_plans,13,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+854,C00852,clinical.care_plans,clinical,care_plans,14,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+855,C00853,clinical.care_plans,clinical,care_plans,15,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+856,C00854,clinical.care_goals,clinical,care_goals,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+857,C00855,clinical.care_goals,clinical,care_goals,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+858,C00856,clinical.care_goals,clinical,care_goals,3,care_plan_id,uuid,,clinical.care_plans,NO,NO,,Klinis,Referensi ke clinical.care_plans,DRAFT,
+859,C00857,clinical.care_goals,clinical,care_goals,4,patient_id,uuid,,patient.patients,YES,NO,,Klinis,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+860,C00858,clinical.care_goals,clinical,care_goals,5,description,text,,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+861,C00859,clinical.care_goals,clinical,care_goals,6,target_json,jsonb,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+862,C00860,clinical.care_goals,clinical,care_goals,7,status,varchar(24),,,YES,NO,,Klinis,Status state machine; transisi dikendalikan domain,DRAFT,
+863,C00861,clinical.care_goals,clinical,care_goals,8,due_at,timestamptz,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+864,C00862,clinical.care_goals,clinical,care_goals,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+865,C00863,clinical.care_goals,clinical,care_goals,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+866,C00864,clinical.care_goals,clinical,care_goals,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+867,C00865,clinical.care_goals,clinical,care_goals,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+868,C00866,clinical.care_goals,clinical,care_goals,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+869,C00867,clinical.care_plan_activities,clinical,care_plan_activities,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+870,C00868,clinical.care_plan_activities,clinical,care_plan_activities,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+871,C00869,clinical.care_plan_activities,clinical,care_plan_activities,3,care_plan_id,uuid,,clinical.care_plans,YES,NO,,Klinis,Referensi ke clinical.care_plans,DRAFT,
+872,C00870,clinical.care_plan_activities,clinical,care_plan_activities,4,service_order_id,uuid,,orders.service_orders,NO,NO,,Klinis,Referensi ke orders.service_orders,DRAFT,
+873,C00871,clinical.care_plan_activities,clinical,care_plan_activities,5,activity_code,varchar(90),,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+874,C00872,clinical.care_plan_activities,clinical,care_plan_activities,6,description,text,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+875,C00873,clinical.care_plan_activities,clinical,care_plan_activities,7,status,varchar(24),,,YES,NO,,Klinis,Status state machine; transisi dikendalikan domain,DRAFT,
+876,C00874,clinical.care_plan_activities,clinical,care_plan_activities,8,planned_start,timestamptz,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+877,C00875,clinical.care_plan_activities,clinical,care_plan_activities,9,completed_at,timestamptz,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+878,C00876,clinical.care_plan_activities,clinical,care_plan_activities,10,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+879,C00877,clinical.care_plan_activities,clinical,care_plan_activities,11,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+880,C00878,clinical.care_plan_activities,clinical,care_plan_activities,12,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+881,C00879,clinical.care_plan_activities,clinical,care_plan_activities,13,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+882,C00880,clinical.care_plan_activities,clinical,care_plan_activities,14,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+883,C00881,clinical.care_teams,clinical,care_teams,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+884,C00882,clinical.care_teams,clinical,care_teams,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+885,C00883,clinical.care_teams,clinical,care_teams,3,patient_id,uuid,,patient.patients,YES,NO,,Klinis,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+886,C00884,clinical.care_teams,clinical,care_teams,4,encounter_id,uuid,,encounter.encounters,NO,NO,,Klinis,FK encounter internal; wajib valid untuk rekam klinis kunjungan,DRAFT,
+887,C00885,clinical.care_teams,clinical,care_teams,5,team_name,varchar(180),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+888,C00886,clinical.care_teams,clinical,care_teams,6,status,varchar(24),,,YES,NO,,Klinis,Status state machine; transisi dikendalikan domain,DRAFT,
+889,C00887,clinical.care_teams,clinical,care_teams,7,start_at,timestamptz,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+890,C00888,clinical.care_teams,clinical,care_teams,8,end_at,timestamptz,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+891,C00889,clinical.care_teams,clinical,care_teams,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+892,C00890,clinical.care_teams,clinical,care_teams,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+893,C00891,clinical.care_teams,clinical,care_teams,11,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+894,C00892,clinical.care_teams,clinical,care_teams,12,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+895,C00893,clinical.care_teams,clinical,care_teams,13,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+896,C00894,clinical.care_team_members,clinical,care_team_members,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+897,C00895,clinical.care_team_members,clinical,care_team_members,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+898,C00896,clinical.care_team_members,clinical,care_team_members,3,care_team_id,uuid,,clinical.care_teams,YES,NO,,Klinis,Referensi ke clinical.care_teams,DRAFT,
+899,C00897,clinical.care_team_members,clinical,care_team_members,4,practitioner_id,uuid,,master.practitioners,YES,NO,,Klinis,FK master practitioner (tidak identik user_id),DRAFT,
+900,C00898,clinical.care_team_members,clinical,care_team_members,5,responsibility,varchar(90),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+901,C00899,clinical.care_team_members,clinical,care_team_members,6,valid_from,timestamptz,,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+902,C00900,clinical.care_team_members,clinical,care_team_members,7,valid_to,timestamptz,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+903,C00901,clinical.care_team_members,clinical,care_team_members,8,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+904,C00902,clinical.care_team_members,clinical,care_team_members,9,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+905,C00903,clinical.care_team_members,clinical,care_team_members,10,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+906,C00904,clinical.care_team_members,clinical,care_team_members,11,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+907,C00905,clinical.care_team_members,clinical,care_team_members,12,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+908,C00906,clinical.referrals,clinical,referrals,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+909,C00907,clinical.referrals,clinical,referrals,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+910,C00908,clinical.referrals,clinical,referrals,3,patient_id,uuid,,patient.patients,YES,NO,,Klinis,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+911,C00909,clinical.referrals,clinical,referrals,4,encounter_id,uuid,,encounter.encounters,YES,NO,,Klinis,FK encounter internal; wajib valid untuk rekam klinis kunjungan,DRAFT,
+912,C00910,clinical.referrals,clinical,referrals,5,service_order_id,uuid,,orders.service_orders,NO,NO,,Klinis,Referensi ke orders.service_orders,DRAFT,
+913,C00911,clinical.referrals,clinical,referrals,6,destination_organization_id,uuid,,master.organizations,NO,NO,,Klinis,Referensi ke master.organizations,DRAFT,
+914,C00912,clinical.referrals,clinical,referrals,7,reason_text,text,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+915,C00913,clinical.referrals,clinical,referrals,8,referral_status,varchar(30),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+916,C00914,clinical.referrals,clinical,referrals,9,referred_at,timestamptz,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+917,C00915,clinical.referrals,clinical,referrals,10,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+918,C00916,clinical.referrals,clinical,referrals,11,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+919,C00917,clinical.referrals,clinical,referrals,12,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+920,C00918,clinical.referrals,clinical,referrals,13,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+921,C00919,clinical.referrals,clinical,referrals,14,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+922,C00920,clinical.referral_responses,clinical,referral_responses,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+923,C00921,clinical.referral_responses,clinical,referral_responses,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+924,C00922,clinical.referral_responses,clinical,referral_responses,3,referral_id,uuid,,clinical.referrals,YES,NO,,Klinis,Referensi ke clinical.referrals,DRAFT,
+925,C00923,clinical.referral_responses,clinical,referral_responses,4,response_kind,varchar(30),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+926,C00924,clinical.referral_responses,clinical,referral_responses,5,responder_org_id,uuid,,master.organizations,NO,NO,,Klinis,Referensi ke master.organizations,DRAFT,
+927,C00925,clinical.referral_responses,clinical,referral_responses,6,response_at,timestamptz,,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+928,C00926,clinical.referral_responses,clinical,referral_responses,7,reason_code,varchar(60),,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+929,C00927,clinical.referral_responses,clinical,referral_responses,8,payload_json,jsonb,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+930,C00928,clinical.referral_responses,clinical,referral_responses,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+931,C00929,clinical.referral_responses,clinical,referral_responses,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+932,C00930,clinical.clinical_documents,clinical,clinical_documents,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+933,C00931,clinical.clinical_documents,clinical,clinical_documents,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+934,C00932,clinical.clinical_documents,clinical,clinical_documents,3,patient_id,uuid,,patient.patients,YES,NO,,Klinis,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+935,C00933,clinical.clinical_documents,clinical,clinical_documents,4,encounter_id,uuid,,encounter.encounters,NO,NO,,Klinis,FK encounter internal; wajib valid untuk rekam klinis kunjungan,DRAFT,
+936,C00934,clinical.clinical_documents,clinical,clinical_documents,5,document_type,varchar(60),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+937,C00935,clinical.clinical_documents,clinical,clinical_documents,6,title,varchar(250),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+938,C00936,clinical.clinical_documents,clinical,clinical_documents,7,body_storage_uri,text,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+939,C00937,clinical.clinical_documents,clinical,clinical_documents,8,content_sha256,char(64),,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+940,C00938,clinical.clinical_documents,clinical,clinical_documents,9,status,varchar(24),,,YES,NO,,Klinis,Status state machine; transisi dikendalikan domain,DRAFT,document_status
+941,C00939,clinical.clinical_documents,clinical,clinical_documents,10,signed_at,timestamptz,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+942,C00940,clinical.clinical_documents,clinical,clinical_documents,11,author_id,uuid,,master.practitioners,NO,NO,,Klinis,Referensi ke master.practitioners,DRAFT,
+943,C00941,clinical.clinical_documents,clinical,clinical_documents,12,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+944,C00942,clinical.clinical_documents,clinical,clinical_documents,13,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+945,C00943,clinical.clinical_documents,clinical,clinical_documents,14,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+946,C00944,clinical.clinical_documents,clinical,clinical_documents,15,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+947,C00945,clinical.clinical_documents,clinical,clinical_documents,16,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+948,C00946,clinical.document_signatures,clinical,document_signatures,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+949,C00947,clinical.document_signatures,clinical,document_signatures,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+950,C00948,clinical.document_signatures,clinical,document_signatures,3,document_id,uuid,,clinical.clinical_documents,YES,NO,,Klinis,Referensi ke clinical.clinical_documents,DRAFT,
+951,C00949,clinical.document_signatures,clinical,document_signatures,4,signer_user_id,uuid,,identity.users,YES,NO,,Klinis,Referensi ke identity.users,DRAFT,
+952,C00950,clinical.document_signatures,clinical,document_signatures,5,signature_method,varchar(30),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+953,C00951,clinical.document_signatures,clinical,document_signatures,6,signature_hash,char(64),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+954,C00952,clinical.document_signatures,clinical,document_signatures,7,signed_at,timestamptz,,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+955,C00953,clinical.document_signatures,clinical,document_signatures,8,certificate_ref,varchar(250),,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+956,C00954,clinical.document_signatures,clinical,document_signatures,9,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+957,C00955,clinical.document_signatures,clinical,document_signatures,10,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+958,C00956,clinical.nursing_tasks,clinical,nursing_tasks,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+959,C00957,clinical.nursing_tasks,clinical,nursing_tasks,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+960,C00958,clinical.nursing_tasks,clinical,nursing_tasks,3,encounter_id,uuid,,encounter.encounters,YES,NO,,Klinis,FK encounter internal; wajib valid untuk rekam klinis kunjungan,DRAFT,
+961,C00959,clinical.nursing_tasks,clinical,nursing_tasks,4,care_plan_id,uuid,,clinical.care_plans,NO,NO,,Klinis,Referensi ke clinical.care_plans,DRAFT,
+962,C00960,clinical.nursing_tasks,clinical,nursing_tasks,5,task_type,varchar(60),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+963,C00961,clinical.nursing_tasks,clinical,nursing_tasks,6,status,varchar(24),,,YES,NO,,Klinis,Status state machine; transisi dikendalikan domain,DRAFT,
+964,C00962,clinical.nursing_tasks,clinical,nursing_tasks,7,assigned_to,uuid,,master.practitioners,NO,NO,,Klinis,Referensi ke master.practitioners,DRAFT,
+965,C00963,clinical.nursing_tasks,clinical,nursing_tasks,8,due_at,timestamptz,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+966,C00964,clinical.nursing_tasks,clinical,nursing_tasks,9,completed_at,timestamptz,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+967,C00965,clinical.nursing_tasks,clinical,nursing_tasks,10,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+968,C00966,clinical.nursing_tasks,clinical,nursing_tasks,11,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+969,C00967,clinical.nursing_tasks,clinical,nursing_tasks,12,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+970,C00968,clinical.nursing_tasks,clinical,nursing_tasks,13,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+971,C00969,clinical.nursing_tasks,clinical,nursing_tasks,14,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+972,C00970,clinical.clinical_alerts,clinical,clinical_alerts,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+973,C00971,clinical.clinical_alerts,clinical,clinical_alerts,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+974,C00972,clinical.clinical_alerts,clinical,clinical_alerts,3,patient_id,uuid,,patient.patients,YES,NO,,Klinis,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+975,C00973,clinical.clinical_alerts,clinical,clinical_alerts,4,encounter_id,uuid,,encounter.encounters,NO,NO,,Klinis,FK encounter internal; wajib valid untuk rekam klinis kunjungan,DRAFT,
+976,C00974,clinical.clinical_alerts,clinical,clinical_alerts,5,alert_type,varchar(60),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+977,C00975,clinical.clinical_alerts,clinical,clinical_alerts,6,severity,varchar(20),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+978,C00976,clinical.clinical_alerts,clinical,clinical_alerts,7,message,text,,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+979,C00977,clinical.clinical_alerts,clinical,clinical_alerts,8,status,varchar(24),,,YES,NO,,Klinis,Status state machine; transisi dikendalikan domain,DRAFT,
+980,C00978,clinical.clinical_alerts,clinical,clinical_alerts,9,acknowledged_by,uuid,,identity.users,NO,NO,,Klinis,Referensi ke identity.users,DRAFT,
+981,C00979,clinical.clinical_alerts,clinical,clinical_alerts,10,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+982,C00980,clinical.clinical_alerts,clinical,clinical_alerts,11,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+983,C00981,clinical.clinical_alerts,clinical,clinical_alerts,12,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+984,C00982,clinical.clinical_alerts,clinical,clinical_alerts,13,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+985,C00983,clinical.clinical_alerts,clinical,clinical_alerts,14,version,integer,,,YES,NO,1,Internal,Optimistic concurrency token (naik setiap mutation),DRAFT,
+986,C00984,clinical.medication_safety_screenings,clinical,medication_safety_screenings,1,id,uuid,YES,,YES,YES,gen_random_uuid(),Internal,UUID primary key internal stabil; bukan ID FHIR/SATUSEHAT,DRAFT,
+987,C00985,clinical.medication_safety_screenings,clinical,medication_safety_screenings,2,tenant_id,uuid,,identity.tenants,YES,NO,,Internal,Isolasi tenant; FK ke identity.tenants; wajib divalidasi lintas FK,DRAFT,
+988,C00986,clinical.medication_safety_screenings,clinical,medication_safety_screenings,3,prescription_id,uuid,,pharmacy.prescriptions,NO,NO,,Klinis,Referensi ke pharmacy.prescriptions,DRAFT,
+989,C00987,clinical.medication_safety_screenings,clinical,medication_safety_screenings,4,patient_id,uuid,,patient.patients,YES,NO,,Klinis,FK pasien internal; MRN/IHS terpisah pada patient_identifiers,DRAFT,
+990,C00988,clinical.medication_safety_screenings,clinical,medication_safety_screenings,5,screening_type,varchar(40),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+991,C00989,clinical.medication_safety_screenings,clinical,medication_safety_screenings,6,risk_level,varchar(20),,,YES,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+992,C00990,clinical.medication_safety_screenings,clinical,medication_safety_screenings,7,rule_version,varchar(40),,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+993,C00991,clinical.medication_safety_screenings,clinical,medication_safety_screenings,8,evidence_json,jsonb,,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+994,C00992,clinical.medication_safety_screenings,clinical,medication_safety_screenings,9,decision,varchar(30),,,NO,NO,,Klinis,Atribut domain clinical; detail nilai/aturan divalidasi bersama SME,DRAFT,
+995,C00993,clinical.medication_safety_screenings,clinical,medication_safety_screenings,10,reviewed_by,uuid,,master.practitioners,NO,NO,,Klinis,Referensi ke master.practitioners,DRAFT,
+996,C00994,clinical.medication_safety_screenings,clinical,medication_safety_screenings,11,created_at,timestamptz,,,YES,NO,now(),Internal,Waktu penciptaan record UTC,DRAFT,
+997,C00995,clinical.medication_safety_screenings,clinical,medication_safety_screenings,12,created_by,uuid,,,NO,NO,,Internal,Actor user/service identity; tidak boleh ditimpa client,DRAFT,
+998,C00996,clinical.medication_safety_screenings,clinical,medication_safety_screenings,13,updated_at,timestamptz,,,YES,NO,now(),Internal,Waktu perubahan terakhir UTC,DRAFT,
+999,C00997,clinical.medication_safety_screenings,clinical,medication_safety_screenings,14,updated_by,uuid,,,NO,NO,,Internal,Actor terakhir user/service identity; tidak boleh ditimpa client,DRAFT,
+<PARSED TEXT FOR SHEET: 7 / 18 TABS
+TAB NAME: 06_RELATIONS>
+index,06 RELATIONS,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6,Unnamed: 7,Unnamed: 8,Unnamed: 9
+0,DRAFT • SIMRS FHIR-First • PostgreSQL source-of-truth • no dedicated FHIR Server,,,,,,,,,
+1,,,,,,,,,,
+2,Rel ID,From table,From column,To table,To PK,Cardinality,Delete policy,Tenant integrity,Enforcement,Status
+3,R0001,identity.tenants,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+4,R0002,identity.tenant_memberships,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+5,R0003,identity.tenant_memberships,user_id,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+6,R0004,identity.users,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+7,R0005,identity.roles,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+8,R0006,identity.role_permissions,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+9,R0007,identity.role_permissions,role_id,identity.roles,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+10,R0008,identity.role_permissions,permission_id,identity.permissions,id,N:1,RESTRICT / NO ACTION,FK -> id,Database + RLS,DRAFT
+11,R0009,identity.user_roles,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+12,R0010,identity.user_roles,user_id,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+13,R0011,identity.user_roles,role_id,identity.roles,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+14,R0012,identity.user_roles,organization_id,master.organizations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+15,R0013,identity.sessions,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+16,R0014,identity.sessions,user_id,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+17,R0015,identity.mfa_factors,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+18,R0016,identity.mfa_factors,user_id,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+19,R0017,identity.auth_events,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+20,R0018,identity.auth_events,user_id,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+21,R0019,identity.access_policies,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+22,R0020,identity.service_accounts,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+23,R0021,master.organizations,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+24,R0022,master.organizations,parent_organization_id,master.organizations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+25,R0023,master.organization_identifiers,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+26,R0024,master.organization_identifiers,organization_id,master.organizations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+27,R0025,master.organization_units,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+28,R0026,master.organization_units,organization_id,master.organizations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+29,R0027,master.organization_units,parent_unit_id,master.organization_units,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+30,R0028,master.locations,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+31,R0029,master.locations,organization_id,master.organizations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+32,R0030,master.locations,parent_location_id,master.locations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+33,R0031,master.rooms,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+34,R0032,master.rooms,location_id,master.locations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+35,R0033,master.beds,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+36,R0034,master.beds,room_id,master.rooms,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+37,R0035,master.beds,location_id,master.locations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+38,R0036,master.practitioners,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+39,R0037,master.practitioner_identifiers,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+40,R0038,master.practitioner_identifiers,practitioner_id,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+41,R0039,master.practitioner_credentials,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+42,R0040,master.practitioner_credentials,practitioner_id,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+43,R0041,master.practitioner_assignments,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+44,R0042,master.practitioner_assignments,practitioner_id,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+45,R0043,master.practitioner_assignments,organization_id,master.organizations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+46,R0044,master.practitioner_assignments,unit_id,master.organization_units,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+47,R0045,master.service_catalog,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+48,R0046,master.tariff_catalog,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+49,R0047,master.tariff_catalog,service_id,master.service_catalog,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+50,R0048,master.tariff_catalog,payer_id,billing.payers,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+51,R0049,master.payment_methods,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+52,R0050,terminology.concepts,code_system_id,terminology.code_systems,id,N:1,RESTRICT / NO ACTION,FK -> id,Database + RLS,DRAFT
+53,R0051,terminology.value_set_members,value_set_id,terminology.value_sets,id,N:1,RESTRICT / NO ACTION,FK -> id,Database + RLS,DRAFT
+54,R0052,terminology.value_set_members,concept_id,terminology.concepts,id,N:1,RESTRICT / NO ACTION,FK -> id,Database + RLS,DRAFT
+55,R0053,terminology.code_mappings,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+56,R0054,patient.patients,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+57,R0055,patient.patient_identifiers,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+58,R0056,patient.patient_identifiers,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+59,R0057,patient.patient_identifiers,issuer_organization_id,master.organizations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+60,R0058,patient.patient_contacts,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+61,R0059,patient.patient_contacts,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+62,R0060,patient.related_persons,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+63,R0061,patient.related_persons,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+64,R0062,patient.patient_merges,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+65,R0063,patient.patient_merges,source_patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+66,R0064,patient.patient_merges,target_patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+67,R0065,patient.patient_merges,approved_by,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+68,R0066,patient.patient_flags,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+69,R0067,patient.patient_flags,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+70,R0068,patient.patient_identity_reviews,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+71,R0069,patient.patient_identity_reviews,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+72,R0070,patient.patient_identity_reviews,candidate_patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+73,R0071,patient.patient_identity_reviews,reviewed_by,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+74,R0072,scheduling.schedules,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+75,R0073,scheduling.schedules,organization_id,master.organizations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+76,R0074,scheduling.schedules,service_id,master.service_catalog,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+77,R0075,scheduling.schedules,practitioner_id,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+78,R0076,scheduling.schedules,unit_id,master.organization_units,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+79,R0077,scheduling.slots,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+80,R0078,scheduling.slots,schedule_id,scheduling.schedules,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+81,R0079,scheduling.appointments,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+82,R0080,scheduling.appointments,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+83,R0081,scheduling.appointments,slot_id,scheduling.slots,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+84,R0082,scheduling.appointments,service_id,master.service_catalog,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+85,R0083,scheduling.appointments,practitioner_id,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+86,R0084,scheduling.queue_tickets,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+87,R0085,scheduling.queue_tickets,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+88,R0086,scheduling.queue_tickets,appointment_id,scheduling.appointments,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+89,R0087,scheduling.queue_tickets,organization_id,master.organizations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+90,R0088,scheduling.queue_events,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+91,R0089,scheduling.queue_events,queue_ticket_id,scheduling.queue_tickets,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+92,R0090,scheduling.queue_events,operator_user_id,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+93,R0091,scheduling.kiosk_checkins,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+94,R0092,scheduling.kiosk_checkins,appointment_id,scheduling.appointments,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+95,R0093,scheduling.kiosk_checkins,queue_ticket_id,scheduling.queue_tickets,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+96,R0094,encounter.episodes_of_care,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+97,R0095,encounter.episodes_of_care,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+98,R0096,encounter.episodes_of_care,managing_organization_id,master.organizations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+99,R0097,encounter.registrations,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+100,R0098,encounter.registrations,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+101,R0099,encounter.registrations,appointment_id,scheduling.appointments,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+102,R0100,encounter.registrations,organization_id,master.organizations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+103,R0101,encounter.encounters,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+104,R0102,encounter.encounters,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+105,R0103,encounter.encounters,registration_id,encounter.registrations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+106,R0104,encounter.encounters,episode_id,encounter.episodes_of_care,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+107,R0105,encounter.encounters,organization_id,master.organizations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+108,R0106,encounter.encounters,service_unit_id,master.organization_units,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+109,R0107,encounter.encounter_participants,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+110,R0108,encounter.encounter_participants,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+111,R0109,encounter.encounter_participants,practitioner_id,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+112,R0110,encounter.admissions,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+113,R0111,encounter.admissions,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+114,R0112,encounter.bed_assignments,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+115,R0113,encounter.bed_assignments,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+116,R0114,encounter.bed_assignments,bed_id,master.beds,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+117,R0115,encounter.bed_movements,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+118,R0116,encounter.bed_movements,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+119,R0117,encounter.bed_movements,from_bed_id,master.beds,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+120,R0118,encounter.bed_movements,to_bed_id,master.beds,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+121,R0119,encounter.discharges,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+122,R0120,encounter.discharges,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+123,R0121,encounter.discharges,authorized_by,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+124,R0122,encounter.discharges,summary_document_id,clinical.clinical_documents,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+125,R0123,encounter.encounter_payers,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+126,R0124,encounter.encounter_payers,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+127,R0125,encounter.encounter_payers,coverage_id,billing.coverages,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+128,R0126,encounter.encounter_payers,authorization_id,billing.coverage_authorizations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+129,R0127,encounter.emergency_triages,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+130,R0128,encounter.emergency_triages,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+131,R0129,encounter.emergency_triages,triaged_by,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+132,R0130,consent.consent_records,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+133,R0131,consent.consent_records,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+134,R0132,consent.consent_records,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+135,R0133,consent.consent_records,policy_id,consent.consent_policies,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+136,R0134,consent.consent_policies,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+137,R0135,consent.consent_artifacts,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+138,R0136,consent.consent_artifacts,consent_id,consent.consent_records,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+139,R0137,consent.consent_artifacts,signed_by,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+140,R0138,consent.consent_revocations,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+141,R0139,consent.consent_revocations,consent_id,consent.consent_records,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+142,R0140,consent.consent_revocations,revoked_by,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+143,R0141,consent.disclosure_requests,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+144,R0142,consent.disclosure_requests,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+145,R0143,consent.disclosure_requests,requester_organization_id,master.organizations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+146,R0144,consent.disclosure_requests,reviewed_by,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+147,R0145,consent.disclosure_events,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+148,R0146,consent.disclosure_events,disclosure_request_id,consent.disclosure_requests,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+149,R0147,consent.disclosure_events,consent_id,consent.consent_records,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+150,R0148,clinical.assessments,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+151,R0149,clinical.assessments,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+152,R0150,clinical.assessments,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+153,R0151,clinical.assessments,assessed_by,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+154,R0152,clinical.clinical_notes,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+155,R0153,clinical.clinical_notes,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+156,R0154,clinical.clinical_notes,author_practitioner_id,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+157,R0155,clinical.clinical_notes,supersedes_id,clinical.clinical_notes,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+158,R0156,clinical.note_addenda,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+159,R0157,clinical.note_addenda,clinical_note_id,clinical.clinical_notes,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+160,R0158,clinical.note_addenda,author_practitioner_id,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+161,R0159,clinical.diagnoses,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+162,R0160,clinical.diagnoses,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+163,R0161,clinical.diagnoses,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+164,R0162,clinical.diagnoses,asserted_by,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+165,R0163,clinical.observations,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+166,R0164,clinical.observations,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+167,R0165,clinical.observations,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+168,R0166,clinical.observations,performer_id,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+169,R0167,clinical.observation_components,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+170,R0168,clinical.observation_components,observation_id,clinical.observations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+171,R0169,clinical.procedures,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+172,R0170,clinical.procedures,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+173,R0171,clinical.procedures,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+174,R0172,clinical.procedures,performer_id,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+175,R0173,clinical.allergies,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+176,R0174,clinical.allergies,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+177,R0175,clinical.allergies,recorded_by,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+178,R0176,clinical.care_plans,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+179,R0177,clinical.care_plans,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+180,R0178,clinical.care_plans,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+181,R0179,clinical.care_plans,authored_by,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+182,R0180,clinical.care_goals,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+183,R0181,clinical.care_goals,care_plan_id,clinical.care_plans,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+184,R0182,clinical.care_goals,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+185,R0183,clinical.care_plan_activities,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+186,R0184,clinical.care_plan_activities,care_plan_id,clinical.care_plans,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+187,R0185,clinical.care_plan_activities,service_order_id,orders.service_orders,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+188,R0186,clinical.care_teams,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+189,R0187,clinical.care_teams,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+190,R0188,clinical.care_teams,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+191,R0189,clinical.care_team_members,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+192,R0190,clinical.care_team_members,care_team_id,clinical.care_teams,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+193,R0191,clinical.care_team_members,practitioner_id,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+194,R0192,clinical.referrals,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+195,R0193,clinical.referrals,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+196,R0194,clinical.referrals,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+197,R0195,clinical.referrals,service_order_id,orders.service_orders,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+198,R0196,clinical.referrals,destination_organization_id,master.organizations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+199,R0197,clinical.referral_responses,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+200,R0198,clinical.referral_responses,referral_id,clinical.referrals,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+201,R0199,clinical.referral_responses,responder_org_id,master.organizations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+202,R0200,clinical.clinical_documents,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+203,R0201,clinical.clinical_documents,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+204,R0202,clinical.clinical_documents,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+205,R0203,clinical.clinical_documents,author_id,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+206,R0204,clinical.document_signatures,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+207,R0205,clinical.document_signatures,document_id,clinical.clinical_documents,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+208,R0206,clinical.document_signatures,signer_user_id,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+209,R0207,clinical.nursing_tasks,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+210,R0208,clinical.nursing_tasks,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+211,R0209,clinical.nursing_tasks,care_plan_id,clinical.care_plans,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+212,R0210,clinical.nursing_tasks,assigned_to,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+213,R0211,clinical.clinical_alerts,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+214,R0212,clinical.clinical_alerts,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+215,R0213,clinical.clinical_alerts,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+216,R0214,clinical.clinical_alerts,acknowledged_by,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+217,R0215,clinical.medication_safety_screenings,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+218,R0216,clinical.medication_safety_screenings,prescription_id,pharmacy.prescriptions,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+219,R0217,clinical.medication_safety_screenings,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+220,R0218,clinical.medication_safety_screenings,reviewed_by,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+221,R0219,clinical.early_warning_scores,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+222,R0220,clinical.early_warning_scores,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+223,R0221,clinical.early_warning_scores,triggered_alert_id,clinical.clinical_alerts,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+224,R0222,clinical.clinical_pathways,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+225,R0223,clinical.pathway_steps,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+226,R0224,clinical.pathway_steps,pathway_id,clinical.clinical_pathways,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+227,R0225,clinical.pathway_enrollments,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+228,R0226,clinical.pathway_enrollments,pathway_id,clinical.clinical_pathways,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+229,R0227,clinical.pathway_enrollments,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+230,R0228,orders.service_orders,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+231,R0229,orders.service_orders,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+232,R0230,orders.service_orders,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+233,R0231,orders.service_orders,requesting_practitioner_id,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+234,R0232,orders.service_orders,target_unit_id,master.organization_units,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+235,R0233,orders.order_items,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+236,R0234,orders.order_items,service_order_id,orders.service_orders,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+237,R0235,orders.order_items,service_id,master.service_catalog,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+238,R0236,orders.order_items,performer_id,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+239,R0237,orders.order_events,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+240,R0238,orders.order_events,service_order_id,orders.service_orders,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+241,R0239,orders.order_events,actor_user_id,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+242,R0240,orders.order_fulfillments,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+243,R0241,orders.order_fulfillments,order_item_id,orders.order_items,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+244,R0242,orders.order_fulfillments,performer_unit_id,master.organization_units,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+245,R0243,orders.order_templates,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+246,R0244,laboratory.test_catalog,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+247,R0245,laboratory.test_catalog,service_id,master.service_catalog,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+248,R0246,laboratory.lab_panels,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+249,R0247,laboratory.panel_members,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+250,R0248,laboratory.panel_members,panel_id,laboratory.lab_panels,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+251,R0249,laboratory.panel_members,test_id,laboratory.test_catalog,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+252,R0250,laboratory.lab_orders,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+253,R0251,laboratory.lab_orders,service_order_id,orders.service_orders,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+254,R0252,laboratory.lab_orders,order_item_id,orders.order_items,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+255,R0253,laboratory.specimens,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+256,R0254,laboratory.specimens,lab_order_id,laboratory.lab_orders,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+257,R0255,laboratory.specimen_events,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+258,R0256,laboratory.specimen_events,specimen_id,laboratory.specimens,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+259,R0257,laboratory.specimen_events,performed_by,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+260,R0258,laboratory.specimen_events,location_id,master.locations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+261,R0259,laboratory.lab_results,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+262,R0260,laboratory.lab_results,lab_order_id,laboratory.lab_orders,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+263,R0261,laboratory.lab_results,specimen_id,laboratory.specimens,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+264,R0262,laboratory.lab_results,test_id,laboratory.test_catalog,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+265,R0263,laboratory.lab_results,verified_by,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+266,R0264,laboratory.lab_result_versions,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+267,R0265,laboratory.lab_result_versions,lab_result_id,laboratory.lab_results,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+268,R0266,laboratory.lab_result_versions,changed_by,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+269,R0267,laboratory.lab_reports,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+270,R0268,laboratory.lab_reports,lab_order_id,laboratory.lab_orders,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+271,R0269,laboratory.lab_reports,verified_by,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+272,R0270,laboratory.analyzer_devices,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+273,R0271,laboratory.analyzer_messages,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+274,R0272,laboratory.analyzer_messages,analyzer_id,laboratory.analyzer_devices,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+275,R0273,laboratory.analyzer_messages,lab_order_id,laboratory.lab_orders,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+276,R0274,laboratory.lab_qc_results,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+277,R0275,laboratory.lab_qc_results,analyzer_id,laboratory.analyzer_devices,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+278,R0276,laboratory.lab_qc_results,test_id,laboratory.test_catalog,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+279,R0277,radiology.modalities,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+280,R0278,radiology.modalities,location_id,master.locations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+281,R0279,radiology.rad_orders,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+282,R0280,radiology.rad_orders,service_order_id,orders.service_orders,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+283,R0281,radiology.rad_exams,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+284,R0282,radiology.rad_exams,rad_order_id,radiology.rad_orders,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+285,R0283,radiology.rad_exams,modality_id,radiology.modalities,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+286,R0284,radiology.rad_exams,technologist_id,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+287,R0285,radiology.rad_reports,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+288,R0286,radiology.rad_reports,rad_exam_id,radiology.rad_exams,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+289,R0287,radiology.rad_reports,interpreting_practitioner_id,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+290,R0288,radiology.imaging_studies,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+291,R0289,radiology.imaging_studies,rad_exam_id,radiology.rad_exams,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+292,R0290,radiology.imaging_series,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+293,R0291,radiology.imaging_series,imaging_study_id,radiology.imaging_studies,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+294,R0292,radiology.modality_worklists,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+295,R0293,radiology.modality_worklists,rad_order_id,radiology.rad_orders,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+296,R0294,radiology.modality_worklists,modality_id,radiology.modalities,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+297,R0295,radiology.pacs_access_logs,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+298,R0296,radiology.pacs_access_logs,imaging_study_id,radiology.imaging_studies,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+299,R0297,radiology.pacs_access_logs,accessed_by,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+300,R0298,pharmacy.medications,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+301,R0299,pharmacy.prescriptions,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+302,R0300,pharmacy.prescriptions,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+303,R0301,pharmacy.prescriptions,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+304,R0302,pharmacy.prescriptions,prescriber_id,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+305,R0303,pharmacy.prescription_items,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+306,R0304,pharmacy.prescription_items,prescription_id,pharmacy.prescriptions,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+307,R0305,pharmacy.prescription_items,medication_id,pharmacy.medications,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+308,R0306,pharmacy.prescription_verifications,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+309,R0307,pharmacy.prescription_verifications,prescription_id,pharmacy.prescriptions,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+310,R0308,pharmacy.prescription_verifications,reviewed_by,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+311,R0309,pharmacy.dispenses,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+312,R0310,pharmacy.dispenses,prescription_id,pharmacy.prescriptions,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+313,R0311,pharmacy.dispenses,pharmacy_unit_id,master.organization_units,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+314,R0312,pharmacy.dispenses,dispensed_by,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+315,R0313,pharmacy.dispense_items,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+316,R0314,pharmacy.dispense_items,dispense_id,pharmacy.dispenses,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+317,R0315,pharmacy.dispense_items,prescription_item_id,pharmacy.prescription_items,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+318,R0316,pharmacy.dispense_items,stock_lot_id,inventory.stock_lots,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+319,R0317,pharmacy.dispense_items,stock_movement_id,inventory.stock_movements,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+320,R0318,pharmacy.medication_administrations,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+321,R0319,pharmacy.medication_administrations,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+322,R0320,pharmacy.medication_administrations,prescription_item_id,pharmacy.prescription_items,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+323,R0321,pharmacy.medication_administrations,administered_by,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+324,R0322,pharmacy.bcma_scan_events,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+325,R0323,pharmacy.bcma_scan_events,administration_id,pharmacy.medication_administrations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+326,R0324,pharmacy.bcma_scan_events,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+327,R0325,pharmacy.bcma_scan_events,medication_id,pharmacy.medications,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+328,R0326,pharmacy.bcma_scan_events,operator_id,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+329,R0327,pharmacy.medication_reconciliations,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+330,R0328,pharmacy.medication_reconciliations,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+331,R0329,pharmacy.medication_reconciliations,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+332,R0330,pharmacy.medication_reconciliations,performed_by,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+333,R0331,inventory.items,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+334,R0332,inventory.items,medication_id,pharmacy.medications,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+335,R0333,inventory.item_identifiers,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+336,R0334,inventory.item_identifiers,item_id,inventory.items,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+337,R0335,inventory.item_uoms,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+338,R0336,inventory.item_uoms,item_id,inventory.items,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+339,R0337,inventory.warehouses,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+340,R0338,inventory.warehouses,organization_id,master.organizations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+341,R0339,inventory.warehouses,location_id,master.locations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+342,R0340,inventory.stock_lots,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+343,R0341,inventory.stock_lots,item_id,inventory.items,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+344,R0342,inventory.stock_lots,warehouse_id,inventory.warehouses,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+345,R0343,inventory.stock_movements,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+346,R0344,inventory.stock_movements,warehouse_id,inventory.warehouses,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+347,R0345,inventory.stock_movements,item_id,inventory.items,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+348,R0346,inventory.stock_movements,lot_id,inventory.stock_lots,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+349,R0347,inventory.stock_movements,reversal_of_id,inventory.stock_movements,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+350,R0348,inventory.stock_reservations,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+351,R0349,inventory.stock_reservations,warehouse_id,inventory.warehouses,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+352,R0350,inventory.stock_reservations,item_id,inventory.items,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+353,R0351,inventory.stock_reservations,lot_id,inventory.stock_lots,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+354,R0352,inventory.stock_counts,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+355,R0353,inventory.stock_counts,warehouse_id,inventory.warehouses,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+356,R0354,inventory.stock_counts,approved_by,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+357,R0355,inventory.stock_count_lines,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+358,R0356,inventory.stock_count_lines,stock_count_id,inventory.stock_counts,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+359,R0357,inventory.stock_count_lines,item_id,inventory.items,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+360,R0358,inventory.stock_count_lines,lot_id,inventory.stock_lots,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+361,R0359,inventory.stock_adjustments,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+362,R0360,inventory.stock_adjustments,stock_count_line_id,inventory.stock_count_lines,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+363,R0361,inventory.stock_adjustments,item_id,inventory.items,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+364,R0362,inventory.stock_adjustments,stock_movement_id,inventory.stock_movements,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+365,R0363,inventory.reorder_rules,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+366,R0364,inventory.reorder_rules,item_id,inventory.items,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+367,R0365,inventory.reorder_rules,warehouse_id,inventory.warehouses,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+368,R0366,nutrition.nutrition_assessments,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+369,R0367,nutrition.nutrition_assessments,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+370,R0368,nutrition.nutrition_assessments,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+371,R0369,nutrition.nutrition_assessments,assessed_by,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+372,R0370,nutrition.diet_types,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+373,R0371,nutrition.diet_orders,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+374,R0372,nutrition.diet_orders,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+375,R0373,nutrition.diet_orders,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+376,R0374,nutrition.diet_orders,diet_type_id,nutrition.diet_types,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+377,R0375,nutrition.diet_orders,requested_by,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+378,R0376,nutrition.menus,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+379,R0377,nutrition.menus,diet_type_id,nutrition.diet_types,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+380,R0378,nutrition.menu_items,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+381,R0379,nutrition.menu_items,menu_id,nutrition.menus,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+382,R0380,nutrition.menu_items,recipe_id,nutrition.recipes,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+383,R0381,nutrition.recipes,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+384,R0382,nutrition.recipe_ingredients,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+385,R0383,nutrition.recipe_ingredients,recipe_id,nutrition.recipes,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+386,R0384,nutrition.recipe_ingredients,item_id,inventory.items,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+387,R0385,nutrition.production_batches,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+388,R0386,nutrition.production_batches,menu_id,nutrition.menus,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+389,R0387,nutrition.production_batches,kitchen_location_id,master.locations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+390,R0388,nutrition.production_consumptions,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+391,R0389,nutrition.production_consumptions,production_batch_id,nutrition.production_batches,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+392,R0390,nutrition.production_consumptions,item_id,inventory.items,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+393,R0391,nutrition.production_consumptions,stock_lot_id,inventory.stock_lots,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+394,R0392,nutrition.production_consumptions,stock_movement_id,inventory.stock_movements,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+395,R0393,nutrition.meal_trays,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+396,R0394,nutrition.meal_trays,production_batch_id,nutrition.production_batches,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+397,R0395,nutrition.meal_trays,diet_order_id,nutrition.diet_orders,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+398,R0396,nutrition.meal_trays,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+399,R0397,nutrition.meal_trays,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+400,R0398,nutrition.tray_deliveries,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+401,R0399,nutrition.tray_deliveries,meal_tray_id,nutrition.meal_trays,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+402,R0400,nutrition.tray_deliveries,delivered_by,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+403,R0401,nutrition.tray_deliveries,received_by,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+404,R0402,procurement.suppliers,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+405,R0403,procurement.purchase_requests,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+406,R0404,procurement.purchase_requests,requester_user_id,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+407,R0405,procurement.purchase_requests,organization_id,master.organizations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+408,R0406,procurement.purchase_requests,approved_by,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+409,R0407,procurement.purchase_request_lines,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+410,R0408,procurement.purchase_request_lines,purchase_request_id,procurement.purchase_requests,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+411,R0409,procurement.purchase_request_lines,item_id,inventory.items,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+412,R0410,procurement.purchase_request_lines,service_id,master.service_catalog,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+413,R0411,procurement.purchase_orders,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+414,R0412,procurement.purchase_orders,supplier_id,procurement.suppliers,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+415,R0413,procurement.purchase_orders,organization_id,master.organizations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+416,R0414,procurement.purchase_orders,approved_by,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+417,R0415,procurement.purchase_order_lines,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+418,R0416,procurement.purchase_order_lines,purchase_order_id,procurement.purchase_orders,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+419,R0417,procurement.purchase_order_lines,purchase_request_line_id,procurement.purchase_request_lines,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+420,R0418,procurement.purchase_order_lines,item_id,inventory.items,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+421,R0419,procurement.goods_receipts,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+422,R0420,procurement.goods_receipts,purchase_order_id,procurement.purchase_orders,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+423,R0421,procurement.goods_receipts,warehouse_id,inventory.warehouses,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+424,R0422,procurement.goods_receipts,received_by,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+425,R0423,procurement.goods_receipt_lines,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+426,R0424,procurement.goods_receipt_lines,goods_receipt_id,procurement.goods_receipts,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+427,R0425,procurement.goods_receipt_lines,purchase_order_line_id,procurement.purchase_order_lines,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+428,R0426,procurement.goods_receipt_lines,item_id,inventory.items,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+429,R0427,procurement.goods_receipt_lines,lot_id,inventory.stock_lots,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+430,R0428,procurement.goods_receipt_lines,stock_movement_id,inventory.stock_movements,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+431,R0429,procurement.supplier_invoices,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+432,R0430,procurement.supplier_invoices,supplier_id,procurement.suppliers,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+433,R0431,procurement.supplier_invoices,purchase_order_id,procurement.purchase_orders,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+434,R0432,procurement.supplier_invoice_lines,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+435,R0433,procurement.supplier_invoice_lines,supplier_invoice_id,procurement.supplier_invoices,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+436,R0434,procurement.supplier_invoice_lines,goods_receipt_line_id,procurement.goods_receipt_lines,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+437,R0435,procurement.purchase_returns,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+438,R0436,procurement.purchase_returns,goods_receipt_id,procurement.goods_receipts,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+439,R0437,procurement.purchase_returns,supplier_id,procurement.suppliers,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+440,R0438,operations.operating_rooms,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+441,R0439,operations.operating_rooms,location_id,master.locations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+442,R0440,operations.surgery_schedules,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+443,R0441,operations.surgery_schedules,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+444,R0442,operations.surgery_schedules,service_order_id,orders.service_orders,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+445,R0443,operations.surgery_schedules,room_id,operations.operating_rooms,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+446,R0444,operations.surgery_schedules,surgeon_id,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+447,R0445,operations.surgery_checklists,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+448,R0446,operations.surgery_checklists,surgery_schedule_id,operations.surgery_schedules,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+449,R0447,operations.surgery_checklists,completed_by,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+450,R0448,operations.surgery_events,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+451,R0449,operations.surgery_events,surgery_schedule_id,operations.surgery_schedules,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+452,R0450,operations.surgery_events,practitioner_id,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+453,R0451,operations.anesthesia_records,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+454,R0452,operations.anesthesia_records,surgery_schedule_id,operations.surgery_schedules,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+455,R0453,operations.anesthesia_records,anesthetist_id,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+456,R0454,operations.anesthesia_observations,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+457,R0455,operations.anesthesia_observations,anesthesia_record_id,operations.anesthesia_records,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+458,R0456,operations.anesthesia_observations,observation_id,clinical.observations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+459,R0457,operations.pacu_records,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+460,R0458,operations.pacu_records,surgery_schedule_id,operations.surgery_schedules,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+461,R0459,operations.pacu_records,released_by,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+462,R0460,operations.dialysis_sessions,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+463,R0461,operations.dialysis_sessions,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+464,R0462,operations.dialysis_sessions,service_order_id,orders.service_orders,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+465,R0463,operations.dialysis_sessions,machine_asset_id,operations.assets,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+466,R0464,operations.rehabilitation_sessions,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+467,R0465,operations.rehabilitation_sessions,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+468,R0466,operations.rehabilitation_sessions,service_order_id,orders.service_orders,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+469,R0467,operations.rehabilitation_sessions,therapist_id,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+470,R0468,operations.mcu_packages,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+471,R0469,operations.mcu_package_items,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+472,R0470,operations.mcu_package_items,mcu_package_id,operations.mcu_packages,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+473,R0471,operations.mcu_package_items,service_id,master.service_catalog,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+474,R0472,operations.blood_units,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+475,R0473,operations.blood_crossmatches,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+476,R0474,operations.blood_crossmatches,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+477,R0475,operations.blood_crossmatches,blood_unit_id,operations.blood_units,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+478,R0476,operations.blood_crossmatches,specimen_id,laboratory.specimens,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+479,R0477,operations.blood_crossmatches,checked_by,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+480,R0478,operations.transfusions,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+481,R0479,operations.transfusions,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+482,R0480,operations.transfusions,blood_unit_id,operations.blood_units,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+483,R0481,operations.transfusions,crossmatch_id,operations.blood_crossmatches,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+484,R0482,operations.transfusions,administered_by,master.practitioners,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+485,R0483,operations.cssd_instruments,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+486,R0484,operations.cssd_instruments,asset_id,operations.assets,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+487,R0485,operations.cssd_sets,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+488,R0486,operations.cssd_set_items,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+489,R0487,operations.cssd_set_items,cssd_set_id,operations.cssd_sets,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+490,R0488,operations.cssd_set_items,instrument_id,operations.cssd_instruments,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+491,R0489,operations.cssd_cycles,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+492,R0490,operations.cssd_cycles,sterilizer_asset_id,operations.assets,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+493,R0491,operations.cssd_cycle_items,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+494,R0492,operations.cssd_cycle_items,cssd_cycle_id,operations.cssd_cycles,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+495,R0493,operations.cssd_cycle_items,cssd_set_id,operations.cssd_sets,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+496,R0494,operations.cssd_distributions,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+497,R0495,operations.cssd_distributions,cssd_set_id,operations.cssd_sets,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+498,R0496,operations.cssd_distributions,target_unit_id,master.organization_units,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+499,R0497,operations.cssd_distributions,received_by,identity.users,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+500,R0498,operations.linen_items,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+501,R0499,operations.linen_batches,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+502,R0500,operations.linen_batches,origin_location_id,master.locations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+503,R0501,operations.laundry_cycles,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+504,R0502,operations.laundry_cycles,linen_batch_id,operations.linen_batches,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+505,R0503,operations.laundry_cycles,machine_asset_id,operations.assets,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+506,R0504,operations.linen_movements,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+507,R0505,operations.linen_movements,linen_item_id,operations.linen_items,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+508,R0506,operations.linen_movements,from_location_id,master.locations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+509,R0507,operations.linen_movements,to_location_id,master.locations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+510,R0508,operations.transport_requests,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+511,R0509,operations.transport_requests,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+512,R0510,operations.transport_requests,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+513,R0511,operations.transport_requests,pickup_location_id,master.locations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+514,R0512,operations.vehicles,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+515,R0513,operations.transport_assignments,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+516,R0514,operations.transport_assignments,transport_request_id,operations.transport_requests,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+517,R0515,operations.transport_assignments,vehicle_id,operations.vehicles,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+518,R0516,operations.transport_assignments,assigned_employee_id,hr.employees,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+519,R0517,operations.housekeeping_tasks,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+520,R0518,operations.housekeeping_tasks,location_id,master.locations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+521,R0519,operations.housekeeping_tasks,assigned_employee_id,hr.employees,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+522,R0520,operations.nonmedical_transactions,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+523,R0521,operations.nonmedical_transactions,business_unit_id,master.organization_units,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+524,R0522,operations.assets,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+525,R0523,operations.assets,location_id,master.locations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+526,R0524,operations.asset_maintenances,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+527,R0525,operations.asset_maintenances,asset_id,operations.assets,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+528,R0526,operations.asset_maintenances,vendor_id,procurement.suppliers,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+529,R0527,operations.facility_work_orders,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+530,R0528,operations.facility_work_orders,location_id,master.locations,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+531,R0529,operations.facility_work_orders,assigned_employee_id,hr.employees,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+532,R0530,billing.payers,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+533,R0531,billing.payer_contracts,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+534,R0532,billing.payer_contracts,payer_id,billing.payers,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+535,R0533,billing.coverages,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+536,R0534,billing.coverages,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+537,R0535,billing.coverages,payer_id,billing.payers,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+538,R0536,billing.coverage_authorizations,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+539,R0537,billing.coverage_authorizations,coverage_id,billing.coverages,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+540,R0538,billing.coverage_authorizations,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+541,R0539,billing.charge_rules,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+542,R0540,billing.charge_rules,service_id,master.service_catalog,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+543,R0541,billing.charge_rules,tariff_id,master.tariff_catalog,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+544,R0542,billing.charges,tenant_id,identity.tenants,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+545,R0543,billing.charges,encounter_id,encounter.encounters,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+546,R0544,billing.charges,patient_id,patient.patients,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+547,R0545,billing.charges,service_id,master.service_catalog,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
+548,R0546,billing.charges,charge_rule_id,billing.charge_rules,id,N:1,RESTRICT / NO ACTION,"(tenant_id, FK) -> (tenant_id, id)",Database + RLS,DRAFT
