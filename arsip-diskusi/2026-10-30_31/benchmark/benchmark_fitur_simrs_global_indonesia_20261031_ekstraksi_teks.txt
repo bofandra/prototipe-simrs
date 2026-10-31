@@ -1,0 +1,143 @@
+SUMBER: benchmark_fitur_simrs_global_indonesia_20261031.xlsx
+CATATAN: Ekstraksi teks dari workbook XLSX asli; RUMUS, tipe sel, validasi, format, grafik, dan relasi antar sheet mungkin tidak terjaga.
+
+<PARSED TEXT FOR SHEET: 1 / 6 TABS
+TAB NAME: 00_Baca_Dulu>
+index,BENCHMARK FITUR SIMRS GLOBAL & INDONESIA,Unnamed: 1
+0,"31 Oktober 2026 | Katalog fitur, bukan penilaian implementasi produksi atau peringkat vendor",
+1,,
+2,Komponen,Keterangan
+3,Cakupan,4 EHR/HIS global + 5 pembanding Indonesia/benchmark + SIMRS-Sensi
+4,Unit analisis,"47 kelompok fitur operasional, klinis, enterprise, integrasi"
+5,D,DIDOKUMENTASIKAN pada situs/katalog produk publik; belum diuji di instalasi RS
+6,B,BENCHMARK TrustMe SIMRS dari dokumen yang dibahas sebelumnya; belum diperiksa live
+7,I,IMPLEMENTED FOUNDATION di kode/main menurut dokumen proyek; bukan berarti UAT/produksi
+8,P / R / ?,P=Parsial/perlu bukti; R=draft PR; ?=Belum ada bukti memadai (bukan berarti tidak ada)
+9,,
+10,Aturan interpretasi,
+11,"Status 'D' adalah bukti fitur terdaftar, bukan bukti semua submenu tersedia, integrasi telah berjalan, atau fitur aman digunakan klinis. 'I' di SIMRS-Sensi menunjukkan fondasi kode; cek versi main, tests, UAT dan produksi terpisah. Sel kosong/tanda ? tidak dinilai sebagai kekurangan produk. Jumlah tanda D tidak boleh menjadi skor kualitas antar-vendor karena kedalaman dokumentasi dan model lisensi berbeda.",
+12,,
+13,,
+14,,
+15,"Fokus gap: kesiapan alur pasien end-to-end, operasional modul khusus, external acceptance, dan backoffice enterprise.",
+<PARSED TEXT FOR SHEET: 2 / 6 TABS
+TAB NAME: 01_Matriks_47_Fitur>
+index,MATRIKS 47 KELOMPOK FITUR,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4,Unnamed: 5,Unnamed: 6,Unnamed: 7,Unnamed: 8,Unnamed: 9,Unnamed: 10,Unnamed: 11,Unnamed: 12,Unnamed: 13
+0,D=publik; B=benchmark TrustMe; I=kode/fondasi main SIMRS-Sensi; P=parsial; R=draft PR; ?=belum terverifikasi,,,,,,,,,,,,,
+1,,,,,,,,,,,,,,
+2,Domain,Fitur/Submodul,Bukti minimal / Acceptance,Epic,TrakCare,Oracle Health,MEDITECH,NUHA,SIMGOS V2,Khanza,teraMedik,TrustMe,SIMRS-Sensi,Prioritas PoC
+3,A. Patient access,Master pasien / identitas / MPI,"Cari, deduplikasi, merge pasien, audit perubahan",D,D,D,D,?,D,D,?,?,I,P0
+4,A. Patient access,"Registrasi, admisi & penjamin","Pasien baru/lama, RJ/RI/IGD, payer dan episode",D,D,D,D,D,D,D,D,B,I,P0
+5,A. Patient access,Booking & jadwal dokter,"Slot, kuota, batal/jadwal ulang, konflik",D,D,D,D,D,D,?,?,B,I,P2
+6,A. Patient access,Antrean & call/display,"Nomor antrean, loket/poli, audio/display",D,?,?,?,D,D,D,?,B,I,P2
+7,A. Patient access,APM / self check-in,Check-in mandiri dengan verifikasi aman,D,?,?,?,D,D,?,?,B,P,P2
+8,A. Patient access,Portal / aplikasi pasien,"Riwayat, booking, dokumen, notifikasi",D,D,D,D,D,?,?,?,?,P,P2
+9,A. Patient access,ADT & bed management,"Admission, transfer, discharge, kelas, status bed",D,D,D,D,D,D,D,?,B,I,P0
+10,B. Clinical EHR,Rawat jalan & SOAP,"Pemeriksaan, tindakan, diagnosis, order, resume",D,D,D,D,D,D,D,D,B,I,P0
+11,B. Clinical EHR,IGD & triase,"Triase, reasessmen, tindakan, disposisi",D,D,D,D,D,D,D,D,B,I,P1
+12,B. Clinical EHR,Rawat inap & CPPT,"Asesmen multidisiplin, progres, handover",D,D,D,D,D,D,D,D,B,I,P1
+13,B. Clinical EHR,Keperawatan / asuhan,"Asesmen, intervensi, implementasi, evaluasi",D,D,D,D,D,D,?,?,B,I,P1
+14,B. Clinical EHR,Template klinis / formulir dinamis,"Versi formulir, konfigurasi dan validasi",D,?,?,D,D,D,?,?,B,P,P1
+15,B. Clinical EHR,Consent & tanda tangan digital,"Verifikasi pihak berwenang, versi, audit",D,?,?,?,D,?,?,?,?,P,P1
+16,B. Clinical EHR,Discharge planning & resume,"Rencana pulang, obat, tindak lanjut, finalisasi",D,D,D,D,D,D,?,?,?,P,P1
+17,B. Clinical EHR,Rekonsiliasi obat,"Masuk/pindah/pulang, review farmasi dan DPJP",D,?,?,?,?,D,?,?,?,P,P1
+18,B. Clinical EHR,CDSS / clinical pathway,"Rules, evidence, override, outcome",D,D,D,D,?,?,?,?,?,P,P1
+19,C. Diagnostics,Order klinis terintegrasi,"Order CPOE, status, eksekusi, hasil",D,D,D,D,D,D,D,D,B,I,P0
+20,C. Diagnostics,Laboratorium / LIS,"Specimen, verifikasi, hasil, TAT, instrumen",D,D,D,D,D,D,D,D,B,I,P0
+21,C. Diagnostics,Radiologi / RIS / PACS,"Order, jadwal, laporan, image-viewer",D,?,D,D,D,D,D,D,B,I,P0
+22,C. Diagnostics,"Resep, farmasi & dispensing","Order, farmasis, serah obat, stok/billing",D,D,D,D,D,D,D,D,B,I,P0
+23,C. Diagnostics,Farmasi klinis / BCMA,"Review obat, alergi/interaksi, barcode",D,?,D,?,D,?,?,?,?,P,P1
+24,D. Specialty,"Operasi, anestesi & recovery","Jadwal, asesmen, checklist, pencatatan recovery",D,D,D,D,D,D,?,?,B,P,P2
+25,D. Specialty,ICU / critical care,"Monitoring, chart flowsheet, high-acuity",D,D,D,D,?,?,?,?,?,?,P2
+26,D. Specialty,Kebidanan / maternal-neonatal,"ANC, persalinan, bayi, pascapersalinan",D,D,D,D,?,?,?,?,?,P,P2
+27,D. Specialty,Hemodialisis,"Session, prescription HD, hasil, alat/billing",D,?,?,?,D,?,?,?,?,P,P2
+28,D. Specialty,Fisioterapi / rehabilitasi,"Terapi, jadwal, capaian/asesmen",D,?,?,D,D,?,?,?,?,P,P2
+29,D. Specialty,Medical Check Up,"Paket MCU, asesmen, hasil, kesimpulan",?,?,?,?,D,?,?,D,?,P,P2
+30,D. Specialty,Gizi klinis dan dapur produksi,"Diet valid, allergen gate, menu, produksi, distribusi",D,?,?,D,D,D,D,?,?,P + R,P2
+31,D. Specialty,CSSD / sterilisasi,"Penerimaan, siklus sterilisasi, traceability",?,?,?,?,D,D,?,?,?,P,P2
+32,D. Specialty,Laundry & linen,"Sortasi, cuci, distribusi, kehilangan",?,?,?,?,D,D,?,?,?,P,P2
+33,D. Specialty,Bank darah / transfusi,"Request, stok darah, crossmatch, distribusi",?,?,D,D,?,?,D,D,?,P,P2
+34,D. Specialty,PPI / HAIs & manajemen risiko,"HAIs, surveilans, indikator dan tindak lanjut",D,?,D,D,D,D,?,?,?,P,P2
+35,E. Revenue & ERP,Billing & kasir,"Tarif, charge, pembayaran, refund, tutup kasir",D,D,D,D,D,D,D,D,B,I,P0
+36,E. Revenue & ERP,"Coding, casemix & klaim","ICD, verifikasi dokumen, submission, AR",D,D,D,D,D,D,D,?,?,P,P1
+37,E. Revenue & ERP,Keuangan / GL / AP / AR,"Jurnal, posting, rekonsiliasi, tutup buku",?,?,D,D,D,D,D,D,?,P,P1
+38,E. Revenue & ERP,"Procurement, gudang & inventory","PR, PO, receiving, transfer, FEFO, opname",?,?,D,D,D,D,D,D,B,I,P1
+39,E. Revenue & ERP,Costing & margin layanan,"Jasa medis, HPP, alokasi overhead, unit cost",?,?,D,D,?,?,?,?,?,P,P1
+40,E. Revenue & ERP,"HR, jadwal, payroll & ESS","Kepegawaian, shift, izin, payroll, self-service",?,?,?,D,D,D,D,?,?,P,P1
+41,E. Revenue & ERP,Aset tetap & maintenance,"Registrasi, penyusutan, maintenance/disposal",?,?,?,D,D,?,D,?,?,P,P1
+42,F. Interop & insights,Bridging BPJS Indonesia,SEP/VClaim/Antrol/iCare/claims live dan audit,?,?,?,?,D,D,D,D,B,P,P2
+43,F. Interop & insights,FHIR & SATUSEHAT,"Validasi mapping, sync, retry dan rekonsiliasi",?,?,?,?,D,D,?,D,B,P,P0
+44,F. Interop & insights,Interoperabilitas umum / API,"HL7/FHIR/API, lisensi dan peran, traceability",D,D,D,D,D,D,D,?,?,P,P2
+45,F. Interop & insights,Laporan regulator / RL / SIRS,"Template laporan, filter, rekonsiliasi periodik",?,?,?,?,D,D,D,?,?,P,P2
+46,F. Interop & insights,Executive dashboard / BI,"KPI terdefinisi, cross-domain, drilldown",D,D,D,D,D,D,D,D,B,I,P2
+47,F. Interop & insights,Manajemen multi-RS / konsolidasi,"Akses tenant, CoA rollup, group-level metrics",D,?,?,?,D,?,?,?,?,P,P2
+48,F. Interop & insights,"Keamanan, consent, audit & RBAC","Peranan, privilege per episode, immutable audit",D,?,?,D,D,D,D,D,?,I,P0
+49,F. Interop & insights,AI / clinical documentation support,"Saran, audit, safe review, tidak auto sign",D,?,D,?,?,?,?,?,?,P,P2
+<PARSED TEXT FOR SHEET: 3 / 6 TABS
+TAB NAME: 02_Prioritas_Sensi>
+index,PRIORITAS GAP SIMRS-SENSI,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4
+0,Prioritas analitis: tidak menyatakan pekerjaan sudah rilis atau fungsi produksi,,,,
+1,,,,,
+2,Tahap,Paket/Gap,Acceptance yang harus dibuktikan,Kondisi kode / risiko saat ini,Pembanding utama
+3,P0,Kelengkapan RJ–IGD–RI,Validasi registration→order→result→resume→billing→klaim dan satu episode FHIR,Fondasi main tersedia; detail workflow dan provider/UAT perlu validasi,Epic/TrakCare/Oracle/NUHA
+4,P0,Interoperabilitas SATUSEHAT,"Uji sandbox lalu acceptance resmi, mapping resource, retry/reconciliation",FHIR workbench dan sync-job ada; kontrak/credential/acceptance live belum tuntas,SIMGOS/NUHA
+5,P0,BPJS + claim,"VClaim/Antrol/SEP, e-Klaim dengan sumber bukti dan status klaim",Workflow/job staging tersedia; provider live belum diterima,NUHA/SIMGOS/TrustMe
+6,P0,Clinical safety & consent,"Consent berwenang, rekonsiliasi obat, tanda tangan, risiko duplikasi",Banyak safety-gate dan review; sebagian masih draft/UAT,Epic/MEDITECH
+7,P1,Produksi dan distribusi gizi E07,Assessment diet→otorisasi→produksi→serah; fail-closed,Draft PR #240–#247 belum di-merge; UAT/status produksi NO-GO,NUHA/SIMGOS
+8,P1,Laporan dinamis + RL E06,"Laporan per unit, filter, definisi numerik, ekspor regulator",Fondasi dashboard; paket RL masih memerlukan validasi implementasi/UAT,SIMGOS/NUHA/Khanza
+9,P1,"Operasi, anestesi, recovery E05","Scheduling, checklist, evidence anestesi, sign-off",Fondasi kamar operasi; kedalaman workflow perlu diverifikasi,Epic/MEDITECH/TrakCare
+10,P1,"Rehab, HD, MCU, CSSD, laundry E08–E13","Sesi layanan, alat, stok, distribusi, biaya, keterkaitan RM","Sebagian ada slice awal, belum lengkap UAT/acceptance",NUHA/SIMGOS
+11,P1,"PPI/HAIs, risiko, pathway E14–E15","Indikator berkode, event, audit, intervensi dan outcome",Fondasi mutu dan risiko; kedalaman E14–E15 belum tervalidasi,Epic/MEDITECH/NUHA
+12,P1,Portal pasien E18,"Booking, dokumen pasien, autentikasi, privasi",Rencana/parsial; live patient access perlu uji end-to-end,Epic MyChart/NUHA
+13,P2,"GL/AP/AR, costing, HR, aset E16–E17","Posting/jurnal, tutup buku, rekonsiliasi, payroll, ESS",Foundation enterprise tersedia; acceptance unit belum lengkap,MEDITECH/NUHA/Khanza
+14,P2,Analitik klinis & multi-RS,"KPI definitions, RLS tenant, agregasi konsolidasi",Mart/dashboard awal; perlu validasi sumber dan metrik,Epic Cogito/MEDITECH
+<PARSED TEXT FOR SHEET: 4 / 6 TABS
+TAB NAME: 03_Profil_Vendor>
+index,PROFIL SISTEM PEMBANDING,Unnamed: 1,Unnamed: 2,Unnamed: 3
+0,Pemilahan portfolio vendor vs produk tunggal; khusus SIMRS-Sensi status main dan draft PR terpisah,,,
+1,,,,
+2,Sistem,Kelompok,Sumber utama,Catatan dan batas bukti
+3,Epic,Global,https://www.epic.com/software/,Katalog produk; variasi implementasi dan paket RS
+4,TrakCare,Global,https://www.intersystems.com/sg/products/trakcare/settings-departments/,Katalog core + optional extensions
+5,Oracle Health,Global,https://www.oracle.com/health/products/,Katalog portofolio; bukan berarti semua produk satu paket
+6,MEDITECH,Global,https://ehr.meditech.com/meditech-product-list,Daftar lini produk Expanse
+7,NUHA,Indonesia,https://nuha.care/produk/simrs-emr,34 modul di halaman SIMRS + produk ekosistem
+8,SIMGOS V2,Indonesia,https://docs.simgos2.simpel.web.id/docs/,Panduan modul dan plugin; instalasi dapat berbeda
+9,Khanza,Indonesia,https://www.yaski.or.id/fitur,Katalog SIMKES Khanza A–T; perlu verifikasi versi
+10,teraMedik,Indonesia,https://www.teramedik.com/id/teramedik-simrs-sistem-informasi-manajemen-rumah-sakit,"Katalog ringkas, tidak semua modul dijelaskan sampai subfitur"
+11,TrustMe,Benchmark internal,https://github.com/bofandra/simrs-sensi/blob/main/SELISIH_DENGAN_ROADMAP.md,"TrustMe SIMRS.pdf dirujuk dalam benchmark internal, bukan Trustmedis"
+12,SIMRS-Sensi,Proyek,https://github.com/bofandra/simrs-sensi,Status baseline main vs PR; bukan verifikasi UAT produksi
+<PARSED TEXT FOR SHEET: 5 / 6 TABS
+TAB NAME: 04_Sumber_Bukti>
+index,DAFTAR SUMBER & JEJAK BUKTI,Unnamed: 1,Unnamed: 2,Unnamed: 3
+0,Tautan publik dan tautan repository privat proyek untuk audit ulang klaim,,,
+1,,,,
+2,Sistem,Jenis bukti,URL,Catatan keterbatasan
+3,Epic,Katalog resmi software,https://www.epic.com/software/,Produk global dan interoperabilitas
+4,Epic,Katalog specialty,https://www.epic.com/software/specialties/,"Beaker, ASAP, specialty workflows"
+5,TrakCare,Products/settings/departments,https://www.intersystems.com/sg/products/trakcare/settings-departments/,Core dan optional extension
+6,Oracle Health,Healthcare product capabilities,https://www.oracle.com/health/products/,Portofolio clinical/revenue/analytics
+7,MEDITECH,Expanse product list,https://ehr.meditech.com/meditech-product-list,"Clinical, finance, diagnostic, patient portal"
+8,NUHA,34 SIMRS & EMR modules,https://nuha.care/produk/simrs-emr,25 front office; 9 back office
+9,NUHA,Ekosistem produk lain,https://nuha.care/,"HRIS, cost, fixed assets, dashboard, consolidation"
+10,SIMGOS V2,Panduan dan katalog plugins,https://docs.simgos2.simpel.web.id/docs/,Versi/instalasi dan submodul rinci
+11,SIMGOS V2,Kemenkes SIMGOS V2,https://keslan.kemkes.go.id/simgos,"Status sistem, instalasi, onboarding"
+12,Khanza,YASKI katalog fitur A–T,https://www.yaski.or.id/fitur,20 modul resmi yang dipublikasi
+13,teraMedik,Katalog resmi SIMRS,https://www.teramedik.com/id/teramedik-simrs-sistem-informasi-manajemen-rumah-sakit,"RME, revenue, stok, dashboard, integrasi"
+14,TrustMe,Benchmark PDF dalam rencana proyek,https://github.com/bofandra/simrs-sensi/blob/main/SELISIH_DENGAN_ROADMAP.md,TrustMe SIMRS.pdf belum diperiksa sebagai produk online; jangan samakan Trustmedis
+15,SIMRS-Sensi,Rencana eksekusi 219 fitur/50 modul,https://github.com/bofandra/simrs-sensi/blob/main/RENCANA_EKSEKUSI_BENCHMARK_NUHA_20261028.md,Rencana bukan bukti fitur selesai
+16,SIMRS-Sensi,Panduan user di main,https://github.com/bofandra/simrs-sensi/blob/main/USE_GUIDE.md,Cara pakai dan keterbatasan fitur
+17,SIMRS-Sensi,Gap dengan enterprise roadmap,https://github.com/bofandra/simrs-sensi/blob/main/SELISIH_DENGAN_ROADMAP.md,Baseline dokumen Oktober; perlu verifikasi saat rilis
+18,SIMRS-Sensi,PR gizi draft,https://github.com/bofandra/simrs-sensi/pull/247,"Review/uat gate, bukan produksi"
+<PARSED TEXT FOR SHEET: 6 / 6 TABS
+TAB NAME: 05_Cara_Verifikasi>
+index,KERANGKA VERIFIKASI FITUR,Unnamed: 1,Unnamed: 2,Unnamed: 3,Unnamed: 4
+0,Agar pembanding katalog publik tidak disamakan dengan implementasi nyata,,,,
+1,,,,,
+2,Tahap,Area,Bukti minimum,Status hasil,Aturan
+3,01,Fitur terdaftar,Vendor manual/website,D atau B,"Hanya klaim ketersediaan fitur, bukan jaminan siap dipakai"
+4,02,UI dan akses role,Aplikasi build pada versi tertentu,I/P,"Tersedia menu, validasi role dan denial server"
+5,03,Skenario positif dan negatif,Test suite + UAT klinis,Staging verified,Dokter/perawat/operator menyelesaikan workflow sampai akhir
+6,04,Integrasi eksternal,"Credential test, API contract, acceptance",External accepted,"Retry, status, audit dan rekonsiliasi sesuai provider"
+7,05,Produksi,"Release SHA, monitoring, SOP, backup/restore",Production operational,Tidak cukup hanya build/test/health endpoint sukses
+8,06,Evidence ulang,Tanggal versi dan bukti penguji,Per fitur,Semua angka perbandingan harus version-aware
